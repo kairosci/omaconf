@@ -10,9 +10,10 @@ fi
 
 log "Removing orphan packages"
 ORPHANS=""
-ORPHANS=$(pacman -Qtdq 2>/dev/null || :)
+ORPHANS=$(pacman -Qtdq 2>/dev/null || warn "orphan query skipped")
 if [[ -n "$ORPHANS" ]]; then
-    pacman -Rns --noconfirm $ORPHANS 2>/dev/null || warn "orphan removal skipped"
+    read -r -a orphan_list <<< "$ORPHANS"
+    pacman -Rns --noconfirm "${orphan_list[@]}" 2>/dev/null || warn "orphan removal skipped"
 fi
 
 log "Vacuuming systemd journal"

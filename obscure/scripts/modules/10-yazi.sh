@@ -8,7 +8,7 @@ PLUGIN_SRC="$PROJECT_DIR/data/obscure.yazi"
 
 [[ -f "$PATTERNS_FILE" ]] || { warn "patterns file missing"; return 0; }
 
-mapfile -t PATTERNS < <(grep -vE '^\s*(#|$)' "$PATTERNS_FILE" 2>/dev/null || :)
+mapfile -t PATTERNS < <(awk '!/^[[:space:]]*(#|$)/' "$PATTERNS_FILE")
 
 insert_after_header() {
     local file="$1" header="$2" block="$3"
