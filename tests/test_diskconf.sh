@@ -63,6 +63,7 @@ assert_file_contains "disk-theme hook reads the omarchy palette" "$DISK_HOOK" 'c
 assert_file_not_contains "disk-theme hook hardcodes no theme name" "$DISK_HOOK" 'themes/catppuccin|themes/tokyo-night|themes/gruvbox'
 assert_file_contains "disk-theme hook rejects theme path traversal" "$DISK_HOOK" '\*..\*'
 assert_file_contains "disk-theme hook validates palette hex colors" "$DISK_HOOK" '#\[0-9a-fA-F\]'
+assert_file_not_contains "disk-theme hook reads the palette without early-exit pipelines" "$DISK_HOOK" '\| head'
 assert_file_contains "disk-theme hook manages its own header range" "$DISK_HOOK" 'omaconf disk theme'
 assert_file_contains "disk-theme hook writes atomically" "$DISK_HOOK" 'mktemp'
 assert_file_contains "disk-theme hook keeps the config permissions tight" "$DISK_HOOK" 'chmod 644'
