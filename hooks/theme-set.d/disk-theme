@@ -20,12 +20,12 @@ case "$CURRENT_THEME" in
     *..*|*/*) CURRENT_THEME="default" ;;
 esac
 
-DUA_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/dua-cli"
-CONFIG_FILE="$DUA_CONFIG/config.toml"
+GDU_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/gdu"
+CONFIG_FILE="$GDU_CONFIG/gdu.yaml"
 MARK_BEGIN="# >>> omaconf disk theme >>>"
 MARK_END="# <<< omaconf disk theme <<<"
 
-mkdir -p "$DUA_CONFIG"
+mkdir -p "$GDU_CONFIG"
 
 get_color() {
     local key="$1" default="$2" toml="$3"
@@ -54,22 +54,38 @@ fi
 if [[ -f "$CURRENT_TOML" ]]; then
     BG=$(get_color "background" "#1e1e2e" "$CURRENT_TOML")
     FG=$(get_color "foreground" "#cdd6f4" "$CURRENT_TOML")
-    SELECTION=$(get_color "selection" "#45475a" "$CURRENT_TOML")
-    MUTED=$(get_color "muted" "#585b70" "$CURRENT_TOML")
+    LIGHT_BG=$(get_color "lighter_background" "#313244" "$CURRENT_TOML")
     ACCENT=$(get_color "accent" "#89b4fa" "$CURRENT_TOML")
+    YELLOW=$(get_color "yellow" "#f9e2af" "$CURRENT_TOML")
 else
     BG="#1e1e2e"
     FG="#cdd6f4"
-    SELECTION="#45475a"
-    MUTED="#585b70"
+    LIGHT_BG="#313244"
     ACCENT="#89b4fa"
+    YELLOW="#f9e2af"
 fi
 
 BLOCK_BODY="# omarchy-theme = \"$CURRENT_THEME\"
-# palette: background=$BG foreground=$FG selection=$SELECTION muted=$MUTED accent=$ACCENT
-# dua inherits the terminal palette; no color keys are forced."
+style:
+    footer:
+        text-color: \"$FG\"
+        background-color: \"$LIGHT_BG\"
+        number-color: \"$ACCENT\"
+    selected-row:
+        text-color: \"$BG\"
+        background-color: \"$ACCENT\"
+    marked:
+        text-color: \"$BG\"
+        background-color: \"$YELLOW\"
+    result-row:
+        number-color: \"$FG\"
+        directory-color: \"$ACCENT\"
+    header:
+        text-color: \"$BG\"
+        background-color: \"$ACCENT\"
+        hidden: false"
 
-STAGED="$(mktemp "$DUA_CONFIG/.config.toml.XXXXXX")" || exit 1
+STAGED="$(mktemp "$GDU_CONFIG/.gdu.yaml.XXXXXX")" || exit 1
 if [[ -f "$CONFIG_FILE" ]]; then
     awk -v begin="$MARK_BEGIN" -v end="$MARK_END" '
         index($0, begin) { skip = 1; next }
