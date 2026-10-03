@@ -282,6 +282,7 @@ hooks.portal_header_skipped=cabeçalho de portals.conf ignorado para %s
 hooks.preview_size_reapply_skipped=Reaplicação do tamanho das pré-visualizações de tema omitida
 hooks.preview_size_reapply_root_skipped=Reaplicação do tamanho das pré-visualizações de tema omitida (requer root)
 hooks.portal_chown_failed=falha do chown das configurações do portal para %s
+hooks.portal_reload_skipped=reaplicação do recarregamento do portal ignorada para %s
 
 install.theme_sync_skipped=sincronização do tema ignorada
 install.zed_done=Configuração do Zed instalada com sucesso.
@@ -422,6 +423,9 @@ portals.config_chmod=chmod da configuração do termfilechooser ignorado para %s
 portals.conf_chmod=chmod da configuração de portais ignorado para %s
 portals.chown_failed=falha no chown da configuração de portais para %s
 portals.mask_skipped=mascaramento de portais GTK e GNOME ignorado para %s
+portals.stop_skipped=paragem dos backends de portal GTK e GNOME obsoletos ignorada para %s
+portals.reload=Recarregamento do portal para aplicar o encaminhamento FileChooser
+portals.reload_skipped=Recarregamento do portal ignorado para %s
 keyring.install=Instalando ferramentas CLI de segredos e palavras-passe
 keyring.pkg_failed=falha na instalação para %s
 keyring.disable_gnome=Desativando e mascarando o daemon GNOME Keyring
