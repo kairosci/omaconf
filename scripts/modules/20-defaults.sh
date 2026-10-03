@@ -70,8 +70,8 @@ for user_home in /home/*; do
 done
 
 log "defaults.disk_install"
-if ! pacman -Q dua-cli &>/dev/null; then
-    pacman -S --noconfirm --needed dua-cli || warn "defaults.disk_failed" "dua-cli"
+if ! pacman -Q gdu &>/dev/null; then
+    pacman -S --noconfirm --needed gdu || warn "defaults.disk_failed" "gdu"
 fi
 
 log "defaults.diskconf"

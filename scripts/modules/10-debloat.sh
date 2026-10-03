@@ -26,6 +26,7 @@ DEBLOAT=(
     docker-compose
     gnome-disk-utility
     gnome-themes-extra
+    dua-cli
     foot
 )
 

@@ -48,7 +48,7 @@ assert_true "cliconf installer bash syntax valid" "bash -n '$PROJECT_DIR/cliconf
 assert_true "herdr menu bash syntax valid" "bash -n '$PROJECT_DIR/herdrconf/data/herdr-keybindings-menu'"
 assert_true "herdr installer bash syntax valid" "bash -n '$PROJECT_DIR/herdrconf/install.sh'"
 
-for tool in mpv zathura imv fzf rg fd bat eza zoxide git lazygit gum ai dua; do
+for tool in mpv zathura imv fzf rg fd bat eza zoxide git lazygit gum ai gdu; do
     assert_file_contains "cliconf covers $tool" "$CLICONF_DATA/helpers.sh" "$tool)"
 done
 
