@@ -95,10 +95,9 @@ HELP
 		;;
 	dua)
 		cat << 'HELP'
-dua - j/k or arrows move (vim-style, same as yazi), gg/G top/bottom
-  Tab cycle panes, ] toggle right panes, / search, ? full help, q quit
-  dua i (interactive here), dua i ~/Downloads (scan path)
-  deletion is multi-stage, confirm each step inside dua
+dua - j/k move, g/G top/bottom, h/l parent/enter (vim-style, same as yazi)
+  Tab cycle panes, space/d/x mark, ctrl+r/ctrl+t delete/trash, q quit
+  dua i (interactive here), ? full help inside dua, s/m/c sort
 HELP
 		;;
 	ai)
