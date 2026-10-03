@@ -1,7 +1,4 @@
 #!/bin/bash
-
-# Self-contained integrity checks for the ai repo (no external test libs).
-
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
