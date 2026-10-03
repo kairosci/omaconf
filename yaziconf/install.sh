@@ -59,7 +59,8 @@ yazi - navigation (vim-style)           quick openers
   o/O ............ open / open-with      archives .... extract here
   y/x/p .......... copy/cut/paste
   Tab ............ select, v visual      ~ ........... full help
-  : .............. command, Q quit       ya .......... quit staying here
+   : .............. command, Q quit       ya .......... quit staying here
+   picker ....... Enter confirms, q cancels (Space multi-selects)
 HELP
 }
 SHELLBLOCK
