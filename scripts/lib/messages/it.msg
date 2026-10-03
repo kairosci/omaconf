@@ -1,6 +1,6 @@
 __warning=Attenzione
 __error=Errore
-__root_required=Servono privilegi di root
+__root_required=Permessi root richiesti (esegui con pkexec o sudo)
 __cannot_determine_user=Impossibile determinare l'utente principale
 __stage=--> Esecuzione fase: %s
 __complete=Hardening completato. Riavvio necessario.

@@ -1,6 +1,6 @@
 __warning=Warnung
 __error=Fehler
-__root_required=Root-Rechte erforderlich
+__root_required=Root-Rechte erforderlich (mit pkexec oder sudo ausführen)
 __cannot_determine_user=Hauptbenutzer konnte nicht ermittelt werden
 __stage=--> Stufe wird ausgeführt: %s
 __complete=Härtung abgeschlossen. Neustart erforderlich.
