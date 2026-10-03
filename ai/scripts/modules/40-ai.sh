@@ -1,10 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Opt-in AI debloat. It runs only when sourced by scripts/debloat-ai.sh --yes,
-# which sets OMACONF_AI_DEBLOAT=1. Requires log, warn and omarchy_as from the
-# entry script. Default TUI of AI CLIs is never themed, no exceptions.
-#
 # Explicitly out of scope (never touched):
 #   - user-managed AI CLIs (mise: opencode, copilot, agy, ...)
 #   - tensaku (screenshot annotator, not AI)

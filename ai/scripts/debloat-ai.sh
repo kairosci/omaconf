@@ -1,9 +1,4 @@
 #!/bin/bash
-
-# On-demand AI debloat entry point. The AI module is opt-in and never runs
-# anywhere by default: invoking this script with --yes is the explicit request.
-# Without --yes it prints the planned actions and exits.
-
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
