@@ -13,4 +13,4 @@ i18n_init
 log "__log_in_progress" "$LOG"
 log ""
 
-sudo bash "$SCRIPT_DIR/setup.sh"
+pkexec bash "$SCRIPT_DIR/setup.sh"
