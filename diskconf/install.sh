@@ -24,13 +24,13 @@ fi
 install_shell_block "$HOME/.bashrc" "$MARK_BEGIN" "$MARK_END" << 'SHELLBLOCK'
 function dh() {
 	cat << 'HELP'
-dua - disk usage (vim-style)              panes and actions
-  j/k or arrows .. move (same as yazi)     Tab .......... cycle panes
-  gg/G ........... top/bottom              ] ............ toggle right panes
-  Enter .......... open directory          / ............ search
-  ? .............. full help inside dua    q/Esc ........ quit/back
-  dua i .......... interactive here        dua i ~/Downloads . scan path
-  deletion is multi-stage, confirm each step inside dua
+dua - disk usage (vim-style, same as yazi)   panes and more
+  j/k ............ move                       Tab .......... cycle panes
+  g/G ............ top/bottom                  ? ............ full help
+  h/l, o ......... parent/enter/open            / ............ search
+  space/d/x ...... mark, mark+down, for-del     q/Esc ........ quit/back
+  ctrl+r / ctrl+t  delete / trash marked        s/m/c ........ sort
+  dua i .......... interactive here             r ............ refresh
 HELP
 }
 SHELLBLOCK
