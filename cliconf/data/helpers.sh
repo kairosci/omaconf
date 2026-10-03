@@ -10,6 +10,7 @@ helper - one helper per tool. Usage: helper <name>
   rg ................. search in files   fd ..... find files
   bat ................ cat with colors   eza .... modern ls
   zoxide ............. jump to frequent directories
+  dua ................ disk usage analyzer
   git ................ git essentials   lazygit  visual git
   gum ................ menus and prompts for scripts
   ai ................. AI CLI: default TUI only
@@ -90,6 +91,14 @@ HELP
 		cat << 'HELP'
 gum - gum choose a b c (menu), gum confirm "ok?" && ...
   gum input --placeholder "name", gum spin -- long command
+HELP
+		;;
+	dua)
+		cat << 'HELP'
+dua - j/k or arrows move (vim-style, same as yazi), gg/G top/bottom
+  Tab cycle panes, ] toggle right panes, / search, ? full help, q quit
+  dua i (interactive here), dua i ~/Downloads (scan path)
+  deletion is multi-stage, confirm each step inside dua
 HELP
 		;;
 	ai)

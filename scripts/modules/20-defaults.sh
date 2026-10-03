@@ -69,6 +69,20 @@ for user_home in /home/*; do
     fi
 done
 
+log "defaults.disk_install"
+if ! pacman -Q dua-cli &>/dev/null; then
+    pacman -S --noconfirm --needed dua-cli || warn "defaults.disk_failed" "dua-cli"
+fi
+
+log "defaults.diskconf"
+for user_home in /home/*; do
+    [[ -d "$user_home" ]] || continue
+    _user=$(basename "$user_home")
+    if [[ -x "$PROJECT_DIR/diskconf/install.sh" ]]; then
+        user_as "$_user" bash "$PROJECT_DIR/diskconf/install.sh" 2>/dev/null || warn "defaults.diskconf_skipped" "$_user"
+    fi
+done
+
 log "defaults.trash_install"
 if ! pacman -Q trash-cli &>/dev/null; then
     pacman -S --noconfirm --needed trash-cli

@@ -48,7 +48,7 @@ assert_true "cliconf installer bash syntax valid" "bash -n '$PROJECT_DIR/cliconf
 assert_true "herdr menu bash syntax valid" "bash -n '$PROJECT_DIR/herdrconf/data/herdr-keybindings-menu'"
 assert_true "herdr installer bash syntax valid" "bash -n '$PROJECT_DIR/herdrconf/install.sh'"
 
-for tool in mpv zathura imv fzf rg fd bat eza zoxide git lazygit gum ai; do
+for tool in mpv zathura imv fzf rg fd bat eza zoxide git lazygit gum ai dua; do
     assert_file_contains "cliconf covers $tool" "$CLICONF_DATA/helpers.sh" "$tool)"
 done
 
@@ -69,7 +69,7 @@ assert_true "user config library leaves caller shell options untouched" \
 assert_true "no installer keeps the ad hoc timestamped backup" \
     "! grep -qE 'bak-\\\$\\(date' '$PROJECT_DIR'/*conf/install.sh"
 
-for installer in cliconf herdrconf microconf nvimconf yaziconf zedconf; do
+for installer in cliconf herdrconf microconf nvimconf yaziconf zedconf diskconf; do
     assert_file_contains "$installer sources the user config library" \
         "$PROJECT_DIR/$installer/install.sh" "userconf.sh"
 done
