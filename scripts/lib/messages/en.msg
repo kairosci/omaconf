@@ -1,6 +1,6 @@
 __warning=Warning
 __error=Error
-__root_required=Root privileges required
+__root_required=Root required (run with pkexec or sudo)
 __cannot_determine_user=Cannot determine primary user
 __stage=--> Executing stage: %s
 __complete=Hardening complete. Reboot required.

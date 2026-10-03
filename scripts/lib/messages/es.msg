@@ -1,6 +1,6 @@
 __warning=Advertencia
 __error=Error
-__root_required=Se requieren privilegios de root
+__root_required=Se requieren privilegios root (ejecuta con pkexec o sudo)
 __cannot_determine_user=No se puede determinar el usuario principal
 __stage=--> Ejecutando la etapa: %s
 __complete=Endurecimiento completado. Se requiere reiniciar.

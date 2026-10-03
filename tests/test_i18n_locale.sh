@@ -150,8 +150,28 @@ assert_true "catalogs contain no stray percent signs" \
     "! grep -qE '%[^s]' '$MSG_DIR/en.msg'"
 assert_true "catalogs contain no keys with spaces" \
     "! grep -qE '^[^=#]+ [^=]*=' '$MSG_DIR/en.msg'"
+
+catalog_duplicate_keys() {
+    local catalog="$1"
+    grep -E '^[a-zA-Z_][a-zA-Z0-9_.-]*=' "$catalog" | cut -d= -f1 | sort | uniq -d
+}
+
+for lang in en it fr de es pt; do
+    catalog="$MSG_DIR/$lang.msg"
+    if [[ -f "$catalog" ]]; then
+        assert_true "catalogue $lang defines no duplicate key" "[[ -z \"\$(catalog_duplicate_keys '$catalog')\" ]]"
+    fi
+done
 assert_true "no hook keeps a hardcoded english warning label" \
     "! grep -rq 'warning: ' '$PROJECT_DIR/hooks'"
+
+assert_file_contains_literal "tcheck forwards substitution arguments" "$PROJECT_DIR/scripts/verify.sh" 'check "$(t "$key" "$@")" "$condition"'
+placeholder_keys=$(grep -E '^check\.[a-z_]+=.*%s' "$MSG_DIR/en.msg" | cut -d= -f1)
+for key in $placeholder_keys; do
+    unresolved=$(awk -v needle="tcheck \"$key\" \"[^\"]*\"[[:space:]]*$" \
+        '$0 ~ needle { n++ } END { print n + 0 }' "$PROJECT_DIR/scripts/verify.sh")
+    assert_equal "tcheck call for $key supplies its placeholder argument" "0" "$unresolved"
+done
 assert_true "verify.sh has no untranslated literal check" \
     "! grep -qE '^[[:space:]]+check \"[a-zA-Z]' '$PROJECT_DIR/scripts/verify.sh'"
 

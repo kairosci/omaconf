@@ -1,6 +1,6 @@
 __warning=Avertissement
 __error=Erreur
-__root_required=Les privilèges root sont requis
+__root_required=Privilèges root requis (exécuter avec pkexec ou sudo)
 __cannot_determine_user=Impossible de déterminer l'utilisateur principal
 __stage=--> Exécution de l'étape : %s
 __complete=Durcissement terminé. Redémarrage requis.
