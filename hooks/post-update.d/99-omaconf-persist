@@ -135,6 +135,6 @@ TFEOF
   if [[ -n "$_uid" && -e "/run/user/$_uid/bus" ]]; then
     _portal_env=(env "XDG_RUNTIME_DIR=/run/user/$_uid" "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$_uid/bus")
     run_as_user "$_user" "${_portal_env[@]}" systemctl --user stop xdg-desktop-portal-gtk.service xdg-desktop-portal-gnome.service 2>/dev/null || warn "hooks.portal_reload_skipped" "$_user"
-    run_as_user "$_user" "${_portal_env[@]}" systemctl --user try-reload-or-restart xdg-desktop-portal.service 2>/dev/null || warn "hooks.portal_reload_skipped" "$_user"
+    run_as_user "$_user" "${_portal_env[@]}" systemctl --user restart xdg-desktop-portal.service 2>/dev/null || warn "hooks.portal_reload_skipped" "$_user"
   fi
 done
