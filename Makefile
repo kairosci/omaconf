@@ -1,4 +1,5 @@
 SHELL := /bin/bash
+PROJECT_ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 .DEFAULT_GOAL := help
 
@@ -6,7 +7,7 @@ SHELL := /bin/bash
 
 lint:
 	@if ! command -v shellcheck &> /dev/null; then \
-		echo "shellcheck not found. Install with: sudo pacman -S shellcheck (or use CI)"; \
+		echo "shellcheck not found. Install with: pkexec pacman -S shellcheck (or use CI)"; \
 		exit 1; \
 	fi
 	shellcheck --severity=style \
@@ -19,7 +20,7 @@ help:
 	@bash scripts/lib/help.sh
 
 setup:
-	sudo bash scripts/setup.sh
+	pkexec bash $(PROJECT_ROOT)/scripts/setup.sh
 
 verify:
 	bash scripts/verify.sh
