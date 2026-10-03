@@ -94,6 +94,7 @@ tcheck "check.pkg_removed" "! pacman -Q obs-studio &>/dev/null" obs-studio
 tcheck "check.pkg_removed" "! pacman -Q libreoffice-fresh &>/dev/null" libreoffice-fresh
 tcheck "check.pkg_removed" "! pacman -Q obsidian &>/dev/null" obsidian
 tcheck "check.pkg_installed" "pacman -Q btop &>/dev/null" btop
+tcheck "check.pkg_installed" "pacman -Q dua-cli &>/dev/null" dua-cli
 tcheck "check.pkg_installed" "pacman -Q capitaine-cursors &>/dev/null" capitaine-cursors
 tcheck "check.pkg_installed" "pacman -Q papirus-icon-theme &>/dev/null" papirus-icon-theme
 tcheck "check.pkg_removed" "! pacman -Q gnome-disk-utility &>/dev/null" gnome-disk-utility
@@ -259,6 +260,7 @@ tcheck "check.portals_conf"     "[[ -f \$HOME/.config/xdg-desktop-portal/portals
 tcheck "check.termfilechooser_conf" "[[ -f \$HOME/.config/xdg-desktop-portal-termfilechooser/config ]]"
 tcheck "check.keyring_disabled" "! grep -rq 'pam_gnome_keyring' /etc/pam.d/sddm /etc/pam.d/sddm-autologin 2>/dev/null"
 tcheck "check.cli_secrets"      "command -v secret-tool &>/dev/null && command -v pass &>/dev/null"
+tcheck "check.disk_config"      "[[ -f \$HOME/.config/dua-cli/config.toml ]]"
 
 section verify.sec_debloat
 tcheck "check.ignorepkg" "grep -q '^IgnorePkg' /etc/pacman.conf"
@@ -267,6 +269,7 @@ tcheck "check.cursor_theme"  "gsettings get org.gnome.desktop.interface cursor-t
 tcheck "check.no_tela"         "! grep -rq 'Tela' $HOME/.config/omarchy/themes/ 2>/dev/null"
 tcheck "check.folder_color_hook"        "[[ -x $HOME/.config/omarchy/hooks/theme-set.d/folder-color ]]"
 tcheck "check.micro_theme_hook"         "[[ -x $HOME/.config/omarchy/hooks/theme-set.d/micro-theme ]]"
+tcheck "check.disk_theme_hook"          "[[ -x \$HOME/.config/omarchy/hooks/theme-set.d/disk-theme ]]"
 tcheck "check.micro_colorscheme" "[[ -f $HOME/.config/micro/colorschemes/omarchy.micro ]]"
 
 section verify.sec_aur

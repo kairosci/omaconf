@@ -1,0 +1,25 @@
+# Managed by omaconf diskconf. dua (Disk Usage Analyzer) reads this file from
+# $XDG_CONFIG_HOME/dua-cli/config.toml. Unknown keys are ignored by dua and
+# missing keys fall back to dua defaults, so only documented keys are set
+# here. Run `dua config show-default` for the commented template of every
+# configurable keybinding.
+#
+# Theme: dua inherits the terminal palette, so it follows the active Omarchy
+# theme automatically with no color keys to force. The active theme slug and
+# its palette are recorded in the managed header maintained by
+# hooks/theme-set.d/disk-theme. Keybindings below mirror the vim-style
+# navigation shared by yazi, zathura and imv: j/k move, gg/G jump to
+# top/bottom, Tab cycles panes, ? opens help, q quits.
+
+gitignore = true
+cleanup_heuristics = true
+
+[keys]
+esc_navigates_back = true
+close_pane = "esc"
+toggle_right_panes = "]"
+sort_by_name = "ctrl+n"
+
+[notifications]
+scan_finished = true
+delete_finished = true

@@ -3,7 +3,7 @@ PROJECT_ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup verify test hook icons theme zed micro nvim yazi cli herdr editors clean lang i18n-status lint
+.PHONY: help setup verify test hook icons theme zed micro nvim yazi cli herdr disk editors clean lang i18n-status lint
 
 lint:
 	@if ! command -v shellcheck &> /dev/null; then \
@@ -13,7 +13,7 @@ lint:
 	shellcheck --severity=style \
 		scripts/*.sh scripts/lib/*.sh scripts/modules/*.sh \
 		hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* \
-		zedconf/*.sh microconf/*.sh nvimconf/*.sh yaziconf/*.sh cliconf/*.sh herdrconf/*.sh \
+		zedconf/*.sh microconf/*.sh nvimconf/*.sh yaziconf/*.sh cliconf/*.sh herdrconf/*.sh diskconf/*.sh \
 		tests/*.sh
 
 help:
@@ -59,6 +59,9 @@ cli:
 
 herdr:
 	bash herdrconf/install.sh
+
+disk:
+	bash diskconf/install.sh
 
 editors: zed micro nvim cli
 

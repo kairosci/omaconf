@@ -122,15 +122,16 @@ assert_file_contains "Makefile exposes lang target" "$PROJECT_DIR/Makefile" "^la
 assert_file_contains "Makefile exposes nvim target" "$PROJECT_DIR/Makefile" "^nvim:"
 assert_file_contains "Makefile exposes cli target" "$PROJECT_DIR/Makefile" "^cli:"
 assert_file_contains "Makefile exposes herdr target" "$PROJECT_DIR/Makefile" "^herdr:"
+assert_file_contains "Makefile exposes disk target" "$PROJECT_DIR/Makefile" "^disk:"
 assert_file_contains "Makefile help is translated" "$PROJECT_DIR/Makefile" "lib/help.sh"
 assert_file_contains "Makefile hook target installs the i18n runtime" "$PROJECT_DIR/Makefile" "hooks/i18n"
 
-for installer in zedconf microconf nvimconf yaziconf cliconf herdrconf; do
+for installer in zedconf microconf nvimconf yaziconf cliconf herdrconf diskconf; do
     assert_file_contains "$installer sources the i18n library" "$PROJECT_DIR/$installer/install.sh" "i18n.sh"
 done
 
 for hook in hooks/theme-set.d/folder-color hooks/theme-set.d/micro-theme hooks/theme-set.d/btop-theme \
-            hooks/theme-set.d/shell-icons hooks/theme-set.d/yazi-theme hooks/theme-set.d/cli-theme \
+            hooks/theme-set.d/shell-icons hooks/theme-set.d/yazi-theme hooks/theme-set.d/cli-theme hooks/theme-set.d/disk-theme \
             hooks/pre-refresh-pacman.d/99-omaconf-persist hooks/post-update.d/99-omaconf-persist; do
     assert_file_contains "$(basename "$(dirname "$hook")")/$(basename "$hook") bootstraps i18n" "$PROJECT_DIR/$hook" "i18n-boot.sh"
 done
