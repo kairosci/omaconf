@@ -45,4 +45,7 @@ PORTEOF
     chown -R "$_user":"$_user" "$_tf_dir" "$_portal_dir" 2>/dev/null || warn "portals.chown_failed" "$_user"
 
     user_as "$_user" systemctl --user mask xdg-desktop-portal-gtk.service xdg-desktop-portal-gnome.service 2>/dev/null || warn "portals.mask_skipped" "$_user"
+    user_as "$_user" systemctl --user stop xdg-desktop-portal-gtk.service xdg-desktop-portal-gnome.service 2>/dev/null || warn "portals.stop_skipped" "$_user"
+    log "portals.reload"
+    user_as "$_user" systemctl --user try-reload-or-restart xdg-desktop-portal.service 2>/dev/null || warn "portals.reload_skipped" "$_user"
 done

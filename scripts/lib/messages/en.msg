@@ -282,6 +282,7 @@ hooks.portal_header_skipped=portals.conf header skipped for %s
 hooks.preview_size_reapply_skipped=Theme preview size reapply skipped
 hooks.preview_size_reapply_root_skipped=Theme preview size reapply skipped (needs root)
 hooks.portal_chown_failed=chown portal configs failed for %s
+hooks.portal_reload_skipped=desktop portal reload reapply skipped for %s
 
 install.theme_sync_skipped=Theme sync skipped
 install.zed_done=Zed configuration installed successfully.
@@ -422,6 +423,9 @@ portals.config_chmod=chmod on termfilechooser config skipped for %s
 portals.conf_chmod=chmod on portal config skipped for %s
 portals.chown_failed=chown on portal configuration failed for %s
 portals.mask_skipped=Masking GTK and GNOME desktop portals skipped for %s
+portals.stop_skipped=Stopping stale GTK and GNOME portal backends skipped for %s
+portals.reload=Reloading desktop portal so FileChooser routing takes effect
+portals.reload_skipped=Desktop portal reload skipped for %s
 keyring.install=Installing CLI secret and password tools
 keyring.pkg_failed=Installation failed for %s
 keyring.disable_gnome=Disabling and masking GNOME Keyring daemon
