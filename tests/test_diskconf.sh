@@ -37,7 +37,7 @@ assert_file_contains "diskconf installer degrades gracefully on theme skip" "$DI
 assert_file_contains "diskconf installer manages the shell block" "$DISK_INSTALLER" "install_shell_block"
 assert_file_contains "diskconf installer ships the terminal quick card" "$DISK_INSTALLER" "function dh\(\)"
 assert_file_contains "diskconf quick card documents panes" "$DISK_INSTALLER" "cycle panes"
-assert_file_contains "diskconf quick card points at the built-in help" "$DISK_INSTALLER" "full help inside dua"
+assert_file_contains "diskconf quick card points at the built-in help" "$DISK_INSTALLER" "full help"
 assert_file_contains "diskconf installer logs completion through i18n" "$DISK_INSTALLER" 'log "install.disk_done"'
 
 if command -v python3 &>/dev/null; then
@@ -45,9 +45,21 @@ if command -v python3 &>/dev/null; then
     assert_true "dua-cli config keeps unified vim-style keys" "python3 -c \"
 import tomllib
 cfg = tomllib.load(open('$DISK_DATA','rb'))
+assert cfg.get('format') == 'binary', 'byte format not pinned'
 keys = cfg.get('keys', {})
 assert keys.get('esc_navigates_back') is True, 'esc_navigates_back missing'
-assert 'close_pane' in keys and 'toggle_right_panes' in keys and 'sort_by_name' in keys, 'unified keys missing'
+assert keys.get('quit') == 'q', 'quit is not q like yazi'
+assert keys.get('toggle_help') == '?', 'help is not ? like yazi'
+assert keys.get('open_search') == '/', 'search is not / like yazi'
+assert keys.get('toggle_mark') == 'space', 'mark is not space like yazi'
+assert 'j' in keys.get('move_down', []), 'move_down is not j like yazi'
+assert 'k' in keys.get('move_up', []), 'move_up is not k like yazi'
+assert 'g' in keys.get('move_to_top', []), 'move_to_top misses yazi-style g'
+assert 'G' in keys.get('move_to_bottom', []), 'move_to_bottom is not G like yazi'
+assert 'h' in keys.get('ascend', []), 'ascend misses yazi-style h'
+assert 'l' in keys.get('descend', []), 'descend misses yazi-style l'
+assert 'O' in keys.get('open_entry', []), 'open_entry is not O like yazi'
+assert 'toggle_right_panes' not in keys, 'undocumented key would be silently ignored'
 \""
     assert_true "dua-cli config sets no unsupported color section" "python3 -c \"
 import tomllib
