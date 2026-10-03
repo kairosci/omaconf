@@ -79,6 +79,35 @@ assert_file_not_contains() {
     assert_false "$desc" "grep -qE '$pattern' '$file' 2>/dev/null"
 }
 
+assert_file_contains_literal() {
+    local desc="$1"
+    local file="$2"
+    local needle="$3"
+    assert_true "$desc" "grep -qF -e '$needle' '$file' 2>/dev/null"
+}
+
+test_priv() {
+    if [[ $EUID -eq 0 ]]; then
+        "$@"
+        return
+    fi
+    sudo -n "$@"
+}
+
+assert_equal() {
+    local desc="$1"
+    local actual="$2"
+    local expected="$3"
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ "$actual" == "$expected" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}pass${NC} $desc"
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}fail${NC} $desc (got '$actual', expected '$expected')"
+    fi
+}
+
 test_section() {
     echo -e "\n${BOLD}${CYAN}[TEST SUITE] $1${NC}"
 }

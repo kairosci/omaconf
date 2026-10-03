@@ -17,7 +17,23 @@ chmod 644 /etc/udev/rules.d/98-battery-charge-threshold.rules
 install -Dm755 "$PROJECT_ROOT/scripts/lib/set-battery-charge-limit.sh" /usr/local/libexec/omaconf-set-battery-charge-limit
 install -Dm755 "$PROJECT_ROOT/scripts/lib/battery-charge-resume.sh" /usr/lib/systemd/system-sleep/omaconf-battery-charge-limit
 udevadm control --reload-rules 2>/dev/null || warn "power.udev_reload_skipped"
-udevadm trigger --subsystem-match=power_supply 2>/dev/null || warn "power.udev_trigger_skipped"
+
+_udev_triggered=0
+_udev_attempted=0
+for _battery in /sys/class/power_supply/BAT* /sys/class/power_supply/BATT*; do
+    [[ -e "$_battery" ]] || continue
+    _udev_attempted=$((_udev_attempted + 1))
+    if udevadm trigger --subsystem-match=power_supply \
+        --sysname-match="$(readlink -f "$_battery")" 2>/dev/null; then
+        _udev_triggered=$((_udev_triggered + 1))
+    else
+        warn "power.udev_trigger_node_skipped" "$(basename "$_battery")"
+    fi
+done
+if [[ $_udev_attempted -gt 0 && $_udev_triggered -eq 0 ]]; then
+    warn "power.udev_trigger_skipped"
+fi
+unset _battery _udev_triggered _udev_attempted
 
 mkdir -p /etc/tmpfiles.d
 cat > /etc/tmpfiles.d/battery-charge-threshold.conf << 'TMPFILES'
@@ -46,4 +62,27 @@ systemctl daemon-reload 2>/dev/null || warn "power.daemon_reload_skipped"
 systemctl enable battery-charge-threshold.service 2>/dev/null || warn "power.charge_enable_skipped"
 systemctl start battery-charge-threshold.service 2>/dev/null || warn "power.charge_start_skipped"
 
-/usr/local/libexec/omaconf-set-battery-charge-limit || warn "power.charge_write_failed" "supported battery threshold"
+battery_query() {
+    local key="$1" value=""
+    value=$(/usr/local/libexec/omaconf-set-battery-charge-limit --query "$key" 2>/dev/null) || value=""
+    printf '%s' "$value"
+}
+
+BATTERY_POLICY=$(battery_query limit)
+[[ "$BATTERY_POLICY" =~ ^[0-9]+$ ]] || BATTERY_POLICY=$(sed -n 's/^BATTERY_CHARGE_LIMIT=\([0-9][0-9]*\)$/\1/p' /etc/omaconf/power.conf | head -1)
+BATTERY_LIMIT="${BATTERY_POLICY}%"
+
+if ! /usr/local/libexec/omaconf-set-battery-charge-limit; then
+    warn "power.charge_write_rejected" "$BATTERY_LIMIT"
+fi
+
+case "$(battery_query enforced)" in
+    yes)
+        log "power.charge_enforced" "$BATTERY_LIMIT"
+        ;;
+    no)
+        if [[ "$(battery_query functional_nodes)" == "0" ]]; then
+            warn "power.charge_unsupported" "$BATTERY_LIMIT"
+        fi
+        ;;
+esac

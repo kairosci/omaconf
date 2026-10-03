@@ -30,47 +30,50 @@ check() {
 
 section() { echo -e "\n${BOLD}$(t "$1")${NC}"; }
 
+skip() { echo -e "  ${RED}$(t verify.label_skip)${NC} $1"; }
+
 tcheck() {
     local key="$1" condition="$2"
-    check "$(t "$key")" "$condition"
+    shift 2
+    check "$(t "$key" "$@")" "$condition"
 }
 
 section verify.sec_packages
-tcheck "check.pkg_installed"          "pacman -Q brave-origin-bin &>/dev/null"
-tcheck "check.pkg_removed"                "! pacman -Q chromium &>/dev/null"
-tcheck "check.pkg_installed"                "pacman -Q neovim &>/dev/null"
-tcheck "check.pkg_installed"          "pacman -Q omarchy-nvim &>/dev/null"
-tcheck "check.pkg_installed"                   "pacman -Q mpv &>/dev/null"
-tcheck "check.pkg_installed"                  "pacman -Q yazi &>/dev/null"
-tcheck "check.pkg_installed"                  "pacman -Q 7zip &>/dev/null"
-tcheck "check.pkg_installed"                   "pacman -Q imv &>/dev/null"
-tcheck "check.pkg_installed"             "pacman -Q trash-cli &>/dev/null"
-tcheck "check.pkg_installed"               "pacman -Q zathura &>/dev/null"
-tcheck "check.pkg_installed"     "pacman -Q zathura-pdf-mupdf &>/dev/null"
-tcheck "check.pkg_removed"                "! pacman -Q nautilus &>/dev/null"
-tcheck "check.pkg_removed"         "! pacman -Q yaru-icon-theme &>/dev/null"
-tcheck "check.pkg_removed"   "! pacman -Q system-config-printer &>/dev/null"
-tcheck "check.pkg_removed"                   "! pacman -Q totem &>/dev/null"
-tcheck "check.pkg_removed"                  "! pacman -Q evince &>/dev/null"
-tcheck "check.pkg_removed"                     "! pacman -Q eog &>/dev/null"
-tcheck "check.pkg_removed"                 "! pacman -Q dolphin &>/dev/null"
-tcheck "check.pkg_removed"                  "! pacman -Q okular &>/dev/null"
-tcheck "check.pkg_removed"                "! pacman -Q gwenview &>/dev/null"
-tcheck "check.pkg_removed"                "! pacman -Q kdenlive &>/dev/null"
-tcheck "check.daemon_absent"            "! command -v dockerd &>/dev/null"
-tcheck "check.runtime_present"                  "pacman -Q podman &>/dev/null"
-tcheck "check.pkg_removed"              "! pacman -Q obs-studio &>/dev/null"
-tcheck "check.pkg_removed"       "! pacman -Q libreoffice-fresh &>/dev/null"
-tcheck "check.pkg_removed"                "! pacman -Q obsidian &>/dev/null"
-tcheck "check.pkg_installed"                  "pacman -Q btop &>/dev/null"
-tcheck "check.pkg_installed"     "pacman -Q capitaine-cursors &>/dev/null"
-tcheck "check.pkg_installed"    "pacman -Q papirus-icon-theme &>/dev/null"
-tcheck "check.pkg_removed"      "! pacman -Q gnome-disk-utility &>/dev/null"
-tcheck "check.pkg_removed"      "! pacman -Q gnome-themes-extra &>/dev/null"
+tcheck "check.pkg_installed" "pacman -Q brave-origin-bin &>/dev/null" brave-origin-bin
+tcheck "check.pkg_removed" "! pacman -Q chromium &>/dev/null" chromium
+tcheck "check.pkg_installed" "pacman -Q neovim &>/dev/null" neovim
+tcheck "check.pkg_installed" "pacman -Q omarchy-nvim &>/dev/null" omarchy-nvim
+tcheck "check.pkg_installed" "pacman -Q mpv &>/dev/null" mpv
+tcheck "check.pkg_installed" "pacman -Q yazi &>/dev/null" yazi
+tcheck "check.pkg_installed" "pacman -Q 7zip &>/dev/null" 7zip
+tcheck "check.pkg_installed" "pacman -Q imv &>/dev/null" imv
+tcheck "check.pkg_installed" "pacman -Q trash-cli &>/dev/null" trash-cli
+tcheck "check.pkg_installed" "pacman -Q zathura &>/dev/null" zathura
+tcheck "check.pkg_installed" "pacman -Q zathura-pdf-mupdf &>/dev/null" zathura-pdf-mupdf
+tcheck "check.pkg_removed" "! pacman -Q nautilus &>/dev/null" nautilus
+tcheck "check.pkg_removed" "! pacman -Q yaru-icon-theme &>/dev/null" yaru-icon-theme
+tcheck "check.pkg_removed" "! pacman -Q system-config-printer &>/dev/null" system-config-printer
+tcheck "check.pkg_removed" "! pacman -Q totem &>/dev/null" totem
+tcheck "check.pkg_removed" "! pacman -Q evince &>/dev/null" evince
+tcheck "check.pkg_removed" "! pacman -Q eog &>/dev/null" eog
+tcheck "check.pkg_removed" "! pacman -Q dolphin &>/dev/null" dolphin
+tcheck "check.pkg_removed" "! pacman -Q okular &>/dev/null" okular
+tcheck "check.pkg_removed" "! pacman -Q gwenview &>/dev/null" gwenview
+tcheck "check.pkg_removed" "! pacman -Q kdenlive &>/dev/null" kdenlive
+tcheck "check.daemon_absent" "! command -v dockerd &>/dev/null" dockerd
+tcheck "check.runtime_present" "pacman -Q podman &>/dev/null" podman
+tcheck "check.pkg_removed" "! pacman -Q obs-studio &>/dev/null" obs-studio
+tcheck "check.pkg_removed" "! pacman -Q libreoffice-fresh &>/dev/null" libreoffice-fresh
+tcheck "check.pkg_removed" "! pacman -Q obsidian &>/dev/null" obsidian
+tcheck "check.pkg_installed" "pacman -Q btop &>/dev/null" btop
+tcheck "check.pkg_installed" "pacman -Q capitaine-cursors &>/dev/null" capitaine-cursors
+tcheck "check.pkg_installed" "pacman -Q papirus-icon-theme &>/dev/null" papirus-icon-theme
+tcheck "check.pkg_removed" "! pacman -Q gnome-disk-utility &>/dev/null" gnome-disk-utility
+tcheck "check.pkg_removed" "! pacman -Q gnome-themes-extra &>/dev/null" gnome-themes-extra
 
 section verify.sec_gui
-tcheck "check.tool_present"                   "pacman -Q herdr &>/dev/null"
-tcheck "check.tool_present"                     "pacman -Q gum &>/dev/null"
+tcheck "check.tool_present" "pacman -Q herdr &>/dev/null" herdr
+tcheck "check.tool_present" "pacman -Q gum &>/dev/null" gum
 
 section verify.sec_browser
 tcheck "check.default_browser" "[[ \"\$(omarchy default browser 2>/dev/null)\" == brave-origin ]]"
@@ -177,8 +180,29 @@ tcheck "check.power_conf" "[[ -f /etc/omaconf/power.conf ]]"
 tcheck "check.battery_udev" "[[ -f /etc/udev/rules.d/98-battery-charge-threshold.rules ]]"
 tcheck "check.battery_tmpfiles" "[[ -f /etc/tmpfiles.d/battery-charge-threshold.conf ]]"
 tcheck "check.battery_service" "systemctl is-enabled battery-charge-threshold.service &>/dev/null || [[ -L /etc/systemd/system/multi-user.target.wants/battery-charge-threshold.service ]]"
-if ls /sys/class/power_supply/BAT*/charge_control_end_threshold &>/dev/null; then
-    tcheck "check.battery_limit" "grep -qx '75' /sys/class/power_supply/BAT*/charge_control_end_threshold 2>/dev/null"
+BATTERY_HELPER=/usr/local/libexec/omaconf-set-battery-charge-limit
+BATTERY_STATE_LIMIT=""
+BATTERY_FUNCTIONAL=""
+BATTERY_DRIFT=""
+if [[ -x "$BATTERY_HELPER" ]]; then
+    BATTERY_STATE_LIMIT=$("$BATTERY_HELPER" --query state_limit 2>/dev/null) || BATTERY_STATE_LIMIT=""
+    BATTERY_FUNCTIONAL=$("$BATTERY_HELPER" --query functional_nodes 2>/dev/null) || BATTERY_FUNCTIONAL=""
+    BATTERY_DRIFT=$("$BATTERY_HELPER" --query drift 2>/dev/null) || BATTERY_DRIFT=""
+fi
+BATTERY_POLICY=$(sed -n 's/^BATTERY_CHARGE_LIMIT=\([0-9][0-9]*\)$/\1/p' /etc/omaconf/power.conf 2>/dev/null | head -1)
+BATTERY_POLICY=${BATTERY_POLICY:-75}
+
+if [[ -n "$BATTERY_STATE_LIMIT" && -n "$BATTERY_FUNCTIONAL" && -n "$BATTERY_DRIFT" ]]; then
+    tcheck "check.battery_policy_applied" "[[ '$BATTERY_STATE_LIMIT' == '$BATTERY_POLICY' ]]"
+    if [[ "$BATTERY_FUNCTIONAL" == "0" ]]; then
+        skip "$(t verify.skip_charge_unsupported)"
+    elif [[ "$BATTERY_DRIFT" == "no" ]]; then
+        check "$(t check.battery_limit)" true
+    else
+        check "$(t check.battery_limit)" false
+    fi
+else
+    skip "$(t verify.skip_charge_state)"
 fi
 if [[ -r /sys/power/mem_sleep ]]; then
     if grep -q '\[deep\]' /sys/power/mem_sleep; then
@@ -194,7 +218,7 @@ section verify.sec_sched
 if [[ -r /etc/cron.weekly/security-audit.sh ]]; then
     tcheck "check.weekly_audit" "[[ -f /etc/cron.weekly/security-audit.sh && -x /etc/cron.weekly/security-audit.sh ]]"
 elif sudo -n test -r /etc/cron.weekly/security-audit.sh 2>/dev/null; then
-    tcheck "check.weekly_audit" "sudo -n test -f /etc/cron.weekly/security-audit.sh && sudo -n test -x /etc/cron.weekly/security-audit.sh"
+    tcheck "check.weekly_audit" "sudo -n test -f /etc/cron.weekly/security-audit.sh && priv test -x /etc/cron.weekly/security-audit.sh"
 else
     echo -e "  ${RED}$(t verify.label_skip)${NC} $(t verify.skip_audit)"
 fi
