@@ -8,5 +8,5 @@ source "$SCRIPT_DIR/lib/i18n.sh"
 
 i18n_init
 
-sudo bash "$SCRIPT_DIR/setup.sh"
+pkexec bash "$SCRIPT_DIR/setup.sh"
 read -r -p "$(t __press_enter)"
