@@ -20,10 +20,10 @@ assert_true() {
     TESTS_RUN=$((TESTS_RUN + 1))
     if eval "$cmd" &>/dev/null; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
-        echo -e "  ${GREEN}pass${NC} $desc"
+        printf '%b\n' "  ${GREEN}pass${NC} $desc"
     else
         TESTS_FAILED=$((TESTS_FAILED + 1))
-        echo -e "  ${RED}fail${NC} $desc"
+        printf '%b\n' "  ${RED}fail${NC} $desc"
     fi
 }
 
@@ -33,10 +33,10 @@ assert_false() {
     TESTS_RUN=$((TESTS_RUN + 1))
     if ! eval "$cmd" &>/dev/null; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
-        echo -e "  ${GREEN}pass${NC} $desc"
+        printf '%b\n' "  ${GREEN}pass${NC} $desc"
     else
         TESTS_FAILED=$((TESTS_FAILED + 1))
-        echo -e "  ${RED}fail${NC} $desc"
+        printf '%b\n' "  ${RED}fail${NC} $desc"
     fi
 }
 
@@ -46,10 +46,10 @@ assert_warn() {
     TESTS_RUN=$((TESTS_RUN + 1))
     if eval "$cmd" &>/dev/null; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
-        echo -e "  ${GREEN}pass${NC} $desc"
+        printf '%b\n' "  ${GREEN}pass${NC} $desc"
     else
         TESTS_WARNED=$((TESTS_WARNED + 1))
-        echo -e "  ${YELLOW}warn${NC} $desc"
+        printf '%b\n' "  ${YELLOW}warn${NC} $desc"
     fi
 }
 
@@ -62,10 +62,10 @@ assert_no_offenders() {
     TESTS_RUN=$((TESTS_RUN + 1))
     if [[ -z "$offenders" ]]; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
-        echo -e "  ${GREEN}pass${NC} $desc"
+        printf '%b\n' "  ${GREEN}pass${NC} $desc"
     else
         TESTS_FAILED=$((TESTS_FAILED + 1))
-        echo -e "  ${RED}fail${NC} $desc"
+        printf '%b\n' "  ${RED}fail${NC} $desc"
         printf '%s\n' "$offenders"
     fi
 }
@@ -118,20 +118,20 @@ assert_equal() {
     TESTS_RUN=$((TESTS_RUN + 1))
     if [[ "$actual" == "$expected" ]]; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
-        echo -e "  ${GREEN}pass${NC} $desc"
+        printf '%b\n' "  ${GREEN}pass${NC} $desc"
     else
         TESTS_FAILED=$((TESTS_FAILED + 1))
-        echo -e "  ${RED}fail${NC} $desc (got '$actual', expected '$expected')"
+        printf '%b\n' "  ${RED}fail${NC} $desc (got '$actual', expected '$expected')"
     fi
 }
 
 test_section() {
-    echo -e "\n${BOLD}${CYAN}[TEST SUITE] $1${NC}"
+    printf '%b\n' "\n${BOLD}${CYAN}[TEST SUITE] $1${NC}"
 }
 
 test_summary() {
     echo ""
-    echo -e "${BOLD}Summary: Total: $TESTS_RUN | Passed: ${GREEN}$TESTS_PASSED${NC}${BOLD} | Failed: ${RED}$TESTS_FAILED${NC}${BOLD} | Warnings: ${YELLOW}$TESTS_WARNED${NC}"
+    printf '%b\n' "${BOLD}Summary: Total: $TESTS_RUN | Passed: ${GREEN}$TESTS_PASSED${NC}${BOLD} | Failed: ${RED}$TESTS_FAILED${NC}${BOLD} | Warnings: ${YELLOW}$TESTS_WARNED${NC}"
     if [[ $TESTS_FAILED -gt 0 ]]; then
         return 1
     fi

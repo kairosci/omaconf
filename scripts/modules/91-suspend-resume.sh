@@ -4,10 +4,8 @@ set -euo pipefail
 
 log "power.suspend_resume"
 
-# Clean up legacy broken deep sleep drop-in if present
 rm -f /etc/systemd/sleep.conf.d/99-omaconf-deep-sleep.conf
 
-# Determine safe sleep mode based on hardware and kernel defaults
 target_sleep_mode=""
 if [[ -r /sys/power/mem_sleep ]]; then
     if grep -q '\[deep\]' /sys/power/mem_sleep; then
@@ -34,7 +32,6 @@ SLEEP_CONF
     chmod 644 /etc/systemd/sleep.conf.d/99-omaconf-suspend.conf
 fi
 
-# NVIDIA power management support for suspend/resume
 if lsmod 2>/dev/null | grep -qw nvidia || pacman -Q nvidia &>/dev/null || pacman -Q nvidia-open &>/dev/null || pacman -Q nvidia-dkms &>/dev/null; then
     log "power.nvidia_suspend"
     mkdir -p /etc/modprobe.d
