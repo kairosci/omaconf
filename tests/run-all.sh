@@ -8,13 +8,8 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
-CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
-
-echo -e "${BOLD}${CYAN}======================================================${NC}"
-echo -e "${BOLD}${CYAN}        OMACONF COMPREHENSIVE TEST SUITE RUNNER        ${NC}"
-echo -e "${BOLD}${CYAN}======================================================${NC}"
 
 TOTAL_SUITES=0
 PASSED_SUITES=0
@@ -47,18 +42,16 @@ for tfile in "${TEST_FILES[@]}"; do
         PASSED_SUITES=$((PASSED_SUITES + 1))
     else
         FAILED_SUITES=$((FAILED_SUITES + 1))
-        echo -e "${RED}[FAILED] Test suite $tname encountered errors${NC}"
+        printf '%b\n' "${RED}[FAILED] Test suite $tname encountered errors${NC}"
     fi
 done
 
-echo -e "\n${BOLD}${CYAN}======================================================${NC}"
-echo -e "${BOLD}Test Suites Completed: $TOTAL_SUITES | Passed: ${GREEN}$PASSED_SUITES${NC}${BOLD} | Failed: ${RED}$FAILED_SUITES${NC}"
-echo -e "${BOLD}${CYAN}======================================================${NC}"
+printf '%b\n' "${BOLD}Test Suites Completed: $TOTAL_SUITES | Passed: ${GREEN}$PASSED_SUITES${NC}${BOLD} | Failed: ${RED}$FAILED_SUITES${NC}"
 
 if [[ $FAILED_SUITES -gt 0 ]]; then
-    echo -e "${RED}${BOLD}Test run failed with $FAILED_SUITES suite failures!${NC}"
+    printf '%b\n' "${RED}${BOLD}Test run failed with $FAILED_SUITES suite failures!${NC}"
     exit 1
 fi
 
-echo -e "${GREEN}${BOLD}All test suites passed successfully!${NC}"
+printf '%b\n' "${GREEN}${BOLD}All test suites passed successfully!${NC}"
 exit 0

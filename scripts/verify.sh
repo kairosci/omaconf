@@ -49,16 +49,16 @@ check() {
     local desc="$1" condition="$2"
     if eval "$condition" &>/dev/null; then
         ((PASS++))
-        echo -e "  ${GREEN}$(t verify.label_pass)${NC} $desc"
+        printf '%b\n' "  ${GREEN}$(t verify.label_pass)${NC} $desc"
     else
         ((FAIL++))
-        echo -e "  ${RED}$(t verify.label_fail)${NC} $desc"
+        printf '%b\n' "  ${RED}$(t verify.label_fail)${NC} $desc"
     fi
 }
 
-section() { echo -e "\n${BOLD}$(t "$1")${NC}"; }
+section() { printf '%b\n' "\n${BOLD}$(t "$1")${NC}"; }
 
-skip() { echo -e "  ${RED}$(t verify.label_skip)${NC} $1"; }
+skip() { printf '%b\n' "  ${RED}$(t verify.label_skip)${NC} $1"; }
 
 tcheck() {
     local key="$1" condition="$2"
@@ -302,6 +302,6 @@ catalog_check() {
 tcheck "verify.locale_catalogs" "catalog_check"
 tcheck "verify.locale_i18n" "[[ -n \"$I18N_LANG\" ]] && (( ${#OMACONF_I18N[@]} > 0 ))"
 
-echo ""
-echo -e "${BOLD}$(t verify.passed_summary "$PASS" "$FAIL")${NC}"
+printf '\n'
+printf '%b\n' "${BOLD}$(t verify.passed_summary "$PASS" "$FAIL")${NC}"
 [[ $FAIL -eq 0 ]] || exit 1

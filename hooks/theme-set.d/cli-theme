@@ -49,13 +49,11 @@ generate_cli_theme() {
     cyan=$(get_color "cyan" "#94e2d5" "$toml")
     bright_fg=$(get_color "bright_foreground" "$fg" "$toml")
 
-    # 1. FZF environment settings
     cat > "$OMACONF_CONFIG/cli-theme.sh" << ENVS
 # Dynamic Omaconf CLI Theme Environment
 export FZF_DEFAULT_OPTS="--color=bg+:${selection},bg:${bg},spinner:${accent},hl:${red},fg:${fg},header:${accent},info:${yellow},pointer:${accent},marker:${green},fg+:${bright_fg},prompt:${accent},hl+:${red} --layout=reverse --border"
 ENVS
 
-    # 2. Lazygit theme configuration
     cat > "$LAZYGIT_CONFIG/config.yml" << YML
 gui:
   theme:
