@@ -32,7 +32,8 @@ clean_paths_for_user() {
     fi
     local rel=""
     for rel in "$@"; do
-        rm -rf "$u_home/$rel" 2>/dev/null || warn "home cleanup skipped: $u_home/$rel"
+        [[ -n "$rel" && "$rel" != "/" ]] || { warn "unsafe relative path refused: $rel"; continue; }
+        rm -rf "$u_home/${rel:?}" 2>/dev/null || warn "home cleanup skipped: $u_home/$rel"
     done
 }
 
@@ -68,7 +69,8 @@ for u_home in /home/*; do
         while IFS= read -r desktop; do
             [[ -f "$desktop" ]] || continue
             rm -f "$desktop" 2>/dev/null || warn "stale launcher removal skipped: $desktop"
-        done < <(grep -rlE "(^|[ /=])$stale([ ;]|$)" "$u_home/.local/share/applications" 2>/dev/null || :)
+        done < <(find "$u_home/.local/share/applications" -maxdepth 1 -type f -name '*.desktop' \
+            -exec grep -lE "(^|[ /=])$stale([ ;]|$)" {} + 2>/dev/null)
     done
 done
 
@@ -82,7 +84,8 @@ for u_home in /home/*; do
         while IFS= read -r app_file; do
             [[ -f "$app_file" ]] || continue
             rm -f "$app_file" 2>/dev/null || warn "webapp sweep skipped: $app_file"
-        done < <(grep -rlE 'omarchy-(launch-webapp|webapp-handler)' "$u_home/.local/share/applications" 2>/dev/null || :)
+        done < <(find "$u_home/.local/share/applications" -maxdepth 1 -type f -name '*.desktop' \
+                -exec grep -lE 'omarchy-(launch-webapp|webapp-handler)' {} + 2>/dev/null)
     fi
 done
 

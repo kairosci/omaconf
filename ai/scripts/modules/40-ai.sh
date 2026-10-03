@@ -12,7 +12,7 @@ set -euo pipefail
 
 if [[ "${OMACONF_AI_DEBLOAT:-0}" != "1" ]]; then
     printf '%s\n' "AI debloat is opt-in: run scripts/debloat-ai.sh --yes to proceed"
-    return 0 2>/dev/null || exit 0
+    return 0
 fi
 
 AI_CRASH_UNITS=(
