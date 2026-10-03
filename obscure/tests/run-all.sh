@@ -8,13 +8,8 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
-CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
-
-printf '%b\n' "${BOLD}${CYAN}======================================================${NC}"
-printf '%b\n' "${BOLD}${CYAN}        OBSCURE TEST SUITE RUNNER        ${NC}"
-printf '%b\n' "${BOLD}${CYAN}======================================================${NC}"
 
 TOTAL_SUITES=0
 PASSED_SUITES=0
@@ -41,9 +36,7 @@ for tfile in "${TEST_FILES[@]}"; do
     fi
 done
 
-printf '%b\n' "\n${BOLD}${CYAN}======================================================${NC}"
 printf '%b\n' "${BOLD}Test Suites Completed: $TOTAL_SUITES | Passed: ${GREEN}$PASSED_SUITES${NC}${BOLD} | Failed: ${RED}$FAILED_SUITES${NC}"
-printf '%b\n' "${BOLD}${CYAN}======================================================${NC}"
 
 if [[ $FAILED_SUITES -gt 0 ]]; then
     printf '%b\n' "${RED}${BOLD}Test run failed with $FAILED_SUITES suite failures!${NC}"
