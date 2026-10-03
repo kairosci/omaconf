@@ -53,6 +53,23 @@ assert_warn() {
     fi
 }
 
+assert_no_offenders() {
+    local desc="$1"
+    local scan="$2"
+    shift 2
+    local offenders
+    offenders=$("$scan" "$@" | sed "s|${PROJECT_DIR:-.}/||g")
+    TESTS_RUN=$((TESTS_RUN + 1))
+    if [[ -z "$offenders" ]]; then
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+        echo -e "  ${GREEN}pass${NC} $desc"
+    else
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+        echo -e "  ${RED}fail${NC} $desc"
+        printf '%s\n' "$offenders"
+    fi
+}
+
 assert_file_exists() {
     local desc="$1"
     local file="$2"
