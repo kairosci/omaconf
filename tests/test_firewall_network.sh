@@ -29,10 +29,10 @@ if systemctl list-unit-files ufw.service &>/dev/null; then
     assert_true "live UFW service is enabled" "systemctl is-enabled ufw.service &>/dev/null"
 fi
 
-if sudo -n ufw status &>/dev/null; then
-    assert_true "live UFW is active" "sudo -n ufw status | grep -q 'Status: active'"
-    assert_true "live UFW default deny incoming" "sudo -n ufw status verbose | grep -q 'Default: deny (incoming)'"
-    assert_true "live UFW default allow outgoing" "sudo -n ufw status verbose | grep -q 'allow (outgoing)'"
+if test_priv ufw status &>/dev/null; then
+    assert_true "live UFW is active" "test_priv ufw status | grep -q 'Status: active'"
+    assert_true "live UFW default deny incoming" "test_priv ufw status verbose | grep -q 'Default: deny (incoming)'"
+    assert_true "live UFW default allow outgoing" "test_priv ufw status verbose | grep -q 'allow (outgoing)'"
 fi
 
 SSHD_CONF="/etc/ssh/sshd_config.d/hardened.conf"

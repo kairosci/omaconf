@@ -6,8 +6,36 @@ set -uo pipefail
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 source "$SCRIPT_DIR/lib/i18n.sh"
+source "$SCRIPT_DIR/lib/target-user.sh"
 
 i18n_init
+
+TARGET_USER=""
+TARGET_UID=""
+if [[ $EUID -eq 0 ]]; then
+    TARGET_USER=$(target_user_resolve || printf '')
+    if [[ -n "$TARGET_USER" ]]; then
+        TARGET_UID=$(target_uid_resolve "$TARGET_USER" || printf '')
+        TARGET_HOME=$(target_home_resolve "$TARGET_USER" || printf '')
+        if [[ -n "$TARGET_HOME" ]]; then
+            export HOME="$TARGET_HOME"
+            export USER="$TARGET_USER"
+            export LOGNAME="$TARGET_USER"
+        fi
+        if [[ -n "$TARGET_UID" && -d "/run/user/$TARGET_UID" ]]; then
+            export XDG_RUNTIME_DIR="/run/user/$TARGET_UID"
+            export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$TARGET_UID/bus"
+        fi
+    fi
+fi
+
+priv() {
+    if [[ $EUID -eq 0 ]]; then
+        "$@"
+        return
+    fi
+    sudo -n "$@"
+}
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -85,12 +113,12 @@ tcheck "check.yazi_syntax_legacy" "! grep -qF '\"\$@\"' \$HOME/.config/yazi/yazi
 
 
 section verify.sec_firewall
-if UFW_STATUS=$(sudo -n ufw status 2>/dev/null); then
+if UFW_STATUS=$(priv ufw status 2>/dev/null); then
     tcheck "check.ufw_active"          "echo '$UFW_STATUS' | grep -q 'Status: active'"
-    tcheck "check.ufw_deny_incoming"       "sudo -n ufw status verbose 2>/dev/null | grep -q 'Default: deny (incoming)'"
-    tcheck "check.ufw_allow_outgoing"      "sudo -n ufw status verbose 2>/dev/null | grep -q 'allow (outgoing)'"
+    tcheck "check.ufw_deny_incoming"       "priv ufw status verbose 2>/dev/null | grep -q 'Default: deny (incoming)'"
+    tcheck "check.ufw_allow_outgoing"      "priv ufw status verbose 2>/dev/null | grep -q 'allow (outgoing)'"
 else
-    echo -e "  ${RED}$(t verify.label_skip)${NC} $(t verify.skip_root)"
+    skip "$(t verify.skip_root)"
 fi
 tcheck "check.ufw_boot"     "systemctl is-enabled ufw.service &>/dev/null"
 
@@ -134,12 +162,12 @@ if [[ -r "$SSHD_DIR/hardened.conf" ]]; then
     tcheck "check.sshd_hardened"        "[[ -f $SSHD_DIR/hardened.conf ]]"
     tcheck "check.sshd_root_login"     "grep -q '^PermitRootLogin no' $SSHD_DIR/hardened.conf"
     tcheck "check.sshd_password_auth"  "grep -q '^PasswordAuthentication no' $SSHD_DIR/hardened.conf"
-elif sudo -n test -r "$SSHD_DIR/hardened.conf" 2>/dev/null; then
-    tcheck "check.sshd_hardened"        "sudo -n test -f $SSHD_DIR/hardened.conf"
-    tcheck "check.sshd_root_login"     "sudo -n grep -q '^PermitRootLogin no' $SSHD_DIR/hardened.conf"
-    tcheck "check.sshd_password_auth"  "sudo -n grep -q '^PasswordAuthentication no' $SSHD_DIR/hardened.conf"
+elif priv test -r "$SSHD_DIR/hardened.conf" 2>/dev/null; then
+    tcheck "check.sshd_hardened"        "priv test -f $SSHD_DIR/hardened.conf"
+    tcheck "check.sshd_root_login"     "priv grep -q '^PermitRootLogin no' $SSHD_DIR/hardened.conf"
+    tcheck "check.sshd_password_auth"  "priv grep -q '^PasswordAuthentication no' $SSHD_DIR/hardened.conf"
 else
-    echo -e "  ${RED}$(t verify.label_skip)${NC} $(t verify.skip_ssh)"
+    skip "$(t verify.skip_ssh)"
 fi
 
 section verify.sec_services
@@ -217,10 +245,10 @@ fi
 section verify.sec_sched
 if [[ -r /etc/cron.weekly/security-audit.sh ]]; then
     tcheck "check.weekly_audit" "[[ -f /etc/cron.weekly/security-audit.sh && -x /etc/cron.weekly/security-audit.sh ]]"
-elif sudo -n test -r /etc/cron.weekly/security-audit.sh 2>/dev/null; then
-    tcheck "check.weekly_audit" "sudo -n test -f /etc/cron.weekly/security-audit.sh && priv test -x /etc/cron.weekly/security-audit.sh"
+elif priv test -r /etc/cron.weekly/security-audit.sh 2>/dev/null; then
+    tcheck "check.weekly_audit" "priv test -f /etc/cron.weekly/security-audit.sh && priv test -x /etc/cron.weekly/security-audit.sh"
 else
-    echo -e "  ${RED}$(t verify.label_skip)${NC} $(t verify.skip_audit)"
+    skip "$(t verify.skip_audit)"
 fi
 
 section verify.sec_userconfigs

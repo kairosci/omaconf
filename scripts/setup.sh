@@ -15,22 +15,13 @@ umask 077
 set -euo pipefail
 
 source "$SCRIPT_DIR/lib/i18n.sh"
+source "$SCRIPT_DIR/lib/target-user.sh"
 
 i18n_init
 
 [[ $EUID -eq 0 ]] || err "__root_required"
 
-PRIMARY_USER="${SUDO_USER:-}"
-if [[ -z "$PRIMARY_USER" && "${PKEXEC_UID:-}" =~ ^[0-9]+$ ]]; then
-    PRIMARY_USER=$(id -nu "$PKEXEC_UID" 2>/dev/null || printf '')
-fi
-if [[ -z "$PRIMARY_USER" ]] || ! id "$PRIMARY_USER" &>/dev/null; then
-    PRIMARY_USER=$(getent group wheel | cut -d: -f4 | cut -d, -f1)
-fi
-if [[ -z "$PRIMARY_USER" ]] || ! id "$PRIMARY_USER" &>/dev/null; then
-    PRIMARY_USER=$(basename "$(find /home -mindepth 1 -maxdepth 1 -type d 2>/dev/null | tail -1)")
-fi
-id "$PRIMARY_USER" &>/dev/null || err "__cannot_determine_user"
+PRIMARY_USER=$(target_user_resolve) || err "__cannot_determine_user"
 
 MODULE_FILES=(
     "$MODULES_DIR/00-env.sh"
