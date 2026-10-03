@@ -36,6 +36,7 @@ TEST_FILES=(
     "$SCRIPT_DIR/test_config_validity.sh"
     "$SCRIPT_DIR/test_desktop_defaults.sh"
     "$SCRIPT_DIR/test_herdr_menu.sh"
+    "$SCRIPT_DIR/test_diskconf.sh"
 )
 
 for tfile in "${TEST_FILES[@]}"; do
