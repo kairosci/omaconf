@@ -17,10 +17,10 @@ check() {
     local desc="$1" condition="$2"
     if eval "$condition" &>/dev/null; then
         ((PASS++))
-        echo -e "  ${GREEN}pass${NC} $desc"
+        printf '%b\n' "  ${GREEN}pass${NC} $desc"
     else
         ((FAIL++))
-        echo -e "  ${RED}fail${NC} $desc"
+        printf '%b\n' "  ${RED}fail${NC} $desc"
     fi
 }
 
@@ -28,14 +28,14 @@ warn_check() {
     local desc="$1" condition="$2"
     if eval "$condition" &>/dev/null; then
         ((PASS++))
-        echo -e "  ${GREEN}pass${NC} $desc"
+        printf '%b\n' "  ${GREEN}pass${NC} $desc"
     else
         ((WARN++))
-        echo -e "  ${YELLOW}warn${NC} $desc"
+        printf '%b\n' "  ${YELLOW}warn${NC} $desc"
     fi
 }
 
-section() { echo -e "\n${BOLD}$1${NC}"; }
+section() { printf '%b\n' "\n${BOLD}$1${NC}"; }
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
@@ -119,6 +119,6 @@ section "Omarchy User Configurations"
 warn_check "Starship prompt config exists" "[[ -f \"$HOME/.config/starship.toml\" ]]"
 warn_check "Git user config exists" "[[ -f \"$HOME/.config/git/config\" ]]"
 
-echo ""
-echo -e "${BOLD}Passed: $PASS  Failed: $FAIL  Warnings: $WARN${NC}"
+printf '\n'
+printf '%b\n' "${BOLD}Passed: $PASS  Failed: $FAIL  Warnings: $WARN${NC}"
 [[ $FAIL -eq 0 ]] || exit 1

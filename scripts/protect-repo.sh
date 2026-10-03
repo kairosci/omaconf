@@ -1,15 +1,8 @@
 #!/usr/bin/env bash
-# Apply strict branch protection to a GitHub repository.
-# Usage: ./protect-repo.sh <owner>/<repo> [branch]
-# If branch is omitted, defaults to "main".
-# Requires gh CLI to be installed and authenticated.
-
 set -euo pipefail
 
-# Default configuration
 BRANCH="main"
 
-# JSON payload for branch protection (strictest settings)
 generate_payload() {
     cat <<'EOF'
 {
@@ -39,7 +32,6 @@ generate_payload() {
 EOF
 }
 
-# Parse arguments
 if [[ $# -eq 0 ]]; then
     echo "Usage: $0 <owner>/<repo> [branch]"
     echo "Example: $0 krosci/omaconf"
@@ -51,7 +43,6 @@ if [[ $# -ge 2 ]]; then
     BRANCH="$2"
 fi
 
-# Resolve owner/repo
 if ! gh repo view "$REPO_ARG" &>/dev/null; then
     echo "Error: repo '$REPO_ARG' not found. Ensure gh is authenticated."
     exit 1
@@ -60,12 +51,10 @@ fi
 OWNER="${REPO_ARG%%/*}"
 REPOS_NAME="${REPO_ARG##*/}"
 
-# Write payload to a temp file
 TMPFILE="$(mktemp)"
 trap 'rm -f "$TMPFILE"' EXIT
 generate_payload > "$TMPFILE"
 
-# Apply branch protection via GitHub API
 echo "Applying branch protection to $OWNER/$REPOS_NAME ($BRANCH)..."
 if gh api "repos/$OWNER/$REPOS_NAME/branches/$BRANCH/protection" -X PUT --input "$TMPFILE" >/dev/null; then
     echo "Branch protection successfully applied."
