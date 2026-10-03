@@ -20,11 +20,28 @@ assert_file_contains "power module provisions udev battery rule" "$POWER_MODULE"
 assert_file_contains "power module provisions systemd-tmpfiles rule" "$POWER_MODULE" "battery-charge-threshold.conf"
 assert_file_contains "power module provisions systemd battery service" "$POWER_MODULE" "battery-charge-threshold.service"
 assert_file_contains "power module provisions the resume hook" "$POWER_MODULE" "battery-charge-resume.sh"
+assert_file_contains_literal "udev trigger is scoped to battery nodes" "$POWER_MODULE" "--sysname-match="
+assert_true "udev trigger does not fire on the whole power_supply subsystem" \
+    "! grep -qE 'udevadm trigger --subsystem-match=power_supply[[:space:]]*(2>|;|\$)' '$POWER_MODULE'"
 assert_file_contains "suspend power module configures safe memory sleep mode" "$SUSPEND_POWER_MODULE" "MemorySleepMode="
 assert_file_contains "suspend power module handles s2idle and deep modes" "$SUSPEND_POWER_MODULE" "target_sleep_mode="
 assert_file_contains "suspend power module removes legacy deep sleep config" "$SUSPEND_POWER_MODULE" "99-omaconf-deep-sleep.conf"
 assert_file_exists "battery threshold helper exists" "$PROJECT_DIR/scripts/lib/set-battery-charge-limit.sh"
 assert_file_exists "battery resume helper exists" "$PROJECT_DIR/scripts/lib/battery-charge-resume.sh"
+assert_file_contains "battery helper probes the threshold capability before writing" "$PROJECT_DIR/scripts/lib/set-battery-charge-limit.sh" "threshold_functional"
+assert_file_contains_literal "battery helper verifies the applied limit by reading it back" "$PROJECT_DIR/scripts/lib/set-battery-charge-limit.sh" 'got=$(threshold_read "$node") || return 1'
+assert_file_contains_literal "battery helper owns the enforcement state directory" "$PROJECT_DIR/scripts/lib/set-battery-charge-limit.sh" 'OMACONF_BATTERY_STATE_DIR:-/run/omaconf'
+assert_file_contains_literal "battery helper records the enforcement state" "$PROJECT_DIR/scripts/lib/set-battery-charge-limit.sh" 'STATE_FILE="$STATE_DIR/battery-charge-limit.state"'
+assert_file_contains "battery helper reports the firmware unsupported reason" "$PROJECT_DIR/scripts/lib/set-battery-charge-limit.sh" "reason=firmware_unsupported"
+assert_file_contains_literal "battery helper exposes a query interface" "$PROJECT_DIR/scripts/lib/set-battery-charge-limit.sh" '--query|query)'
+assert_file_contains "power module reports the enforced limit" "$POWER_MODULE" "power.charge_enforced"
+assert_file_contains "power module reports an unsupported firmware" "$POWER_MODULE" "power.charge_unsupported"
+assert_file_contains_literal "power module reads the enforcement state through the helper" "$POWER_MODULE" 'battery_query enforced'
+assert_file_not_contains "power module does not duplicate the state path" "$POWER_MODULE" "/run/omaconf/battery-charge-limit.state"
+assert_file_contains_literal "verify derives the battery verdict from the helper state" "$PROJECT_DIR/scripts/verify.sh" '--query state_limit'
+assert_file_contains "verify skips the battery limit on unsupported firmware" "$PROJECT_DIR/scripts/verify.sh" "verify.skip_charge_unsupported"
+assert_file_contains_literal "verify fails the battery limit on drift" "$PROJECT_DIR/scripts/verify.sh" 'check "$(t check.battery_limit)" false'
+assert_file_not_contains "verify has no existence based battery gate" "$PROJECT_DIR/scripts/verify.sh" "ls /sys/class/power_supply/BAT\*/charge_control_end_threshold"
 
 if [[ -f /etc/omaconf/power.conf ]]; then
     assert_file_contains "power.conf defines BATTERY_CHARGE_LIMIT" "/etc/omaconf/power.conf" "BATTERY_CHARGE_LIMIT=[0-9]+"
@@ -45,23 +62,90 @@ if [[ -f /etc/systemd/system/battery-charge-threshold.service ]]; then
     assert_true "battery charge threshold service is enabled" "systemctl is-enabled battery-charge-threshold.service &>/dev/null || [[ -L /etc/systemd/system/multi-user.target.wants/battery-charge-threshold.service ]]"
 fi
 
-check_live_battery_threshold() {
-    local checked=0
-    for bat_node in /sys/class/power_supply/BAT*/charge_control_end_threshold /sys/class/power_supply/BAT*/charge_stop_threshold /sys/class/power_supply/BATT*/charge_control_end_threshold; do
-        if [[ -f "$bat_node" ]]; then
-            local val
-            val=$(cat "$bat_node" 2>/dev/null || printf '')
-            if [[ -n "$val" ]]; then
-                checked=$((checked + 1))
-                [[ "$val" == "75" ]] || return 1
-            fi
-        fi
+functional_battery_node() {
+    local bat_node val
+    for bat_node in /sys/class/power_supply/BAT*/charge_control_end_threshold /sys/class/power_supply/BAT*/charge_stop_threshold /sys/class/power_supply/BAT*/charge_end_threshold /sys/class/power_supply/BATT*/charge_control_end_threshold; do
+        [[ -f "$bat_node" ]] || continue
+        val=$(cat "$bat_node" 2>/dev/null || printf '')
+        [[ "$val" =~ ^[0-9]+$ ]] && return 0
     done
-    return 0
+    return 1
 }
 
-if ls /sys/class/power_supply/BAT*/charge_control_end_threshold &>/dev/null && [[ -f /etc/omaconf/power.conf ]]; then
-    assert_true "live battery charge threshold matches policy (75%)" "check_live_battery_threshold"
+check_live_battery_threshold() {
+    local want="$1"
+    local bat_node val checked=0
+    for bat_node in /sys/class/power_supply/BAT*/charge_control_end_threshold /sys/class/power_supply/BAT*/charge_stop_threshold /sys/class/power_supply/BAT*/charge_end_threshold /sys/class/power_supply/BATT*/charge_control_end_threshold; do
+        [[ -f "$bat_node" ]] || continue
+        val=$(cat "$bat_node" 2>/dev/null || printf '')
+        [[ "$val" =~ ^[0-9]+$ ]] || continue
+        checked=$((checked + 1))
+        [[ "$val" == "$want" ]] || return 1
+    done
+    [[ "$checked" -gt 0 ]]
+}
+
+power_policy_limit() {
+    local val
+    val=$(sed -n 's/^BATTERY_CHARGE_LIMIT=\([0-9][0-9]*\)$/\1/p' /etc/omaconf/power.conf 2>/dev/null | head -1)
+    printf '%s' "${val:-75}"
+}
+
+BATTERY_HELPER=/usr/local/libexec/omaconf-set-battery-charge-limit
+if [[ -x "$BATTERY_HELPER" && -r /etc/omaconf/power.conf ]]; then
+    recorded_limit=$("$BATTERY_HELPER" --query state_limit 2>/dev/null || printf '')
+    assert_equal "recorded battery limit matches the policy" "$recorded_limit" "$(power_policy_limit)"
+
+    if functional_battery_node; then
+        assert_true "live battery charge threshold matches the policy" "check_live_battery_threshold $(power_policy_limit)"
+    else
+        assert_false "live battery charge threshold must not drift once supported" "functional_battery_node && ! check_live_battery_threshold $(power_policy_limit)"
+    fi
 fi
+
+battery_helper_query() {
+    local want="$1" key="$2"
+    OMACONF_BATTERY_STATE_DIR="$SANDBOX_STATE" \
+        OMACONF_POWER_CONF="$SANDBOX_CONF" \
+        OMACONF_POWER_SUPPLY_ROOT="$SANDBOX_POWER" \
+        "$PROJECT_DIR/scripts/lib/set-battery-charge-limit.sh" --query "$key" 2>/dev/null | grep -qx "$want"
+}
+
+battery_helper_apply() {
+    OMACONF_BATTERY_STATE_DIR="$SANDBOX_STATE" \
+        OMACONF_POWER_CONF="$SANDBOX_CONF" \
+        OMACONF_POWER_SUPPLY_ROOT="$SANDBOX_POWER" \
+        "$PROJECT_DIR/scripts/lib/set-battery-charge-limit.sh"
+}
+
+SANDBOX=$(mktemp -d)
+SANDBOX_STATE="$SANDBOX/run"
+SANDBOX_CONF="$SANDBOX/power.conf"
+SANDBOX_POWER="$SANDBOX/power_supply"
+mkdir -p "$SANDBOX_POWER/BAT0"
+trap 'rm -rf "$SANDBOX"' EXIT
+printf 'BATTERY_CHARGE_LIMIT=60\n' > "$SANDBOX_CONF"
+SANDBOX_THRESHOLD="$SANDBOX_POWER/BAT0/charge_control_end_threshold"
+
+printf '80\n' > "$SANDBOX_THRESHOLD"
+battery_helper_apply
+assert_true "a functional interface is written and enforced" "battery_helper_query 60 state_limit && battery_helper_query yes enforced && battery_helper_query no drift"
+assert_true "a functional interface is recorded in the state" "battery_helper_query applied reason && battery_helper_query 1 nodes_seen && battery_helper_query 1 nodes_written && battery_helper_query 0 nodes_refused"
+assert_equal "the threshold file actually holds the policy value" "$(cat "$SANDBOX_THRESHOLD")" "60"
+
+printf '80\n' > "$SANDBOX_THRESHOLD"
+assert_true "a drifted supported interface is detected" "battery_helper_query yes drift"
+assert_false "a drifted supported interface is never reported as enforced" "battery_helper_query yes enforced"
+
+: > "$SANDBOX_THRESHOLD"
+battery_helper_apply
+assert_true "an inert firmware interface is reported as unsupported" "battery_helper_query no enforced && battery_helper_query 0 functional_nodes && battery_helper_query firmware_unsupported reason"
+assert_true "an unsupported interface is never recorded as written" "battery_helper_query 0 nodes_seen && battery_helper_query 0 nodes_written"
+assert_true "an unsupported interface is never reported as drifted" "battery_helper_query no drift"
+
+: > "$SANDBOX_CONF"
+printf '80\n' > "$SANDBOX_THRESHOLD"
+battery_helper_apply
+assert_true "a missing policy falls back to the default limit" "battery_helper_query 75 limit"
 
 test_summary
