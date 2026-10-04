@@ -3,7 +3,7 @@ function helper() {
 	"" | list | ls)
 		cat << 'HELP'
 helper - one helper per tool. Usage: helper <name>
-  yazi and Micro have built-in help: ~, Ctrl-g
+  Micro has built-in help: Ctrl-g
   yh/mh are terminal quick cards
   mpv ................ video and audio   mupdf .... pdf
   imv ................ images            fzf .... fuzzy search
@@ -70,7 +70,7 @@ HELP
 	zoxide)
 		cat << 'HELP'
 zoxide - z partial-name jump to directory, z - previous
-  zi interactive menu, in yazi press Z to jump with zoxide
+  zi interactive menu
 HELP
 		;;
 	git)
@@ -94,7 +94,7 @@ HELP
 		;;
 	gdu)
 		cat << 'HELP'
-gdu - j/k move, g/G top/bottom, h/l parent/enter (vim-style, same as yazi)
+gdu - j/k move, g/G top/bottom, h/l parent/enter (vim-style)
   enter open, d/e delete/empty, D trash, space mark, s sort, q quit
   gdu (interactive here), gdu ~/Downloads (scan path), ? full help
 HELP
@@ -108,10 +108,10 @@ AI CLI - no exceptions: default TUI only, no omaconf themes.
   Open the built-in help inside the app you are using.
 HELP
 		;;
-	yazi | micro)
+	micro)
 		cat << 'HELP'
 These have built-in help, always up to date:
-  yazi ... press ~ inside yazi (or yh from terminal)
+
   micro .. press Ctrl-g inside micro (or mh from terminal)
 HELP
 		;;

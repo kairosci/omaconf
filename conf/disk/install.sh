@@ -29,7 +29,7 @@ fi
 install_shell_block "$HOME/.bashrc" "$MARK_BEGIN" "$MARK_END" << 'SHELLBLOCK'
 function dh() {
 	cat << 'HELP'
-gdu - disk usage (vim-style, same as yazi)   views and more
+gdu - disk usage (vim-style)   views and more
   j/k ............ move                       ? ............ full help
   g/G ............ top/bottom                  s ............ sort size
   h/l, enter ..... parent/enter                 d ............ delete

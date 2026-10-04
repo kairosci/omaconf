@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 TARGET_USER="${SUDO_USER:-${PKEXEC_UID:-$USER}}"
+if ((EUID != 0)); then TARGET_USER=$(id -un); fi
 SYSTEM_SCOPE=0
 
 if [[ "${1:-}" == "--system" ]]; then

@@ -353,13 +353,9 @@ assert_file_contains "make herdr runs the installer" "$PROJECT_DIR/Makefile" 'he
 assert_true "make herdr body calls herdrconf" \
     "grep -A1 '^herdr:' '$PROJECT_DIR/Makefile' | grep -q 'conf/herdr/install.sh'"
 assert_file_contains "make phony lists herdr" "$PROJECT_DIR/Makefile" 'herdr'
-assert_file_contains "make lint covers herdrconf" "$PROJECT_DIR/Makefile" 'conf/herdr/'
+assert_file_contains "make lint covers every app config" "$PROJECT_DIR/Makefile" 'conf/\*/\*.sh'
 assert_file_contains "make help lists herdr" "$PROJECT_DIR/scripts/lib/help.sh" 'row herdr "make.herdr"'
-assert_file_contains "defaults module provisions herdrconf per user" "$PROJECT_DIR/scripts/lib/modules/20-defaults.sh" "conf/herdr/install.sh"
-assert_true "defaults provisioning degrades per user" \
-    "grep -A4 'conf/herdr/install.sh' '$PROJECT_DIR/scripts/lib/modules/20-defaults.sh' | grep -q 'defaults.herdrconf_skipped'"
-assert_true "defaults provisioning logs its stage" \
-    "grep -q 'log \"defaults.herdrconf\"' '$PROJECT_DIR/scripts/lib/modules/20-defaults.sh'"
+assert_file_contains "setup discovers app installers per user" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" 'conf/\*/install.sh'
 assert_file_contains "ci syntax job covers app installers" "$PROJECT_DIR/.github/workflows/ci.yml" 'conf/'
 assert_file_contains "test runner includes the herdr suite" "$PROJECT_DIR/tests/run-all.sh" "test_herdr_menu.sh"
 

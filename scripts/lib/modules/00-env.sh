@@ -50,13 +50,28 @@ user_as() {
     fi
     local -a _env=(
         "HOME=$home"
+        "USER=$user"
+        "LOGNAME=$user"
+        "XDG_CONFIG_HOME=$home/.config"
+        "XDG_DATA_HOME=$home/.local/share"
+        "XDG_STATE_HOME=$home/.local/state"
+        "XDG_CACHE_HOME=$home/.cache"
         "PATH=$home/.local/bin:/usr/share/omarchy/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin"
         "XDG_RUNTIME_DIR=$runtime"
         "DBUS_SESSION_BUS_ADDRESS=$bus"
     )
     if [[ -n "${OMACONF_LANG:-}" ]]; then _env+=("OMACONF_LANG=$OMACONF_LANG"); fi
     if [[ -n "${OMACONF_FORCE_TZ:-}" ]]; then _env+=("OMACONF_FORCE_TZ=$OMACONF_FORCE_TZ"); fi
-    sudo -u "$user" env -u XDG_SESSION_DESKTOP -u DESKTOP_SESSION "${_env[@]}" "$@"
+    local session_env entry
+    if [[ -n "$bus" ]] && session_env=$(sudo -u "$user" env "XDG_RUNTIME_DIR=$runtime" "DBUS_SESSION_BUS_ADDRESS=$bus" systemctl --user show-environment); then
+        while IFS= read -r entry; do
+            case "$entry" in
+                WAYLAND_DISPLAY=*|DISPLAY=*|HYPRLAND_INSTANCE_SIGNATURE=*|XDG_CURRENT_DESKTOP=*) _env+=("$entry") ;;
+            esac
+        done <<< "$session_env"
+    fi
+    sudo -u "$user" env -u XDG_SESSION_DESKTOP -u DESKTOP_SESSION \
+        -u SUDO_USER -u SUDO_UID -u SUDO_GID -u PKEXEC_UID "${_env[@]}" "$@"
 }
 
 omarchy_as() {

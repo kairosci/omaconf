@@ -30,6 +30,7 @@ keyring_switch() {
         [[ -d "$user_home" ]] || continue
         user=$(basename "$user_home")
         dbus_dir="$user_home/.local/share/dbus-1/services"
+        install -d -m 700 -o "$user" -g "$user" "$user_home/.local/share/dbus-1" "$dbus_dir"
         keyring_dir="$user_home/.config/python_keyring"
         mkdir -p "$keyring_dir"
         printf '[backend]\ndefault-keyring=keyring.backends.SecretService.Keyring\n' > "$keyring_dir/keyringrc.cfg"

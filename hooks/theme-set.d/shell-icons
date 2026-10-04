@@ -17,18 +17,7 @@ else
 fi
 [[ -n "$CURRENT_THEME" ]] || exit 0
 
-case "$CURRENT_THEME" in
-    white|flexoki-light|catppuccin-latte|solarized-light) THEMING_MODE="light" ;;
-    *)                                                     THEMING_MODE="dark" ;;
-esac
-
-if [[ "$THEMING_MODE" == "dark" ]] && [[ -d "/usr/share/icons/Papirus-Dark" ]]; then
-    ICON_THEME="Papirus-Dark"
-elif [[ -d "/usr/share/icons/Papirus" ]]; then
-    ICON_THEME="Papirus"
-else
-    ICON_THEME="hicolor"
-fi
+ICON_THEME="Omaconf-Papirus"
 
 USER_THEME="$HOME/.config/omarchy/themes/$CURRENT_THEME"
 mkdir -p "$USER_THEME"

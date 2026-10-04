@@ -3,75 +3,56 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-if (($#)); then themes=("$@"); else printf 'Usage: %s <theme> [theme...]\n' "${0##*/}" >&2; exit 2; fi
-
-for dependency in awk hyprctl identify jq magick omarchy grim setsid micro btop; do
+[[ "${OMACONF_APPLY_PIPELINE:-0}" == 1 ]] || { printf 'Run preview regeneration through the setup pipeline.\n' >&2; exit 1; }
+(($#)) || { printf 'Usage: %s <theme> [theme...]\n' "${0##*/}" >&2; exit 2; }
+themes=("$@")
+for dependency in awk hyprctl identify jq magick grim setsid dbus-run-session geany thunar gsettings pgrep omarchy; do
     command -v "$dependency" >/dev/null || { printf 'Required command is missing: %s\n' "$dependency" >&2; exit 1; }
 done
-
 for theme in "${themes[@]}"; do
-    [[ "$theme" =~ ^[a-z0-9-]+$ ]] || { printf 'Invalid theme slug: %s\n' "$theme" >&2; exit 2; }
-    [[ -r "/usr/share/omarchy/themes/$theme/colors.toml" ]] || {
-        printf 'Theme colors are missing for %s\n' "$theme" >&2
-        exit 1
+    [[ "$theme" =~ ^[a-z0-9-]+$ && -r "/usr/share/omarchy/themes/$theme/colors.toml" ]] || {
+        printf 'Invalid or missing theme: %s\n' "$theme" >&2
+        exit 2
     }
 done
 
-MICRO_PID=""
-BTOP_PID=""
+GEANY_PID=""
+THUNAR_PID=""
 CAPTURE_WORKSPACE=""
-ORIGINAL_THEME="$(omarchy theme current)"
 ORIGINAL_WORKSPACE="$(hyprctl -j activeworkspace | jq -er '.id')"
-CAPTURE_OUTPUT="$(hyprctl -j monitors | jq -er '.[] | select(.focused) | .name')"
+ORIGINAL_THEME="$(cat "$HOME/.local/state/omarchy/current/theme.name")"
+ORIGINAL_BACKGROUND="$(readlink -f "$HOME/.local/state/omarchy/current/background")"
+CAPTURE_MONITOR="$(hyprctl -j monitors | jq -er '.[] | select(.focused) | .name')"
+THEME_CHANGED=0
 ARTIFACTS_DIR="$(mktemp -d "${TMPDIR:-/tmp}/omaconf-preview.XXXXXX")"
 CANVAS_WIDTH=1800
 CANVAS_HEIGHT=1012
 
 stop_capture_process() {
-    local pid="$1" process_status
-    if ! kill -- "-$pid" 2>/dev/null && ! kill "$pid" 2>/dev/null; then
-        if kill -0 "$pid" 2>/dev/null; then
-            printf 'Could not stop capture window process %s\n' "$pid" >&2
-            return 1
-        fi
-    fi
-    if wait "$pid" 2>/dev/null; then
-        return 0
-    else
-        process_status=$?
-    fi
-    if ((process_status != 143)); then
-        printf 'Capture window process %s exited unexpectedly with status %s\n' "$pid" "$process_status" >&2
-        return 1
-    fi
+    local pid="$1" status
+    if kill -0 "$pid" 2>/dev/null; then kill -- "-$pid" || return 1; fi
+    if wait "$pid"; then return 0; else status=$?; fi
+    [[ "$status" == 143 ]] || { printf 'Capture process exited with status %s\n' "$status" >&2; return 1; }
 }
-
 focus_workspace() {
-    local workspace="$1" result
-    if ! result="$(hyprctl dispatch "hl.dsp.focus({ workspace = \"$workspace\" })" 2>&1)"; then
-        printf 'Could not focus workspace %s: %s\n' "$workspace" "$result" >&2
-        return 1
-    fi
+    hyprctl dispatch "hl.dsp.focus({ workspace = \"$1\" })" >/dev/null
 }
-
 cleanup() {
     local status=$?
-    if [[ -n "$MICRO_PID" ]] && kill -0 "$MICRO_PID" 2>/dev/null; then stop_capture_process "$MICRO_PID" || status=1; fi
-    if [[ -n "$BTOP_PID" ]] && kill -0 "$BTOP_PID" 2>/dev/null; then stop_capture_process "$BTOP_PID" || status=1; fi
-    if [[ -n "$CAPTURE_WORKSPACE" ]]; then
-        focus_workspace "$ORIGINAL_WORKSPACE" || status=1
+    trap - EXIT INT TERM
+    if [[ -n "$GEANY_PID" ]]; then stop_capture_process "$GEANY_PID" || status=1; fi
+    if [[ -n "$THUNAR_PID" ]]; then stop_capture_process "$THUNAR_PID" || status=1; fi
+    if ((THEME_CHANGED)); then
+        omarchy theme set "$ORIGINAL_THEME" || status=1
+        if [[ -f "$ORIGINAL_BACKGROUND" ]]; then omarchy theme bg set "$ORIGINAL_BACKGROUND" || status=1; fi
     fi
-    if ! omarchy theme set "$ORIGINAL_THEME"; then
-        printf 'Failed to restore theme %s\n' "$ORIGINAL_THEME" >&2
-        status=1
-    fi
-    if ! rm -rf -- "$ARTIFACTS_DIR"; then
-        printf 'Could not remove temporary preview directory %s\n' "$ARTIFACTS_DIR" >&2
-        status=1
-    fi
+    if [[ -n "$CAPTURE_WORKSPACE" ]]; then focus_workspace "$ORIGINAL_WORKSPACE" || status=1; fi
+    rm -rf -- "$ARTIFACTS_DIR" || status=1
     exit "$status"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 for candidate in {90..999}; do
     if ! hyprctl -j workspaces | jq -e --argjson id "$candidate" '.[] | select(.id == $id)' >/dev/null; then
@@ -80,12 +61,25 @@ for candidate in {90..999}; do
     fi
 done
 [[ -n "$CAPTURE_WORKSPACE" ]] || { printf 'No free capture workspace is available.\n' >&2; exit 1; }
-
-cat > "$ARTIFACTS_DIR/sample.lua" <<'EOF'
+mkdir -p "$ARTIFACTS_DIR/dbus-services"
+cp /usr/share/dbus-1/services/org.xfce.Xfconf.service "$ARTIFACTS_DIR/dbus-services/"
+cat > "$ARTIFACTS_DIR/session.conf" <<EOF_BUS
+<busconfig>
+  <type>session</type>
+  <listen>unix:tmpdir=/tmp</listen>
+  <auth>EXTERNAL</auth>
+  <servicedir>$ARTIFACTS_DIR/dbus-services</servicedir>
+  <policy context="default">
+    <allow own="*"/>
+    <allow send_destination="*"/>
+    <allow receive_sender="*"/>
+  </policy>
+</busconfig>
+EOF_BUS
+mkdir -p "$ARTIFACTS_DIR/Files/Documents" "$ARTIFACTS_DIR/Files/Pictures" "$ARTIFACTS_DIR/Files/Projects"
+cat > "$ARTIFACTS_DIR/Files/Projects/sample.lua" <<'LUA'
 local M = {}
 
----@param items string[]
----@return string[]
 function M.sorted_unique(items)
     local seen = {}
     local result = {}
@@ -100,47 +94,82 @@ function M.sorted_unique(items)
 end
 
 return M
-EOF
+LUA
 
 capture_app() {
-    local app="$1" pid="$2" class="omaconf-preview-$1" client=""
+    local app="$1" client="" address monitor width height origin_x origin_y x y group pids
+    if [[ "$app" == geany ]]; then group="$GEANY_PID"; else group="$THUNAR_PID"; fi
     for _ in {1..100}; do
-        client="$(hyprctl -j clients | jq -c --argjson pid "$pid" --arg class "$class" \
-            --argjson workspace "$CAPTURE_WORKSPACE" '.[] | select(.pid == $pid and .class == $class and .workspace.id == $workspace)')"
+        if pids=$(pgrep -g "$group"); then
+            pids=$(jq -cs '.' <<< "$pids")
+            client="$(hyprctl -j clients | jq -c --arg app "$app" --argjson pids "$pids" \
+                '.[] | select((.class | ascii_downcase) == $app) | .pid as $pid | select($pids | index($pid))')"
+        else
+            printf '%s capture process terminated before its window appeared\n' "$app" >&2
+            return 1
+        fi
         [[ -n "$client" ]] && break
         sleep 0.1
     done
-    [[ -n "$client" ]] || { printf '%s window did not appear on workspace %s\n' "$class" "$CAPTURE_WORKSPACE" >&2; return 1; }
+    [[ -n "$client" ]] || { printf '%s window did not appear\n' "$app" >&2; return 1; }
+    address=$(jq -er '.address' <<< "$client")
+    hyprctl dispatch "hl.dsp.window.move({ window = \"address:$address\", workspace = \"$CAPTURE_WORKSPACE\", follow = true })" >/dev/null
+    monitor=$(hyprctl -j monitors | jq -c --arg name "$CAPTURE_MONITOR" '.[] | select(.name == $name)')
+    width=$(jq -er '(.width / .scale) | floor' <<< "$monitor")
+    height=$(jq -er '(.height / .scale) | floor' <<< "$monitor")
+    origin_x=$(jq -er '.x' <<< "$monitor")
+    origin_y=$(jq -er '.y' <<< "$monitor")
+    if [[ "$app" == geany ]]; then x=$((origin_x + width * 3 / 100)); y=$((origin_y + height * 17 / 100));
+    else x=$((origin_x + width * 52 / 100)); y=$((origin_y + height * 25 / 100)); fi
+    hyprctl dispatch "hl.dsp.window.float({ window = \"address:$address\", action = \"enable\" })" >/dev/null
+    hyprctl dispatch "hl.dsp.window.resize({ window = \"address:$address\", x = $((width * 45 / 100)), y = $((height * 62 / 100)) })" >/dev/null
+    hyprctl dispatch "hl.dsp.window.move({ window = \"address:$address\", x = $x, y = $y })" >/dev/null
 }
 
 for theme in "${themes[@]}"; do
-    printf 'Capturing Micro and btop for %s\n' "$theme"
-    OMARCHY_THEME_HEADLESS=1 OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy theme set "$theme"
+    printf 'Capturing the complete desktop for %s\n' "$theme"
+    THEME_CHANGED=1
+    omarchy theme set "$theme"
+    sleep 4
+    palette="$HOME/.local/state/omarchy/current/theme/colors.toml"
+    config="$ARTIFACTS_DIR/config-$theme"
+    mkdir -p "$config/data"
+    ln -s "${XDG_DATA_HOME:-$HOME/.local/share}/icons" "$config/data/icons"
+    ln -s "${XDG_DATA_HOME:-$HOME/.local/share}/themes" "$config/data/themes"
+    XDG_CONFIG_HOME="$config" OMACONF_THEME_COLORS="$palette" bash "$PROJECT_DIR/hooks/theme-set.d/gtk-theme"
+    mode=$(awk -F '"' '/^mode[[:space:]]*=/ { print $2; exit }' "$palette")
+    gtk_theme=$(awk -F '=' '/^gtk-theme-name=/ { print $2; exit }' "$config/gtk-3.0/settings.ini")
+    icons=Omaconf-Papirus
+    printf '[Settings]\ngtk-theme-name=%s\ngtk-icon-theme-name=%s\ngtk-cursor-theme-name=capitaine-cursors\n' "$gtk_theme" "$icons" > "$config/gtk-3.0/settings.ini"
+    for setting in "icon-theme:$icons" "gtk-theme:$gtk_theme" "color-scheme:prefer-${mode:-dark}"; do
+        XDG_CONFIG_HOME="$config" GSETTINGS_BACKEND=keyfile gsettings set org.gnome.desktop.interface "${setting%%:*}" "${setting#*:}"
+    done
     focus_workspace "$CAPTURE_WORKSPACE"
-    setsid kitty --class omaconf-preview-micro -o font_size=9 -o window_padding_width=8 \
-        -o background_opacity=1.0 -e micro "$ARTIFACTS_DIR/sample.lua" &
-    MICRO_PID=$!
+    setsid env XDG_CONFIG_HOME="$config" XDG_DATA_HOME="$config/data" XDG_CACHE_HOME="$config/cache" \
+        XDG_DATA_DIRS="${XDG_DATA_HOME:-$HOME/.local/share}:/usr/local/share:/usr/share" \
+        GIO_USE_VFS=local GSETTINGS_BACKEND=keyfile NO_AT_BRIDGE=1 GTK_USE_PORTAL=0 GTK_THEME="$gtk_theme" \
+        dbus-run-session --config-file "$ARTIFACTS_DIR/session.conf" -- geany --new-instance --no-session --no-msgwin --no-terminal "$ARTIFACTS_DIR/Files/Projects/sample.lua" &
+    GEANY_PID=$!
     sleep 0.5
-    setsid kitty --class omaconf-preview-btop -o font_size=9 -o window_padding_width=8 \
-        -o background_opacity=1.0 -e btop --filter btop &
-    BTOP_PID=$!
-    capture_app micro "$MICRO_PID"
-    capture_app btop "$BTOP_PID"
-    sleep 3
-    grim -o "$CAPTURE_OUTPUT" "$ARTIFACTS_DIR/$theme-desktop.png"
-    stop_capture_process "$MICRO_PID"
-    MICRO_PID=""
-    stop_capture_process "$BTOP_PID"
-    BTOP_PID=""
+    setsid env XDG_CONFIG_HOME="$config" XDG_DATA_HOME="$config/data" XDG_CACHE_HOME="$config/cache" \
+        XDG_DATA_DIRS="${XDG_DATA_HOME:-$HOME/.local/share}:/usr/local/share:/usr/share" \
+        GIO_USE_VFS=local GSETTINGS_BACKEND=keyfile NO_AT_BRIDGE=1 GTK_USE_PORTAL=0 GTK_THEME="$gtk_theme" \
+        dbus-run-session --config-file "$ARTIFACTS_DIR/session.conf" -- thunar --window "$ARTIFACTS_DIR/Files" &
+    THUNAR_PID=$!
+    sleep 2
+    capture_app geany
+    capture_app thunar
+    sleep 1
+    grim -o "$CAPTURE_MONITOR" "$ARTIFACTS_DIR/desktop.png"
+    stop_capture_process "$GEANY_PID"
+    GEANY_PID=""
+    stop_capture_process "$THUNAR_PID"
+    THUNAR_PID=""
     output_dir="$SCRIPT_DIR/$theme"
     mkdir -p "$output_dir"
-    magick "$ARTIFACTS_DIR/$theme-desktop.png" -resize "${CANVAS_WIDTH}x${CANVAS_HEIGHT}!" \
+    magick "$ARTIFACTS_DIR/desktop.png" -resize "${CANVAS_WIDTH}x${CANVAS_HEIGHT}" \
         -depth 8 -density 72 "PNG32:$output_dir/preview.png"
 done
-
 source "$PROJECT_DIR/scripts/lib/theme-preview.sh"
-for theme in "${themes[@]}"; do
-    theme_preview_normalize_file "$SCRIPT_DIR/$theme/preview.png" || exit 1
-done
-bash "$SCRIPT_DIR/apply.sh" "${themes[@]}"
-printf 'Rebuilt and applied %s preview(s).\n' "${#themes[@]}"
+for theme in "${themes[@]}"; do theme_preview_normalize_file "$SCRIPT_DIR/$theme/preview.png"; done
+printf 'Rebuilt %s preview(s).\n' "${#themes[@]}"
