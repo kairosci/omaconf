@@ -31,7 +31,6 @@ MODULE_FILES=(
     "$MODULES_DIR/25-desktop-cleanup.sh"
     "$MODULES_DIR/30-theming.sh"
     "$MODULES_DIR/32-omaqt.sh"
-    "$MODULES_DIR/33-nvim.sh"
     "$MODULES_DIR/35-shell-plugins.sh"
     "$MODULES_DIR/40-firewall.sh"
     "$MODULES_DIR/50-kernel.sh"

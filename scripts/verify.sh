@@ -84,8 +84,11 @@ tcheck "check.pkg_installed" "pacman -Q qutebrowser &>/dev/null" qutebrowser
 tcheck "check.pkg_installed" "pacman -Q python-adblock &>/dev/null" python-adblock
 tcheck "check.pkg_removed" "! pacman -Q brave-origin-bin &>/dev/null" brave-origin-bin
 tcheck "check.pkg_removed" "! pacman -Q chromium &>/dev/null" chromium
-tcheck "check.pkg_installed" "pacman -Q neovim &>/dev/null" neovim
-tcheck "check.pkg_installed" "pacman -Q omarchy-nvim &>/dev/null" omarchy-nvim
+tcheck "check.pkg_removed" "! pacman -Q neovim &>/dev/null" neovim
+tcheck "check.pkg_removed" "! pacman -Q omarchy-nvim &>/dev/null" omarchy-nvim
+tcheck "check.pkg_installed" "pacman -Q micro &>/dev/null" micro
+tcheck "check.pkg_installed" "pacman -Q fzf &>/dev/null" fzf
+tcheck "check.pkg_installed" "pacman -Q universal-ctags &>/dev/null" universal-ctags
 tcheck "check.pkg_installed" "pacman -Q mpv &>/dev/null" mpv
 tcheck "check.pkg_installed" "pacman -Q yazi &>/dev/null" yazi
 tcheck "check.pkg_installed" "pacman -Q 7zip &>/dev/null" 7zip
@@ -124,6 +127,7 @@ tcheck "check.tool_present" "pacman -Q gum &>/dev/null" gum
 section verify.sec_browser
 tcheck "check.default_browser" "[[ \"\$(xdg-settings get default-web-browser 2>/dev/null)\" == org.qutebrowser.qutebrowser.desktop ]]"
 tcheck "check.default_editor"  "[[ \"\$(cat \$HOME/.local/state/omarchy/defaults/editor 2>/dev/null)\" == micro ]]"
+tcheck "check.quteconf" "[[ -f \$HOME/.config/qutebrowser/config.py ]]"
 tcheck "check.yazi_config" "[[ -f \$HOME/.config/yazi/yazi.toml ]]"
 tcheck "check.yazi_syntax_current" "grep -q '%s' \$HOME/.config/yazi/yazi.toml"
 tcheck "check.yazi_syntax_legacy" "! grep -qF '"\$@"' \$HOME/.config/yazi/yazi.toml"

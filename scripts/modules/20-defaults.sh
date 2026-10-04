@@ -18,9 +18,11 @@ for user_home in /home/*; do
 done
 
 log "defaults.micro_install"
-if ! pacman -Q micro &>/dev/null; then
-    pacman -S --noconfirm --needed micro
-fi
+for pkg in micro fzf universal-ctags; do
+    if ! pacman -Q "$pkg" &>/dev/null; then
+        pacman -S --noconfirm --needed "$pkg" || err "defaults.micro_dependency_failed" "$pkg"
+    fi
+done
 
 log "defaults.editor"
 for user_home in /home/*; do
@@ -31,6 +33,9 @@ for user_home in /home/*; do
     chown -R "$_user":"$_user" "$user_home/.local/state" 2>/dev/null || warn "defaults.editor_state_failed" "$_user"
     if [[ -x "$PROJECT_DIR/microconf/install.sh" ]]; then
         user_as "$_user" bash "$PROJECT_DIR/microconf/install.sh" 2>/dev/null || warn "defaults.microconf_skipped" "$_user"
+    fi
+    if [[ -x "$PROJECT_DIR/quteconf/install.sh" ]]; then
+        user_as "$_user" bash "$PROJECT_DIR/quteconf/install.sh" 2>/dev/null || warn "defaults.quteconf_skipped" "$_user"
     fi
 done
 
@@ -143,6 +148,13 @@ for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
     _user=$(basename "$user_home")
     _bindings="$user_home/.config/hypr/bindings.lua"
+    if [[ -f "$_bindings" ]] && grep -qE '^-- om(ablot|aconf)-yazi-fm:' "$_bindings"; then
+        sed -i \
+            -e '/^-- omablot-yazi-fm:/,/^o\.bind("SUPER + ALT + SHIFT + F"/d' \
+            -e '/^-- omaconf-yazi-fm:/,/^o\.bind("SUPER + ALT + SHIFT + F"/d' \
+            "$_bindings" || warn "defaults.bindings_migration_skipped" "$_user"
+        chown "$_user":"$_user" "$_bindings" 2>/dev/null || warn "defaults.bindings_chown" "$_user"
+    fi
     if [[ -f "$_bindings" ]] && ! grep -q 'omaconf-yazi-fm' "$_bindings" 2>/dev/null; then
         cat >> "$_bindings" << 'LUAEOF'
 
@@ -151,6 +163,14 @@ hl.unbind("SUPER + SHIFT + F")
 o.bind("SUPER + SHIFT + F", "File manager", "xdg-terminal-exec yazi")
 hl.unbind("SUPER + ALT + SHIFT + F")
 o.bind("SUPER + ALT + SHIFT + F", "File manager (cwd)", "xdg-terminal-exec --dir=\"$(omarchy-cmd-terminal-cwd)\" yazi")
+LUAEOF
+        chown "$_user":"$_user" "$_bindings" 2>/dev/null || warn "defaults.bindings_chown" "$_user"
+    fi
+    if [[ -f "$_bindings" ]] && ! grep -q 'qutebrowser --temp-basedir' "$_bindings" 2>/dev/null; then
+        cat >> "$_bindings" << 'LUAEOF'
+
+hl.unbind("SUPER + SHIFT + ALT + B")
+o.bind("SUPER + SHIFT + ALT + B", "Private browser", { launch = "qutebrowser --temp-basedir" })
 LUAEOF
         chown "$_user":"$_user" "$_bindings" 2>/dev/null || warn "defaults.bindings_chown" "$_user"
     fi

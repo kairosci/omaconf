@@ -34,6 +34,8 @@ DEBLOAT=(
     zathura-pdf-mupdf
     dua-cli
     foot
+    neovim
+    omarchy-nvim
 )
 
 log "debloat.start"

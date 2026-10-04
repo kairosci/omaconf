@@ -27,6 +27,14 @@ fi
 
 install_user_file "$SCRIPT_DIR/data/bindings.json" "$CONFIG_DIR/bindings.json"
 
+if command -v micro &>/dev/null; then
+    for plugin in detectindent jump snippets; do
+        if ! micro -plugin list 2>/dev/null | grep -q "^$plugin "; then
+            micro -plugin install "$plugin" || warn "install.micro_plugin_skipped" "$plugin"
+        fi
+    done
+fi
+
 if [[ -x "$PROJECT_DIR/hooks/theme-set.d/micro-theme" ]]; then
     bash "$PROJECT_DIR/hooks/theme-set.d/micro-theme" 2>/dev/null || warn "install.theme_sync_skipped"
 fi
@@ -34,14 +42,13 @@ fi
 install_shell_block "$HOME/.bashrc" "$MARK_BEGIN" "$MARK_END" << 'SHELLBLOCK'
 function mh() {
 	cat << 'HELP'
-micro - essentials                        splits and more
-  Ctrl-s ......... save                    Alt-g ....... split vertical
-  Ctrl-q ......... quit                    Alt-h ....... split horizontal
-  Ctrl-z / Ctrl-y  undo / redo             Ctrl-e ...... command line
-  Ctrl-f/n/p ..... find / next/prev
-  Ctrl-a/c/x/v ... select copy cut paste
-  Ctrl-k / Ctrl-d  cut line / duplicate line
-  Ctrl-g ......... full help inside micro
+micro - essentials                        project tools
+  Ctrl-s ......... save                    F4 ........... jump to symbol
+  Ctrl-q ......... quit                    Ctrl-e ....... command line
+  Ctrl-z / Ctrl-y  undo / redo             Ctrl-g ....... editor help
+  Ctrl-f/h ....... find / replace          Ctrl-e ....... command line
+  Ctrl-a/c/x/v ... select copy cut paste   Alt-g/h ...... split views
+  Ctrl-k / Ctrl-d  cut line / duplicate
 HELP
 }
 SHELLBLOCK

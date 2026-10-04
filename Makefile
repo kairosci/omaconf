@@ -12,7 +12,7 @@ else
 $(error BACKEND must be keepassxc or gnome-keyring)
 endif
 
-.PHONY: help setup keyring verify test hook icons theme zed micro nvim yazi cli herdr disk editors clean lang i18n-status lint
+.PHONY: help setup keyring verify test hook icons theme zed micro qute yazi cli herdr disk editors clean lang i18n-status lint
 
 lint:
 	@if ! command -v shellcheck &> /dev/null; then \
@@ -22,7 +22,7 @@ lint:
 	shellcheck --severity=style \
 		scripts/*.sh scripts/lib/*.sh scripts/modules/*.sh \
 		hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* \
-		zedconf/*.sh microconf/*.sh nvimconf/*.sh yaziconf/*.sh cliconf/*.sh herdrconf/*.sh diskconf/*.sh \
+		zedconf/*.sh microconf/*.sh quteconf/*.sh yaziconf/*.sh cliconf/*.sh herdrconf/*.sh diskconf/*.sh \
 		tests/*.sh
 
 help:
@@ -60,8 +60,8 @@ zed:
 micro:
 	bash microconf/install.sh
 
-nvim:
-	bash nvimconf/install.sh
+qute:
+	bash quteconf/install.sh
 
 yazi:
 	bash yaziconf/install.sh
@@ -75,7 +75,7 @@ herdr:
 disk:
 	bash diskconf/install.sh
 
-editors: zed micro nvim cli
+editors: zed micro cli
 
 lang:
 	@bash scripts/lib/i18n.sh --list

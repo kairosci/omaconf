@@ -1,13 +1,7 @@
 # microconf
 
-Native Micro editor configuration installer for Omarchy desktop.
+Micro is the default terminal editor. Its configuration uses native completion and the built-in linter, plus the official plugin channel's `detectindent`, `jump` and `snippets` plugins. `jump` needs universal-ctags. Project commands remain explicit through Micro's command line and the user's shell, avoiding unsupported plugin aliases.
 
-## Overview
-microconf installs customized configuration files, keyboard shortcuts, and dynamic Omarchy theme integrations for the Micro terminal editor. All operations are executed using native Bash automation and standard Unix utilities without Python dependencies or external package managers.
+Install with `make micro` or `bash microconf/install.sh`. `mh` prints the key reference; Ctrl+G opens Micro's current help.
 
-## Installation
-Execute the native installation script in the user environment to copy and merge settings into the XDG configuration path:
-`bash microconf/install.sh`
-
-## Configuration Architecture
-Base editor preferences reside in `data/settings.json`, including tab handling, soft wrap, diff gutter, auto-indentation, and the default `"colorscheme": "omarchy"`. Custom key mappings are stored in `data/bindings.json`. Dynamic colorschemes matching active Omarchy themes are populated in `~/.config/micro/colorschemes/` by the theme hook engine. The installer creates automatic timestamped backups before writing new configurations into `~/.config/micro/`.
+Common editing keys match Zed: Ctrl+S save, Ctrl+F find, Ctrl+Z undo, Ctrl+Y redo, Ctrl+C/X/V copy/cut/paste and Ctrl+Q quit. Ctrl+H opens replace. Omarchy Super shortcuts remain managed by Hyprland.

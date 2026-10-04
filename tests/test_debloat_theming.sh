@@ -17,6 +17,8 @@ assert_file_contains "debloat module defines package removal" "$DEBLOAT_MODULE" 
 assert_file_contains "debloat module defines IgnorePkg pinning" "$DEBLOAT_MODULE" "IgnorePkg.*MERGED_PINS"
 assert_file_contains "debloat module merges pins instead of overwriting" "$DEBLOAT_MODULE" "EXISTING_PINS"
 assert_file_contains "debloat module installs persistence hooks" "$DEBLOAT_MODULE" "99-omaconf-persist"
+assert_file_contains "debloat removes Neovim" "$DEBLOAT_MODULE" "neovim"
+assert_file_contains "debloat removes the Omarchy Neovim package" "$DEBLOAT_MODULE" "omarchy-nvim"
 assert_file_contains "debloat module removes the sushi previewer orphan" "$DEBLOAT_MODULE" "sushi"
 assert_file_contains "debloat module removes the sushi sourceview dependency" "$DEBLOAT_MODULE" "gtksourceview4"
 assert_file_contains "debloat module removes the sushi gtk plugin dependency" "$DEBLOAT_MODULE" "gst-plugin-gtk"
@@ -26,6 +28,8 @@ assert_file_contains "no-gtk skill registered in the agent contract" "$PROJECT_D
 assert_file_exists "defaults module exists" "$DEFAULTS_MODULE"
 assert_file_contains "defaults module configures qutebrowser" "$DEFAULTS_MODULE" "qutebrowser"
 assert_file_contains "defaults module configures micro editor" "$DEFAULTS_MODULE" "micro"
+assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
+assert_file_contains "defaults module provisions quteconf" "$DEFAULTS_MODULE" "quteconf/install.sh"
 assert_file_contains "defaults module configures yazi file manager" "$DEFAULTS_MODULE" "yazi"
 assert_file_contains "defaults module configures 7zip archive support" "$DEFAULTS_MODULE" "7zip"
 assert_file_contains "defaults module installs Kitty" "$DEFAULTS_MODULE" "pacman -S --noconfirm --needed kitty"
@@ -69,7 +73,7 @@ assert_file_contains "post-update hook resolves the deployed preview library" "$
 assert_file_contains "post-update hook reapplies preview normalization" "$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist" "theme_preview_normalize"
 
 REBUILD_GEOMETRY="$PROJECT_DIR/theme-previews/rebuild-previews.sh"
-assert_file_contains "rebuild script captures Neovim" "$REBUILD_GEOMETRY" 'capture_app nvim'
+assert_file_contains "rebuild script captures Micro" "$REBUILD_GEOMETRY" 'capture_app micro'
 assert_file_contains "rebuild script captures btop" "$REBUILD_GEOMETRY" 'capture_app btop'
 assert_file_contains "rebuild script builds a paired preview canvas" "$REBUILD_GEOMETRY" 'CANVAS_WIDTH=1800'
 assert_file_contains "rebuild script writes the composite as rgba" "$REBUILD_GEOMETRY" 'PNG32:\$output_dir/preview.png'
