@@ -4,8 +4,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-DISK_INSTALLER="$PROJECT_DIR/diskconf/install.sh"
-DISK_DATA="$PROJECT_DIR/diskconf/data/gdu.yaml"
+DISK_INSTALLER="$PROJECT_DIR/conf/disk/install.sh"
+DISK_DATA="$PROJECT_DIR/conf/disk/data/gdu.yaml"
 DISK_HOOK="$PROJECT_DIR/hooks/theme-set.d/disk-theme"
 DEFAULTS_MODULE="$PROJECT_DIR/scripts/modules/20-defaults.sh"
 DEBLOAT_MODULE="$PROJECT_DIR/scripts/modules/10-debloat.sh"
@@ -17,7 +17,7 @@ test_section "Disk Usage Analyzer Configuration"
 assert_file_exists "diskconf installer exists" "$DISK_INSTALLER"
 assert_file_executable "diskconf installer is executable" "$DISK_INSTALLER"
 assert_file_exists "gdu base config exists" "$DISK_DATA"
-assert_true "diskconf data and hook dropped dua" "! grep -rq 'dua-cli' '$PROJECT_DIR/diskconf/data' '$DISK_HOOK'"
+assert_true "diskconf data and hook dropped dua" "! grep -rq 'dua-cli' '$PROJECT_DIR/conf/disk/data' '$DISK_HOOK'"
 assert_file_exists "disk-theme hook exists" "$DISK_HOOK"
 assert_file_executable "disk-theme hook is executable" "$DISK_HOOK"
 
@@ -70,20 +70,20 @@ assert_file_contains "disk-theme hook writes atomically" "$DISK_HOOK" 'mktemp'
 assert_file_contains "disk-theme hook keeps the config permissions tight" "$DISK_HOOK" 'chmod 644'
 
 assert_file_contains "defaults module installs gdu from the repos" "$DEFAULTS_MODULE" 'pacman -Q gdu'
-assert_file_contains "defaults module provisions diskconf per user" "$DEFAULTS_MODULE" 'diskconf/install.sh'
+assert_file_contains "defaults module provisions diskconf per user" "$DEFAULTS_MODULE" 'conf/disk/install.sh'
 assert_file_contains "defaults module warns without aborting on skip" "$DEFAULTS_MODULE" 'defaults.diskconf_skipped'
 assert_file_not_contains "defaults disk block never exits the sourcing setup" "$DEFAULTS_MODULE" 'defaults.diskconf_skipped.*exit'
 assert_file_contains "debloat module removes the replaced analyzer" "$DEBLOAT_MODULE" 'dua-cli'
 
 assert_file_contains "Makefile exposes disk target" "$PROJECT_DIR/Makefile" '^disk:'
-assert_file_contains "Makefile lints diskconf" "$PROJECT_DIR/Makefile" 'diskconf/'
+assert_file_contains "Makefile lints diskconf" "$PROJECT_DIR/Makefile" 'conf/disk/'
 assert_file_contains "help lists disk target" "$PROJECT_DIR/scripts/lib/help.sh" 'row disk "make.disk"'
 assert_file_contains "verify checks gdu package" "$PROJECT_DIR/scripts/verify.sh" 'pacman -Q gdu'
 assert_file_contains "verify checks gdu config" "$PROJECT_DIR/scripts/verify.sh" 'gdu/gdu.yaml'
 assert_file_contains "verify drops the dua package" "$PROJECT_DIR/scripts/verify.sh" 'pacman -Q dua-cli'
 assert_file_contains "verify checks disk-theme hook" "$PROJECT_DIR/scripts/verify.sh" 'theme-set.d/disk-theme'
-assert_file_contains "cliconf covers gdu" "$PROJECT_DIR/cliconf/data/helpers.sh" 'gdu)'
-assert_file_contains "cliconf redirects legacy dua to gdu" "$PROJECT_DIR/cliconf/data/helpers.sh" 'dua | disk'
+assert_file_contains "cliconf covers gdu" "$PROJECT_DIR/conf/cli/data/helpers.sh" 'gdu)'
+assert_file_contains "cliconf redirects legacy dua to gdu" "$PROJECT_DIR/conf/cli/data/helpers.sh" 'dua | disk'
 
 for key in install.disk_done install.disk_legacy_skipped defaults.disk_install defaults.disk_failed defaults.diskconf defaults.diskconf_skipped make.disk check.disk_config check.disk_theme_hook; do
     assert_true "catalog en defines $key" "grep -qE '^$key=' '$PROJECT_DIR/scripts/lib/messages/en.msg'"

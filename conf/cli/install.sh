@@ -2,12 +2,12 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 SHARE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/omaconf"
 MARK_BEGIN="# >>> omaconf helpers >>>"
 MARK_END="# <<< omaconf helpers <<<"
 
-I18N_LIB="$(dirname "$SCRIPT_DIR")/scripts/lib"
+I18N_LIB="$PROJECT_DIR/scripts/lib"
 # shellcheck source=/dev/null
 source "$I18N_LIB/i18n.sh"
 # shellcheck source=/dev/null

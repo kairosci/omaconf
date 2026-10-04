@@ -22,7 +22,7 @@ lint:
 	shellcheck --severity=style \
 		scripts/*.sh scripts/lib/*.sh scripts/modules/*.sh \
 		hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* \
-		zedconf/*.sh microconf/*.sh quteconf/*.sh yaziconf/*.sh cliconf/*.sh herdrconf/*.sh diskconf/*.sh \
+		conf/zed/*.sh conf/micro/*.sh conf/qutebrowser/*.sh conf/yazi/*.sh conf/cli/*.sh conf/herdr/*.sh conf/disk/*.sh \
 		tests/*.sh
 
 help:
@@ -55,25 +55,25 @@ theme:
 	@bash hooks/theme-set.d/micro-theme
 
 zed:
-	bash zedconf/install.sh
+	bash conf/zed/install.sh
 
 micro:
-	bash microconf/install.sh
+	bash conf/micro/install.sh
 
 qute:
-	bash quteconf/install.sh
+	bash conf/qutebrowser/install.sh
 
 yazi:
-	bash yaziconf/install.sh
+	bash conf/yazi/install.sh
 
 cli:
-	bash cliconf/install.sh
+	bash conf/cli/install.sh
 
 herdr:
-	bash herdrconf/install.sh
+	bash conf/herdr/install.sh
 
 disk:
-	bash diskconf/install.sh
+	bash conf/disk/install.sh
 
 editors: zed micro cli
 

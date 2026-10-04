@@ -2,13 +2,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/gdu"
 LEGACY_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/dua-cli"
 MARK_BEGIN="# >>> omaconf disk >>>"
 MARK_END="# <<< omaconf disk <<<"
 
-I18N_LIB="$(dirname "$SCRIPT_DIR")/scripts/lib"
+I18N_LIB="$PROJECT_DIR/scripts/lib"
 # shellcheck source=/dev/null
 source "$I18N_LIB/i18n.sh"
 # shellcheck source=/dev/null

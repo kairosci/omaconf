@@ -11,7 +11,7 @@ cliconf installs helper command with English cheatsheet per tool in the stack. T
 Run in user scope:
 
 ```bash
-bash cliconf/install.sh
+bash conf/cli/install.sh
 ```
 
 ## Architecture

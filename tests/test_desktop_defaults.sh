@@ -32,15 +32,15 @@ assert_file_not_contains "defaults never sets the browser as root" "$DEFAULTS_MO
 
 assert_file_contains "debloat module merges pins instead of overwriting" "$DEBLOAT_MODULE" "EXISTING_PINS"
 assert_file_contains "debloat module installs persistence hooks" "$DEBLOAT_MODULE" "99-omaconf-persist"
-assert_file_contains "yaziconf installer enforces yazi file manager" "$PROJECT_DIR/yaziconf/install.sh" 'inode/directory'
-assert_file_contains "yaziconf installer pins the terminal desktop entry" "$PROJECT_DIR/yaziconf/install.sh" 'FM_DESKTOP="yazi-terminal.desktop"'
-assert_file_contains "yaziconf installer registers the desktop entry" "$PROJECT_DIR/yaziconf/install.sh" "xdg-mime default"
+assert_file_contains "yaziconf installer enforces yazi file manager" "$PROJECT_DIR/conf/yazi/install.sh" 'inode/directory'
+assert_file_contains "yaziconf installer pins the terminal desktop entry" "$PROJECT_DIR/conf/yazi/install.sh" 'FM_DESKTOP="yazi-terminal.desktop"'
+assert_file_contains "yaziconf installer registers the desktop entry" "$PROJECT_DIR/conf/yazi/install.sh" "xdg-mime default"
 assert_file_contains "defaults module records file-manager state" "$DEFAULTS_MODULE" "defaults/file-manager"
 assert_file_contains "defaults module rebinds file manager keys to yazi" "$DEFAULTS_MODULE" "omaconf-yazi-fm"
-assert_file_contains "defaults module provisions herdrconf menu" "$DEFAULTS_MODULE" "herdrconf/install.sh"
+assert_file_contains "defaults module provisions herdrconf menu" "$DEFAULTS_MODULE" "conf/herdr/install.sh"
 assert_file_contains "defaults module installs gdu disk analyzer" "$DEFAULTS_MODULE" "pacman -Q gdu"
 assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
-assert_file_contains "defaults module provisions diskconf" "$DEFAULTS_MODULE" "diskconf/install.sh"
+assert_file_contains "defaults module provisions diskconf" "$DEFAULTS_MODULE" "conf/disk/install.sh"
 assert_file_contains "shell plugins module uses canonical omamp source" "$SHELL_PLUGINS_MODULE" "omaconf/omamp.git"
 assert_file_contains "env module defines omarchy_as helper" "$PROJECT_DIR/scripts/modules/00-env.sh" "omarchy_as\(\)"
 assert_file_contains "omarchy_as forwards the user session bus" "$PROJECT_DIR/scripts/modules/00-env.sh" "DBUS_SESSION_BUS_ADDRESS"
@@ -57,7 +57,7 @@ assert_file_contains "keyring module exposes a backend switch function" "$PROJEC
 assert_file_contains "keyring module provisions KeePassXC Secret Service" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "FdoSecrets"
 assert_file_contains "keyring switch validates both supported backends" "$PROJECT_DIR/scripts/keyring-switch.sh" "keepassxc|gnome-keyring"
 assert_file_contains "Makefile exposes the keyring selection target" "$PROJECT_DIR/Makefile" "scripts/keyring-switch.sh"
-assert_file_contains "defaults provision quteconf" "$DEFAULTS_MODULE" "quteconf/install.sh"
+assert_file_contains "defaults provision quteconf" "$DEFAULTS_MODULE" "conf/qutebrowser/install.sh"
 
 PERSIST_PRE="$PROJECT_DIR/hooks/pre-refresh-pacman.d/99-omaconf-persist"
 assert_file_exists "pre-refresh persist hook exists in repo" "$PERSIST_PRE"

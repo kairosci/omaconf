@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/qutebrowser"
 I18N_LIB="$PROJECT_DIR/scripts/lib"
 # shellcheck source=/dev/null
