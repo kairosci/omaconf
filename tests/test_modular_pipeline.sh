@@ -16,6 +16,7 @@ EXPECTED_MODULES=(
     "10-debloat.sh"
     "20-defaults.sh"
     "22-portals.sh"
+    "25-desktop-cleanup.sh"
     "30-theming.sh"
     "32-omaqt.sh"
     "33-nvim.sh"

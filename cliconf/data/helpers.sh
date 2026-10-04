@@ -5,7 +5,7 @@ function helper() {
 helper - one helper per tool. Usage: helper <name>
   yazi/micro/nvim have built-in help: ~, Ctrl-g, <leader>hh
   yh/mh are terminal quick cards
-  mpv ................ video and audio   zathura .. pdf
+  mpv ................ video and audio   mupdf .... pdf
   imv ................ images            fzf .... fuzzy search
   rg ................. search in files   fd ..... find files
   bat ................ cat with colors   eza .... modern ls
@@ -24,11 +24,10 @@ mpv - q quit, SPACE pause, f fullscreen, m mute
   j/J subtitle delay, # audio track, _ video
 HELP
 		;;
-	zathura)
+		mupdf)
 		cat << 'HELP'
-zathura - j/k scroll, d/u page, +/- zoom, f fit width
-  r rotate, / search (n/N next/prev), g/G first/last page
-  Tab index toggle, Ctrl-r reload, F11 fullscreen, q quit
+MuPDF - arrows scroll, +/- zoom, f fit width, / search
+  n/N next/previous match, w wrap to page width, q quit
 HELP
 		;;
 	imv)

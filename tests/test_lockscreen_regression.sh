@@ -26,7 +26,7 @@ if [[ -f /etc/usbguard/rules.conf ]]; then
         "grep -qE '(03:00:01|03:01:01|03:01:02|interface-class == \{ 03:..:.. \}|allow)' /etc/usbguard/rules.conf 2>/dev/null"
 fi
 
-assert_true "Primary user belongs to wheel group" "[[ \$(id -u) -eq 0 ]] || groups | grep -qw 'wheel' || id -Gn | grep -qw 'wheel'"
+assert_true "Primary user belongs to wheel group" "[[ \$(id -u) -eq 0 ]] || getent group wheel | awk -F: -v user=\"\$(id -un)\" 'index(\",\" \$4 \",\", \",\" user \",\")'"
 assert_true "User shell is defined in /etc/shells" "grep -qFx \"${SHELL:-/bin/bash}\" /etc/shells"
 
 for pam_file in /etc/pam.d/system-auth /etc/pam.d/hyprlock /etc/pam.d/swaylock /etc/pam.d/gtklock; do

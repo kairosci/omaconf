@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 target_user_resolve() {
     local candidate=""
 

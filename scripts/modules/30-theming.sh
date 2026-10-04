@@ -19,27 +19,17 @@ for user_home in /home/*; do
         _theme_name="default"
     fi
     case "$_theme_name" in
-        white|flexoki-light|catppuccin-latte|solarized-light) _icon_theme="Papirus" ;;
-        *)                                                     _icon_theme="Papirus-Dark" ;;
+        white|flexoki-light|catppuccin-latte|solarized-light)
+            _icon_theme="Papirus"; _color_scheme="default" ;;
+        *)
+            _icon_theme="Papirus-Dark"; _color_scheme="prefer-dark" ;;
     esac
 
     if [[ -e "/run/user/$_uid/bus" ]]; then
         user_as "$_user" gsettings set org.gnome.desktop.interface icon-theme "$_icon_theme" 2>/dev/null || warn "theming.icon_skipped" "$_user"
         user_as "$_user" gsettings set org.gnome.desktop.interface cursor-theme "capitaine-cursors" 2>/dev/null || warn "theming.cursor_skipped" "$_user"
+        user_as "$_user" gsettings set org.gnome.desktop.interface color-scheme "$_color_scheme" 2>/dev/null || warn "theming.cscheme_skipped" "$_user"
     fi
-
-    for _gtk_major in 3.0 4.0; do
-        _gtk_dir="$user_home/.config/gtk-$_gtk_major"
-        mkdir -p "$_gtk_dir"
-        _gtk_settings="$_gtk_dir/settings.ini"
-        if [[ ! -f "$_gtk_settings" ]]; then
-            printf '[Settings]\ngtk-icon-theme-name=%s\ngtk-cursor-theme-name=capitaine-cursors\ngtk-cursor-theme-size=24\n' "$_icon_theme" > "$_gtk_settings"
-        else
-            sed -i '/^gtk-icon-theme-name=/d;/^gtk-cursor-theme-name=/d;/^gtk-cursor-theme-size=/d' "$_gtk_settings"
-            printf 'gtk-icon-theme-name=%s\ngtk-cursor-theme-name=capitaine-cursors\ngtk-cursor-theme-size=24\n' "$_icon_theme" >> "$_gtk_settings"
-        fi
-        chown -R "$_user":"$_user" "$_gtk_dir" 2>/dev/null || warn "theming.gtk_chown" "$_user"
-    done
 
     mkdir -p "$user_home/.icons/default"
     cat > "$user_home/.icons/default/index.theme" << 'EOF'
@@ -58,6 +48,15 @@ EOF
 hl.env("XCURSOR_THEME", "capitaine-cursors")
 hl.env("HYPRCURSOR_THEME", "capitaine-cursors")
 -- end omaconf cursor env (managed)
+LUAEOF
+        chown "$_user":"$_user" "$_hyland" 2>/dev/null || warn "theming.hypr_chown" "$_user"
+    fi
+    if [[ -f "$_hyland" ]] && ! grep -q 'omaconf qt env' "$_hyland" 2>/dev/null; then
+        cat >> "$_hyland" << 'LUAEOF'
+
+-- omaconf qt env (managed)
+hl.env("QT_QPA_PLATFORMTHEME", "xdgdesktop")
+-- end omaconf qt env (managed)
 LUAEOF
         chown "$_user":"$_user" "$_hyland" 2>/dev/null || warn "theming.hypr_chown" "$_user"
     fi

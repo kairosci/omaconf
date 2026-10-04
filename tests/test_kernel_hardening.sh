@@ -38,11 +38,12 @@ check_sysctl_live() {
     local path="/proc/sys/${key//./\/}"
     [[ -f "$path" ]] || return 0
     local val
-    val=$(cat "$path" 2>/dev/null)
+    test_priv true &>/dev/null || return 2
+    val=$(test_priv sysctl -n "$key" 2>/dev/null)
     [[ "$val" == "$expected" ]]
 }
 
-if [[ -f /etc/sysctl.d/99-security.conf ]]; then
+if [[ -f /etc/sysctl.d/99-security.conf ]] && test_priv true &>/dev/null; then
     assert_true "live kernel.randomize_va_space = 2" "check_sysctl_live kernel.randomize_va_space 2"
     assert_true "live kernel.kptr_restrict = 2" "check_sysctl_live kernel.kptr_restrict 2"
     assert_true "live kernel.dmesg_restrict = 1" "check_sysctl_live kernel.dmesg_restrict 1"
@@ -54,6 +55,8 @@ if [[ -f /etc/sysctl.d/99-security.conf ]]; then
     assert_true "live net.ipv4.conf.all.rp_filter = 1" "check_sysctl_live net.ipv4.conf.all.rp_filter 1"
     assert_true "live net.ipv4.tcp_syncookies = 1" "check_sysctl_live net.ipv4.tcp_syncookies 1"
     assert_true "live net.ipv4.tcp_rfc1337 = 1" "check_sysctl_live net.ipv4.tcp_rfc1337 1"
+elif [[ -f /etc/sysctl.d/99-security.conf ]]; then
+    assert_warn "Live sysctl checks require root access" "false"
 fi
 
 test_summary

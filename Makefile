@@ -2,8 +2,17 @@ SHELL := /bin/bash
 PROJECT_ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 .DEFAULT_GOAL := help
+BACKEND ?= keepassxc
 
-.PHONY: help setup verify test hook icons theme zed micro nvim yazi cli herdr disk editors clean lang i18n-status lint
+ifeq ($(BACKEND),keepassxc)
+KEYRING_BACKEND := keepassxc
+else ifeq ($(BACKEND),gnome-keyring)
+KEYRING_BACKEND := gnome-keyring
+else
+$(error BACKEND must be keepassxc or gnome-keyring)
+endif
+
+.PHONY: help setup keyring verify test hook icons theme zed micro nvim yazi cli herdr disk editors clean lang i18n-status lint
 
 lint:
 	@if ! command -v shellcheck &> /dev/null; then \
@@ -21,6 +30,9 @@ help:
 
 setup:
 	pkexec bash $(PROJECT_ROOT)/scripts/setup.sh
+
+keyring:
+	bash $(PROJECT_ROOT)/scripts/keyring-switch.sh "$(KEYRING_BACKEND)"
 
 verify:
 	bash scripts/verify.sh

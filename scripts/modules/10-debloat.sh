@@ -26,6 +26,12 @@ DEBLOAT=(
     docker-compose
     gnome-disk-utility
     gnome-themes-extra
+    sushi
+    gtksourceview4
+    gst-plugin-gtk
+    brave-origin-bin
+    zathura
+    zathura-pdf-mupdf
     dua-cli
     foot
 )
@@ -119,3 +125,10 @@ for u_home in /home/*; do
         fi
     done
 done
+
+log "desktop.sweep"
+if [[ -f "$PROJECT_DIR/scripts/lib/desktop-cleanup.sh" ]]; then
+    # shellcheck source=../lib/desktop-cleanup.sh
+    source "$PROJECT_DIR/scripts/lib/desktop-cleanup.sh"
+    desktop_cleanup_sweep || warn "desktop.refresh_skipped"
+fi
