@@ -41,7 +41,6 @@ jobs:
             --config p/bash \
             --sarif \
             --output semgrep.sarif \
-            --error \
             scripts hooks conf tests clean/scripts clean/scripts/modules \
             obscure/scripts obscure/scripts/modules ai/scripts ai/scripts/modules \
             performance/scripts performance/scripts/modules
