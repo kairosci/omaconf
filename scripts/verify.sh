@@ -99,7 +99,6 @@ tcheck "check.pkg_installed" "pacman -Q shfmt &>/dev/null" shfmt
 tcheck "check.pkg_installed" "pacman -Q ruff &>/dev/null" ruff
 tcheck "check.pkg_installed" "pacman -Q yamllint &>/dev/null" yamllint
 tcheck "check.pkg_installed" "pacman -Q mpv &>/dev/null" mpv
-tcheck "check.pkg_installed" "pacman -Q yazi &>/dev/null" yazi
 tcheck "check.pkg_installed" "pacman -Q 7zip &>/dev/null" 7zip
 tcheck "check.pkg_installed" "pacman -Q imv &>/dev/null" imv
 tcheck "check.pkg_installed" "pacman -Q trash-cli &>/dev/null" trash-cli
@@ -137,9 +136,6 @@ section verify.sec_browser
 tcheck "check.default_browser" "[[ \"\$(xdg-settings get default-web-browser 2>/dev/null)\" == brave-browser.desktop ]]"
 tcheck "check.default_editor"  "[[ \"\$(cat \$HOME/.local/state/omarchy/defaults/editor 2>/dev/null)\" == geany ]]"
 tcheck "check.terminal_code" "[[ -x \${XDG_BIN_HOME:-\$HOME/.local/bin}/tode ]]"
-tcheck "check.yazi_config" "[[ -f \$HOME/.config/yazi/yazi.toml ]]"
-tcheck "check.yazi_syntax_current" "grep -q '%s' \$HOME/.config/yazi/yazi.toml"
-tcheck "check.yazi_syntax_legacy" "! grep -qF '"\$@"' \$HOME/.config/yazi/yazi.toml"
 section verify.sec_firewall
 if UFW_STATUS=$(priv ufw status 2>/dev/null); then
     tcheck "check.ufw_active"          "echo '$UFW_STATUS' | grep -q 'Status: active'"

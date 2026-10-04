@@ -40,7 +40,7 @@ assert_file_contains "diskconf installer cleans the legacy dua config" "$DISK_IN
 assert_file_contains "diskconf installer warns without aborting on legacy skip" "$DISK_INSTALLER" 'install.disk_legacy_skipped'
 assert_file_contains "diskconf installer manages the shell block" "$DISK_INSTALLER" "install_shell_block"
 assert_file_contains "diskconf installer ships the terminal quick card" "$DISK_INSTALLER" "function dh\(\)"
-assert_file_contains "diskconf quick card documents vim-style parity" "$DISK_INSTALLER" "same as yazi"
+assert_file_contains "diskconf quick card documents vim-style parity" "$DISK_INSTALLER" "vim-style"
 assert_file_contains "diskconf quick card points at the built-in help" "$DISK_INSTALLER" "full help"
 assert_file_contains "diskconf installer logs completion through i18n" "$DISK_INSTALLER" 'log "install.disk_done"'
 
@@ -70,8 +70,8 @@ assert_file_contains "disk-theme hook writes atomically" "$DISK_HOOK" 'mktemp'
 assert_file_contains "disk-theme hook keeps the config permissions tight" "$DISK_HOOK" 'chmod 644'
 
 assert_file_contains "defaults module installs gdu from the repos" "$DEFAULTS_MODULE" 'pacman -Q gdu'
-assert_file_contains "defaults module provisions diskconf per user" "$DEFAULTS_MODULE" 'conf/disk/install.sh'
-assert_file_contains "defaults module warns without aborting on skip" "$DEFAULTS_MODULE" 'defaults.diskconf_skipped'
+assert_file_contains "setup discovers the disk installer" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" 'conf/\*/install.sh'
+assert_file_contains "setup propagates app config failures" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" 'err "defaults.app_failed"'
 assert_file_not_contains "defaults disk block never exits the sourcing setup" "$DEFAULTS_MODULE" 'defaults.diskconf_skipped.*exit'
 assert_file_contains "debloat module removes the replaced analyzer" "$DEBLOAT_MODULE" 'dua-cli'
 

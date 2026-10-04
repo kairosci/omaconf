@@ -6,7 +6,7 @@ description: >-
 
 # Desktop Applications
 
-Thunar is the graphical file manager. Provision GVFS for trash and mounts, gvfs-mtp for phones, Tumbler for thumbnails, and thunar-archive-plugin with File Roller for archives. Nautilus remains excluded. Keep Yazi available as an optional terminal tool; its installer must never take over the directory MIME default.
+Thunar is the graphical file manager. Provision GVFS for trash and mounts, gvfs-mtp for phones, Tumbler for thumbnails, and thunar-archive-plugin with File Roller for archives. Nautilus remains excluded. Remove Yazi and its provisioned integrations while preserving personal data.
 
 Geany edits text, Papers opens PDFs, Loupe opens images, Celluloid plays media, Baobab analyzes storage and Resources monitors the system. Register their MIME defaults and Omarchy launch shortcuts through the shared desktop workflow. Retain existing terminal tools as optional alternatives.
 

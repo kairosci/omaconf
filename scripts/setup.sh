@@ -34,6 +34,7 @@ MODULE_FILES=(
     "$MODULES_DIR/10-debloat.sh"
     "$MODULES_DIR/20-defaults.sh"
     "$MODULES_DIR/22-portals.sh"
+    "$MODULES_DIR/24-user-configurations.sh"
     "$MODULES_DIR/25-desktop-cleanup.sh"
     "$MODULES_DIR/30-theming.sh"
     "$MODULES_DIR/32-omaqt.sh"
@@ -58,7 +59,5 @@ for mod in "${MODULE_FILES[@]}"; do
     # shellcheck disable=SC1090
     source "$mod"
 done
-
-OMASEC_LOG_STDOUT=1 bash "$PROJECT_DIR/obscure/scripts/setup.sh"
 
 log "__complete"

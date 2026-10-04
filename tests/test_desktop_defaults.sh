@@ -32,21 +32,19 @@ assert_file_not_contains "defaults never sets the browser as root" "$DEFAULTS_MO
 
 assert_file_contains "debloat module merges pins instead of overwriting" "$DEBLOAT_MODULE" "EXISTING_PINS"
 assert_file_contains "debloat module installs persistence hooks" "$DEBLOAT_MODULE" "99-omaconf-persist"
-assert_file_not_contains "Yazi installer preserves the graphical directory default" "$PROJECT_DIR/conf/yazi/install.sh" 'xdg-mime default'
-assert_file_contains "yaziconf installer pins the terminal desktop entry" "$PROJECT_DIR/conf/yazi/install.sh" 'FM_DESKTOP="yazi-terminal.desktop"'
 assert_file_contains "defaults module records file-manager state" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "defaults/file-manager"
 assert_file_contains "defaults module rebinds file manager keys to Thunar" "$DEFAULTS_MODULE" "omaconf-thunar-fm"
-assert_file_contains "defaults module provisions herdrconf menu" "$DEFAULTS_MODULE" "conf/herdr/install.sh"
+assert_file_contains "defaults module provisions herdrconf menu" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
 assert_file_contains "defaults module installs gdu disk analyzer" "$DEFAULTS_MODULE" "pacman -Q gdu"
 assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
-assert_file_contains "defaults module provisions diskconf" "$DEFAULTS_MODULE" "conf/disk/install.sh"
+assert_file_contains "defaults module provisions diskconf" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
 assert_file_contains "shell plugins module uses canonical omamp source" "$SHELL_PLUGINS_MODULE" "omaconf/omamp.git"
 assert_file_contains "env module defines omarchy_as helper" "$PROJECT_DIR/scripts/lib/modules/00-env.sh" "omarchy_as\(\)"
 assert_file_contains "omarchy_as forwards the user session bus" "$PROJECT_DIR/scripts/lib/modules/00-env.sh" "DBUS_SESSION_BUS_ADDRESS"
 assert_file_contains "defaults module configures Brave through xdg-settings" "$DEFAULTS_MODULE" "xdg-settings set default-web-browser brave-browser.desktop"
 assert_file_contains "defaults module installs Brave" "$DEFAULTS_MODULE" "aur_verified_install brave-bin"
 assert_file_contains "defaults module installs Slack and Discord" "$DEFAULTS_MODULE" "for pkg in slack-desktop discord"
-assert_file_contains "defaults module installs Terminal Code for each user" "$DEFAULTS_MODULE" "conf/terminal-code/install.sh"
+assert_file_contains "defaults module installs Terminal Code for each user" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
 assert_file_contains "Terminal Code installer uses the upstream installer endpoint" "$PROJECT_DIR/conf/terminal-code/install.sh" "https://tode.sh/install"
 assert_file_contains "Terminal Code installer skips repeat installs" "$PROJECT_DIR/conf/terminal-code/install.sh" "TODE_FORCE_INSTALL"
 assert_file_contains "setup.sh references shell plugins module" "$PROJECT_DIR/scripts/setup.sh" "35-shell-plugins.sh"
@@ -96,7 +94,7 @@ assert_file_not_contains "omaqt module no longer duplicates the yazi default" "$
 
 OMAQT_DIR="/usr/share/omarchy/omaqt"
 if [[ -x "$OMAQT_DIR/install.sh" ]]; then
-    for app in yazi imv mpv papirus-icon-theme; do
+    for app in imv mpv papirus-icon-theme; do
         assert_file_contains "omaqt installer installs $app" "$OMAQT_DIR/install.sh" "$app"
     done
     for app in nautilus totem evince eog yaru-icon-theme dolphin okular gwenview \
@@ -116,7 +114,7 @@ if [[ -x "$OMAQT_DIR/install.sh" ]]; then
 fi
 
 if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pacman.d/omaconf/ignore-pkgs.list ]]; then
-    for app in yazi imv mpv papirus-icon-theme; do
+    for app in thunar geany imv mpv papirus-icon-theme; do
         assert_true "$app installed" "pacman -Q $app &>/dev/null"
     done
     for app in nautilus totem evince eog yaru-icon-theme dolphin okular gwenview \

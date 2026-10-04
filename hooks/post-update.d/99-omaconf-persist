@@ -105,17 +105,7 @@ for user_home in /home/*; do
   _user=$(basename "$user_home")
   _uid=$(id -u "$_user" 2>/dev/null) || continue
   if [[ -e "/run/user/$_uid/bus" ]]; then
-    _tname=""
-    if [[ -f "$user_home/.local/state/omarchy/current/theme.name" ]]; then
-      _tname=$(tr '[:upper:]' '[:lower:]' < "$user_home/.local/state/omarchy/current/theme.name" | tr ' ' '-')
-    fi
-    case "$_tname" in
-      white|flexoki-light|catppuccin-latte|solarized-light) _it="Papirus"; _cs="default" ;;
-      *) _it="Papirus-Dark"; _cs="prefer-dark" ;;
-    esac
-    run_as_user "$_user" env XDG_RUNTIME_DIR="/run/user/$_uid" gsettings set org.gnome.desktop.interface icon-theme "$_it" 2>/dev/null || warn "hooks.icons_reapply_skipped" "$_user"
     run_as_user "$_user" env XDG_RUNTIME_DIR="/run/user/$_uid" gsettings set org.gnome.desktop.interface cursor-theme "capitaine-cursors" 2>/dev/null || warn "hooks.cursor_reapply_skipped" "$_user"
-    run_as_user "$_user" env XDG_RUNTIME_DIR="/run/user/$_uid" gsettings set org.gnome.desktop.interface color-scheme "$_cs" 2>/dev/null || warn "hooks.cscheme_reapply_skipped" "$_user"
   fi
   if [[ -n "$_uid" && -d "/run/user/$_uid" ]]; then
     _user_env=(env "XDG_RUNTIME_DIR=/run/user/$_uid" "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$_uid/bus")
@@ -124,4 +114,10 @@ for user_home in /home/*; do
   fi
   desktop_workflow_defaults "$_user" "$user_home" || warn "hooks.desktop_reapply_skipped" "$_user"
   desktop_workflow_portals "$_user" "$user_home" || warn "hooks.portal_reload_skipped" "$_user"
+  for _hook in folder-color gtk-theme shell-icons; do
+    _hook_path="$user_home/.config/omarchy/hooks/theme-set.d/$_hook"
+    if [[ -f "$_hook_path" ]]; then
+      user_as "$_user" bash "$_hook_path" || warn "hooks.icons_reapply_skipped" "$_user"
+    fi
+  done
 done

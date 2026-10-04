@@ -19,15 +19,20 @@ for color in "$BACKGROUND" "$FOREGROUND" "$ACCENT" "$SELECTION"; do
     [[ "$color" =~ ^#[0-9a-fA-F]{6}$ ]] || { warn "hooks.gtk_palette_failed" "$COLORS"; exit 1; }
 done
 MODE="$(palette mode)"
+[[ "$MODE" == light ]] || MODE=dark
 if [[ "$MODE" == light ]]; then
-    GTK_THEME_NAME=Adwaita
+    GTK_BASE_THEME=Materia-light
     GTK_DARK=false
-    GTK_ICONS=Papirus
+    GTK_ICONS=Omaconf-Papirus
 else
-    GTK_THEME_NAME=Adwaita-dark
+    GTK_BASE_THEME=Materia-dark
     GTK_DARK=true
-    GTK_ICONS=Papirus-Dark
+    GTK_ICONS=Omaconf-Papirus
 fi
+THEME_HASH=$(printf '%s\n' "$BACKGROUND" "$FOREGROUND" "$ACCENT" "$SELECTION" "$MODE" | sha256sum)
+GTK_THEME_NAME="Omaconf-${THEME_HASH:0:16}"
+GTK_THEME_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/themes/$GTK_THEME_NAME"
+mkdir -p "$GTK_THEME_DIR/gtk-3.0" "$GTK_THEME_DIR/gtk-4.0"
 
 for version in 3 4; do
     config="${XDG_CONFIG_HOME:-$HOME/.config}/gtk-$version.0"
@@ -66,10 +71,52 @@ window, dialog, .background, menubar, menu, menuitem, notebook, notebook header,
 headerbar, toolbar, .sidebar { background-color: $BACKGROUND; color: $FOREGROUND; }
 view, treeview, iconview, textview, entry, button, list, row { background-color: $BACKGROUND; color: $FOREGROUND; }
 view:selected, treeview:selected, iconview:selected, .view:selected, row:selected { background-color: $SELECTION; color: $FOREGROUND; }
+button { border-radius: 8px; border-color: $SELECTION; background-image: none; box-shadow: none; padding: 6px 10px; }
+button:hover, entry:focus { border-color: $ACCENT; }
+button:checked, switch:checked, check:checked, radio:checked, scale highlight, progressbar progress { background-color: $ACCENT; color: $BACKGROUND; }
+*:disabled { opacity: 0.55; }
 EOF_CSS
+    if [[ "$version" == 4 ]]; then
+        cat >> "$temporary" <<EOF_CSS
+:root {
+  --window-bg-color: $BACKGROUND;
+  --window-fg-color: $FOREGROUND;
+  --view-bg-color: $BACKGROUND;
+  --view-fg-color: $FOREGROUND;
+  --headerbar-bg-color: $BACKGROUND;
+  --headerbar-fg-color: $FOREGROUND;
+  --sidebar-bg-color: $BACKGROUND;
+  --sidebar-fg-color: $FOREGROUND;
+  --card-bg-color: $SELECTION;
+  --card-fg-color: $FOREGROUND;
+  --dialog-bg-color: $BACKGROUND;
+  --dialog-fg-color: $FOREGROUND;
+  --popover-bg-color: $BACKGROUND;
+  --popover-fg-color: $FOREGROUND;
+  --accent-bg-color: $ACCENT;
+  --accent-fg-color: $BACKGROUND;
+  --accent-color: $ACCENT;
+  --border-opacity: 0.15;
+}
+EOF_CSS
+    fi
     chmod 644 "$temporary"
     mv -f "$temporary" "$config/omaconf.css"
-    if ! grep -qFx '@import url("omaconf.css");' "$config/gtk.css" 2>/dev/null; then
+    if [[ "$version" == 3 ]]; then
+        if [[ -f "$config/gtk.css" ]]; then
+            temporary="$(mktemp "$config/.gtk.XXXXXX")"
+            awk '$0 != "@import url(\"omaconf.css\");" { print }' "$config/gtk.css" > "$temporary"
+            chmod 644 "$temporary"
+            mv -f "$temporary" "$config/gtk.css"
+        fi
+        printf '@import url("/usr/share/themes/%s/gtk-3.0/gtk.css");\n' "$GTK_BASE_THEME" > "$GTK_THEME_DIR/gtk-3.0/gtk.css"
+        cat "$config/omaconf.css" >> "$GTK_THEME_DIR/gtk-3.0/gtk.css"
+        cp "$GTK_THEME_DIR/gtk-3.0/gtk.css" "$GTK_THEME_DIR/gtk-3.0/gtk-dark.css"
+    else
+        cp "$config/omaconf.css" "$GTK_THEME_DIR/gtk-4.0/gtk.css"
+        cp "$config/omaconf.css" "$GTK_THEME_DIR/gtk-4.0/gtk-dark.css"
+    fi
+    if [[ "$version" == 4 ]] && ! grep -qFx '@import url("omaconf.css");' "$config/gtk.css" 2>/dev/null; then
         temporary="$(mktemp "$config/.gtk.XXXXXX")"
         printf '%s\n' '@import url("omaconf.css");' > "$temporary"
         if [[ -f "$config/gtk.css" ]]; then cat "$config/gtk.css" >> "$temporary"; fi
@@ -77,6 +124,7 @@ EOF_CSS
         mv -f "$temporary" "$config/gtk.css"
     fi
 done
+printf '[Desktop Entry]\nName=%s\nType=X-GNOME-Metatheme\n[X-GNOME-Metatheme]\nGtkTheme=%s\nIconTheme=%s\n' "$GTK_THEME_NAME" "$GTK_THEME_NAME" "$GTK_ICONS" > "$GTK_THEME_DIR/index.theme"
 
 GEANY_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/geany"
 mkdir -p "$GEANY_CONFIG/colorschemes"
@@ -108,4 +156,10 @@ elif grep -q '^\[geany\]' "$GEANY_CONFIG/geany.conf"; then
     sed -i '/^\[geany\]/a color_scheme=omaconf.conf' "$GEANY_CONFIG/geany.conf"
 else
     printf '\n[geany]\ncolor_scheme=omaconf.conf\n' >> "$GEANY_CONFIG/geany.conf"
+fi
+
+if [[ -z "${OMACONF_THEME_COLORS:-}" && -S "${XDG_RUNTIME_DIR:-/nonexistent}/bus" ]]; then
+    gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME_NAME"
+    gsettings set org.gnome.desktop.interface color-scheme "prefer-$MODE"
+    gsettings set org.gnome.desktop.interface icon-theme "$GTK_ICONS"
 fi

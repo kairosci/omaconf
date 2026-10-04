@@ -5,7 +5,6 @@ set -euo pipefail
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 SHELL_PLUGINS_MODULE="$PROJECT_DIR/scripts/lib/modules/35-shell-plugins.sh"
-YAZI_DATA="$PROJECT_DIR/conf/yazi/data"
 CLICONF_DATA="$PROJECT_DIR/conf/cli/data"
 
 source "$SCRIPT_DIR/test_lib.sh"
@@ -14,56 +13,6 @@ test_section "Config Validity & Placement Regression"
 
 assert_file_contains "shell plugins module keeps omamp on the right" "$SHELL_PLUGINS_MODULE" "section right"
 
-if command -v python3 &>/dev/null; then
-    assert_true "yazi.toml parses as TOML" "python3 -c \"import tomllib; tomllib.load(open('$YAZI_DATA/yazi.toml','rb'))\""
-    assert_true "yazi theme.toml parses as TOML" "python3 -c \"import tomllib; tomllib.load(open('$YAZI_DATA/theme.toml','rb'))\""
-    assert_true "every yazi open rule has url or mime" "python3 -c \"
-import tomllib
-cfg = tomllib.load(open('$YAZI_DATA/yazi.toml','rb'))
-rules = cfg.get('open', {}).get('rules', [])
-assert rules, 'no open rules found'
-bad = [r for r in rules if 'url' not in r and 'mime' not in r]
-assert not bad, f'rules without url/mime: {bad}'
-\""
-    assert_true "every yazi opener has a run command" "python3 -c \"
-import tomllib
-cfg = tomllib.load(open('$YAZI_DATA/yazi.toml','rb'))
-ops = cfg.get('opener', {})
-assert ops, 'no openers found'
-bad = [k for k, v in ops.items() if not all('run' in e for e in v)]
-assert not bad, f'openers without run: {bad}'
-\""
-    assert_true "yazi open rules end with a catch-all reveal fallback" "python3 -c \"
-import tomllib
-cfg = tomllib.load(open('$YAZI_DATA/yazi.toml','rb'))
-rules = cfg.get('open', {}).get('rules', [])
-assert rules and rules[-1].get('url') == '*' and rules[-1].get('use') == 'reveal', f'no catch-all reveal fallback: {rules[-1] if rules else None}'
-ops = cfg.get('opener', {})
-assert 'reveal' in ops and all('run' in e for e in ops['reveal']), 'reveal opener missing or without run'
-\""
-    assert_true "yazi keymap.toml parses as TOML" "python3 -c \"import tomllib; tomllib.load(open('$YAZI_DATA/keymap.toml','rb'))\""
-    assert_true "yazi Enter key enters directories or opens files" "python3 -c \"
-import tomllib
-cfg = tomllib.load(open('$YAZI_DATA/keymap.toml','rb'))
-mgr = cfg.get('mgr', {})
-keys = mgr.get('prepend_keymap', []) + mgr.get('append_keymap', [])
-hits = [k for k in keys if 'Enter' in str(k.get('on', '')) and 'smart-enter' in str(k.get('run', ''))]
-assert hits, 'no Enter smart-enter binding found'
-\""
-    assert_true "yazi common keybindings map copy cut paste search and quit" "python3 -c \"
-import tomllib
-cfg = tomllib.load(open('$YAZI_DATA/keymap.toml','rb'))
-keys = cfg.get('mgr', {}).get('prepend_keymap', [])
-found = {entry['on']: entry['run'] for entry in keys}
-expected = {'<C-c>': 'yank', '<C-x>': 'yank --cut', '<C-v>': 'paste', '<C-q>': 'quit', '<C-f>': 'filter --smart'}
-assert all(found.get(key) == action for key, action in expected.items()), found
-\""
-    assert_file_exists "yazi smart-enter plugin ships its entry point" "$YAZI_DATA/plugins/smart-enter.yazi/main.lua"
-    assert_file_contains_literal "smart-enter enters directories" "$YAZI_DATA/plugins/smart-enter.yazi/main.lua" 'ya.emit("enter"'
-    assert_file_contains_literal "smart-enter opens files" "$YAZI_DATA/plugins/smart-enter.yazi/main.lua" 'ya.emit("open"'
-else
-    assert_true "python3 available for TOML checks" "false"
-fi
 
 assert_true "Micro settings JSON valid" "jq empty '$PROJECT_DIR/conf/micro/data/settings.json'"
 assert_true "Micro bindings JSON valid" "jq empty '$PROJECT_DIR/conf/micro/data/bindings.json'"
@@ -79,12 +28,6 @@ for tool in mpv mupdf imv fzf rg fd bat eza zoxide git lazygit gum ai gdu; do
     assert_file_contains "cliconf covers $tool" "$CLICONF_DATA/helpers.sh" "$tool)"
 done
 
-if command -v desktop-file-validate &>/dev/null; then
-    assert_true "yazi-terminal desktop file valid" "desktop-file-validate '$YAZI_DATA/yazi-terminal.desktop'"
-else
-    assert_file_contains "yazi-terminal desktop has Exec" "$YAZI_DATA/yazi-terminal.desktop" "^Exec="
-    assert_file_contains "yazi-terminal desktop handles directories" "$YAZI_DATA/yazi-terminal.desktop" "inode/directory"
-fi
 
 USERCONF_LIB="$PROJECT_DIR/scripts/lib/userconf.sh"
 assert_file_exists "user config library exists" "$USERCONF_LIB"

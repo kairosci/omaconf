@@ -29,7 +29,6 @@ assert_file_exists "defaults module exists" "$DEFAULTS_MODULE"
 assert_true "Brave is not part of the DEBLOAT package list" "! sed -n '/^DEBLOAT=(/,/^)/p' '$DEBLOAT_MODULE' | grep -q brave-bin"
 assert_file_contains "defaults module configures micro editor" "$DEFAULTS_MODULE" "micro"
 assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
-assert_file_contains "defaults module configures yazi file manager" "$DEFAULTS_MODULE" "yazi"
 assert_file_contains "defaults module configures 7zip archive support" "$DEFAULTS_MODULE" "7zip"
 assert_file_contains "defaults module installs Kitty" "$DEFAULTS_MODULE" "pacman -S --noconfirm --needed kitty"
 assert_file_contains "defaults module configures imv image viewer" "$DEFAULTS_MODULE" "imv"
@@ -39,7 +38,7 @@ assert_file_contains "defaults module configures MuPDF pdf viewer" "$DEFAULTS_MO
 
 assert_file_exists "theming module exists" "$THEMING_MODULE"
 assert_file_contains "theming module installs hooks" "$THEMING_MODULE" "hooks/theme-set.d"
-assert_file_contains "theming module propagates color-scheme from the active theme" "$THEMING_MODULE" "gsettings set org.gnome.desktop.interface color-scheme"
+assert_file_contains "theming module propagates color-scheme from the active theme" "$PROJECT_DIR/hooks/theme-set.d/gtk-theme" "gsettings set org.gnome.desktop.interface color-scheme"
 assert_file_not_contains "theming module does not write GTK settings" "$THEMING_MODULE" "gtk-settings"
 assert_file_contains "theming module routes Qt through the xdgdesktop platform theme" "$THEMING_MODULE" 'QT_QPA_PLATFORMTHEME", "xdgdesktop"'
 assert_file_exists "theme preview apply helper exists" "$PROJECT_DIR/theme-previews/apply.sh"
@@ -127,7 +126,6 @@ if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pac
     assert_true "gum installed" "pacman -Q gum &>/dev/null"
     assert_true "Thunar installed" "pacman -Q thunar &>/dev/null"
     assert_true "micro installed" "pacman -Q micro &>/dev/null"
-    assert_true "yazi installed" "pacman -Q yazi &>/dev/null"
     assert_true "7zip installed" "pacman -Q 7zip &>/dev/null"
     assert_true "imv installed" "pacman -Q imv &>/dev/null"
     assert_true "mpv installed" "pacman -Q mpv &>/dev/null"
@@ -168,7 +166,7 @@ assert_file_exists "post-update persist hook exists in repo" "$PERSIST_POST"
 assert_file_executable "post-update persist hook executable" "$PERSIST_POST"
 assert_file_contains "post-update hook delegates shared desktop defaults" "$PERSIST_POST" "desktop_workflow_defaults"
 assert_file_contains "post-update hook reapplies GTK routing" "$PROJECT_DIR/conf/xdg-desktop-portal/data/portals.conf" "FileChooser=gtk"
-assert_file_contains "post-update hook reapplies color-scheme" "$PERSIST_POST" 'gsettings set org.gnome.desktop.interface color-scheme'
+assert_file_contains "post-update hook reapplies color-scheme" "$PROJECT_DIR/hooks/theme-set.d/gtk-theme" 'gsettings set org.gnome.desktop.interface color-scheme'
 assert_file_contains "post-update hook stops only the gnome portal backend" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "stop.*xdg-desktop-portal-"
 assert_file_contains "post-update hook reloads portal after routing reapply" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "systemctl --user restart xdg-desktop-portal-gtk.service xdg-desktop-portal.service"
 
@@ -179,9 +177,6 @@ assert_file_exists "zedconf install script exists" "$PROJECT_DIR/conf/zed/instal
 assert_file_exists "microconf install script exists" "$PROJECT_DIR/conf/micro/install.sh"
 assert_file_exists "microconf settings exists" "$PROJECT_DIR/conf/micro/data/settings.json"
 assert_file_exists "microconf bindings exists" "$PROJECT_DIR/conf/micro/data/bindings.json"
-assert_file_exists "yaziconf install script exists" "$PROJECT_DIR/conf/yazi/install.sh"
-assert_file_exists "yaziconf yazi.toml template exists" "$PROJECT_DIR/conf/yazi/data/yazi.toml"
-assert_file_contains "defaults module provisions yaziconf" "$DEFAULTS_MODULE" "yaziconf"
 assert_file_contains "defaults module enforces gio file manager default" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "gio mime inode/directory"
 assert_file_contains "defaults module delegates shared desktop defaults" "$DEFAULTS_MODULE" "desktop_workflow_defaults"
 assert_file_contains "defaults module records file-manager state" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "defaults/file-manager"
@@ -192,26 +187,5 @@ assert_file_contains "portals module routes FileChooser to GTK" "$PROJECT_DIR/co
 assert_file_contains "portals module keeps the gnome portal masked" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "mask.*xdg-desktop-portal-"
 assert_file_contains "portals module stops only the stale gnome backend" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "stop.*xdg-desktop-portal-"
 assert_file_contains "portals module reloads portal after routing" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "systemctl --user restart xdg-desktop-portal-gtk.service xdg-desktop-portal.service"
-assert_file_contains "yaziconf template uses current file placeholders" "$PROJECT_DIR/conf/yazi/data/yazi.toml" "%s"
-assert_file_contains "yaziconf template respects EDITOR with micro fallback" "$PROJECT_DIR/conf/yazi/data/yazi.toml" "EDITOR:-micro"
-assert_false "yaziconf template has no legacy placeholders" "grep -qF -e '\"\$@\"' -e '\"\$1\"' '$PROJECT_DIR/conf/yazi/data/yazi.toml'"
-
-test_icon_mapping() {
-    local theme="$1" expected="$2"
-    local mapped
-    case "$theme" in
-        white|flexoki-light|catppuccin-latte|solarized-light) mapped="Papirus" ;;
-        *) mapped="Papirus-Dark" ;;
-    esac
-    [[ "$mapped" == "$expected" ]]
-}
-
-assert_true "icon map: everforest -> Papirus-Dark" "test_icon_mapping 'everforest' 'Papirus-Dark'"
-assert_true "icon map: vantablack -> Papirus-Dark" "test_icon_mapping 'vantablack' 'Papirus-Dark'"
-assert_true "icon map: white -> Papirus" "test_icon_mapping 'white' 'Papirus'"
-assert_true "icon map: flexoki-light -> Papirus" "test_icon_mapping 'flexoki-light' 'Papirus'"
-assert_true "icon map: catppuccin-latte -> Papirus" "test_icon_mapping 'catppuccin-latte' 'Papirus'"
-assert_true "icon map: solarized-light -> Papirus" "test_icon_mapping 'solarized-light' 'Papirus'"
-assert_true "icon map: default -> Papirus-Dark" "test_icon_mapping 'default' 'Papirus-Dark'"
 
 test_summary

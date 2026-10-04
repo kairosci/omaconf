@@ -11,24 +11,30 @@ log "theming.desktop"
 for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
     _user=$(basename "$user_home")
+    _mode_marker="$user_home/.local/state/omaconf/dark-default"
+    if [[ ! -f "$_mode_marker" ]]; then
+        _palette="$user_home/.local/state/omarchy/current/theme/colors.toml"
+        if [[ ! -f "$_palette" ]] || ! grep -qE '^mode[[:space:]]*=[[:space:]]*"dark"' "$_palette"; then
+            for _candidate in /usr/share/omarchy/themes/*/colors.toml; do
+                if grep -qE '^mode[[:space:]]*=[[:space:]]*"dark"' "$_candidate"; then
+                    _slug=$(basename "$(dirname "$_candidate")")
+                    omarchy_as "$_user" theme set "$_slug"
+                    break
+                fi
+            done
+        fi
+        install -d -m 700 -o "$_user" -g "$_user" "$(dirname "$_mode_marker")"
+        printf 'dark\n' > "$_mode_marker"
+        chown "$_user:$_user" "$_mode_marker"
+    fi
+done
+for user_home in /home/*; do
+    [[ -d "$user_home" ]] || continue
+    _user=$(basename "$user_home")
     _uid=$(id -u "$_user" 2>/dev/null) || continue
 
-    if [[ -f "$user_home/.local/state/omarchy/current/theme.name" ]]; then
-        _theme_name=$(tr '[:upper:]' '[:lower:]' < "$user_home/.local/state/omarchy/current/theme.name" | tr ' ' '-')
-    else
-        _theme_name="default"
-    fi
-    case "$_theme_name" in
-        white|flexoki-light|catppuccin-latte|solarized-light)
-            _icon_theme="Papirus"; _color_scheme="default" ;;
-        *)
-            _icon_theme="Papirus-Dark"; _color_scheme="prefer-dark" ;;
-    esac
-
     if [[ -e "/run/user/$_uid/bus" ]]; then
-        user_as "$_user" gsettings set org.gnome.desktop.interface icon-theme "$_icon_theme" 2>/dev/null || warn "theming.icon_skipped" "$_user"
         user_as "$_user" gsettings set org.gnome.desktop.interface cursor-theme "capitaine-cursors" 2>/dev/null || warn "theming.cursor_skipped" "$_user"
-        user_as "$_user" gsettings set org.gnome.desktop.interface color-scheme "$_color_scheme" 2>/dev/null || warn "theming.cscheme_skipped" "$_user"
     fi
 
     mkdir -p "$user_home/.icons/default"
@@ -79,6 +85,7 @@ for user_home in /home/*; do
     _i18n_dir="$user_home/.config/omarchy/hooks/i18n"
     _lib_dir="$user_home/.config/omarchy/hooks/lib"
     mkdir -p "$_hook_dir" "$_i18n_dir/messages" "$_lib_dir"
+    rm -f "$_hook_dir/yazi-theme" "$user_home/.local/share/applications/yazi-terminal.desktop"
     for hook_file in "$PROJECT_DIR"/hooks/theme-set.d/*; do
         [[ -f "$hook_file" ]] || continue
         hook_name=$(basename "$hook_file")
@@ -105,3 +112,14 @@ for user_home in /home/*; do
     _user=$(basename "$user_home")
     user_as "$_user" bash "$PROJECT_DIR/theme-previews/apply.sh" "${_preview_themes[@]}"
 done
+
+_browser_palette="$(getent passwd "$PRIMARY_USER" | cut -d: -f6)/.local/state/omarchy/current/theme/colors.toml"
+if [[ -f "$_browser_palette" && -x /usr/bin/omarchy-theme-set-browser-policy ]]; then
+    _browser_color=$(awk -F '"' '/^background[[:space:]]*=/ { print tolower(substr($2, 2)); exit }' "$_browser_palette")
+    [[ "$_browser_color" =~ ^[0-9a-f]{6}$ ]] || err "hooks.gtk_palette_failed" "$_browser_palette"
+    bash /usr/bin/omarchy-theme-set-browser-policy "$_browser_color"
+    _browser_uid=$(id -u "$PRIMARY_USER")
+    if pgrep -u "$_browser_uid" -x brave >/dev/null; then
+        user_as "$PRIMARY_USER" brave --refresh-platform-policy --no-startup-window
+    fi
+fi

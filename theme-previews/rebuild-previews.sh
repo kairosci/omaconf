@@ -6,7 +6,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 [[ "${OMACONF_APPLY_PIPELINE:-0}" == 1 ]] || { printf 'Run preview regeneration through the setup pipeline.\n' >&2; exit 1; }
 (($#)) || { printf 'Usage: %s <theme> [theme...]\n' "${0##*/}" >&2; exit 2; }
 themes=("$@")
-for dependency in awk hyprctl identify jq magick grim setsid dbus-run-session geany thunar; do
+for dependency in awk hyprctl identify jq magick grim setsid dbus-run-session geany thunar gsettings pgrep omarchy; do
     command -v "$dependency" >/dev/null || { printf 'Required command is missing: %s\n' "$dependency" >&2; exit 1; }
 done
 for theme in "${themes[@]}"; do
@@ -20,6 +20,10 @@ GEANY_PID=""
 THUNAR_PID=""
 CAPTURE_WORKSPACE=""
 ORIGINAL_WORKSPACE="$(hyprctl -j activeworkspace | jq -er '.id')"
+ORIGINAL_THEME="$(cat "$HOME/.local/state/omarchy/current/theme.name")"
+ORIGINAL_BACKGROUND="$(readlink -f "$HOME/.local/state/omarchy/current/background")"
+CAPTURE_MONITOR="$(hyprctl -j monitors | jq -er '.[] | select(.focused) | .name')"
+THEME_CHANGED=0
 ARTIFACTS_DIR="$(mktemp -d "${TMPDIR:-/tmp}/omaconf-preview.XXXXXX")"
 CANVAS_WIDTH=1800
 CANVAS_HEIGHT=1012
@@ -31,13 +35,17 @@ stop_capture_process() {
     [[ "$status" == 143 ]] || { printf 'Capture process exited with status %s\n' "$status" >&2; return 1; }
 }
 focus_workspace() {
-    hyprctl dispatch "hl.dsp.focus({ workspace = \"$1\" })"
+    hyprctl dispatch "hl.dsp.focus({ workspace = \"$1\" })" >/dev/null
 }
 cleanup() {
     local status=$?
     trap - EXIT INT TERM
     if [[ -n "$GEANY_PID" ]]; then stop_capture_process "$GEANY_PID" || status=1; fi
     if [[ -n "$THUNAR_PID" ]]; then stop_capture_process "$THUNAR_PID" || status=1; fi
+    if ((THEME_CHANGED)); then
+        omarchy theme set "$ORIGINAL_THEME" || status=1
+        if [[ -f "$ORIGINAL_BACKGROUND" ]]; then omarchy theme bg set "$ORIGINAL_BACKGROUND" || status=1; fi
+    fi
     if [[ -n "$CAPTURE_WORKSPACE" ]]; then focus_workspace "$ORIGINAL_WORKSPACE" || status=1; fi
     rm -rf -- "$ARTIFACTS_DIR" || status=1
     exit "$status"
@@ -89,55 +97,77 @@ return M
 LUA
 
 capture_app() {
-    local app="$1" client="" geometry
+    local app="$1" client="" address monitor width height origin_x origin_y x y group pids
+    if [[ "$app" == geany ]]; then group="$GEANY_PID"; else group="$THUNAR_PID"; fi
     for _ in {1..100}; do
-        client="$(hyprctl -j clients | jq -c --arg app "$app" --argjson workspace "$CAPTURE_WORKSPACE" \
-            '.[] | select((.class | ascii_downcase) == $app and .workspace.id == $workspace)')"
+        if pids=$(pgrep -g "$group"); then
+            pids=$(jq -cs '.' <<< "$pids")
+            client="$(hyprctl -j clients | jq -c --arg app "$app" --argjson pids "$pids" \
+                '.[] | select((.class | ascii_downcase) == $app) | .pid as $pid | select($pids | index($pid))')"
+        else
+            printf '%s capture process terminated before its window appeared\n' "$app" >&2
+            return 1
+        fi
         [[ -n "$client" ]] && break
         sleep 0.1
     done
     [[ -n "$client" ]] || { printf '%s window did not appear\n' "$app" >&2; return 1; }
-    geometry=$(jq -er '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"' <<< "$client")
-    grim -g "$geometry" "$ARTIFACTS_DIR/$app.png"
+    address=$(jq -er '.address' <<< "$client")
+    hyprctl dispatch "hl.dsp.window.move({ window = \"address:$address\", workspace = \"$CAPTURE_WORKSPACE\", follow = true })" >/dev/null
+    monitor=$(hyprctl -j monitors | jq -c --arg name "$CAPTURE_MONITOR" '.[] | select(.name == $name)')
+    width=$(jq -er '(.width / .scale) | floor' <<< "$monitor")
+    height=$(jq -er '(.height / .scale) | floor' <<< "$monitor")
+    origin_x=$(jq -er '.x' <<< "$monitor")
+    origin_y=$(jq -er '.y' <<< "$monitor")
+    if [[ "$app" == geany ]]; then x=$((origin_x + width * 3 / 100)); y=$((origin_y + height * 17 / 100));
+    else x=$((origin_x + width * 52 / 100)); y=$((origin_y + height * 25 / 100)); fi
+    hyprctl dispatch "hl.dsp.window.float({ window = \"address:$address\", action = \"enable\" })" >/dev/null
+    hyprctl dispatch "hl.dsp.window.resize({ window = \"address:$address\", x = $((width * 45 / 100)), y = $((height * 62 / 100)) })" >/dev/null
+    hyprctl dispatch "hl.dsp.window.move({ window = \"address:$address\", x = $x, y = $y })" >/dev/null
 }
 
 for theme in "${themes[@]}"; do
-    printf 'Capturing Geany and Thunar for %s\n' "$theme"
-    palette="/usr/share/omarchy/themes/$theme/colors.toml"
+    printf 'Capturing the complete desktop for %s\n' "$theme"
+    THEME_CHANGED=1
+    omarchy theme set "$theme"
+    sleep 4
+    palette="$HOME/.local/state/omarchy/current/theme/colors.toml"
     config="$ARTIFACTS_DIR/config-$theme"
+    mkdir -p "$config/data"
+    ln -s "${XDG_DATA_HOME:-$HOME/.local/share}/icons" "$config/data/icons"
+    ln -s "${XDG_DATA_HOME:-$HOME/.local/share}/themes" "$config/data/themes"
     XDG_CONFIG_HOME="$config" OMACONF_THEME_COLORS="$palette" bash "$PROJECT_DIR/hooks/theme-set.d/gtk-theme"
     mode=$(awk -F '"' '/^mode[[:space:]]*=/ { print $2; exit }' "$palette")
-    if [[ "$mode" == light ]]; then gtk_theme=Adwaita; icons=Papirus; else gtk_theme=Adwaita-dark; icons=Papirus-Dark; fi
+    gtk_theme=$(awk -F '=' '/^gtk-theme-name=/ { print $2; exit }' "$config/gtk-3.0/settings.ini")
+    icons=Omaconf-Papirus
     printf '[Settings]\ngtk-theme-name=%s\ngtk-icon-theme-name=%s\ngtk-cursor-theme-name=capitaine-cursors\n' "$gtk_theme" "$icons" > "$config/gtk-3.0/settings.ini"
+    for setting in "icon-theme:$icons" "gtk-theme:$gtk_theme" "color-scheme:prefer-${mode:-dark}"; do
+        XDG_CONFIG_HOME="$config" GSETTINGS_BACKEND=keyfile gsettings set org.gnome.desktop.interface "${setting%%:*}" "${setting#*:}"
+    done
     focus_workspace "$CAPTURE_WORKSPACE"
     setsid env XDG_CONFIG_HOME="$config" XDG_DATA_HOME="$config/data" XDG_CACHE_HOME="$config/cache" \
-        GIO_USE_VFS=local GSETTINGS_BACKEND=memory NO_AT_BRIDGE=1 GTK_USE_PORTAL=0 GTK_THEME="$gtk_theme" \
-        dbus-run-session --config-file "$ARTIFACTS_DIR/session.conf" -- geany --new-instance --no-session "$ARTIFACTS_DIR/Files/Projects/sample.lua" &
+        XDG_DATA_DIRS="${XDG_DATA_HOME:-$HOME/.local/share}:/usr/local/share:/usr/share" \
+        GIO_USE_VFS=local GSETTINGS_BACKEND=keyfile NO_AT_BRIDGE=1 GTK_USE_PORTAL=0 GTK_THEME="$gtk_theme" \
+        dbus-run-session --config-file "$ARTIFACTS_DIR/session.conf" -- geany --new-instance --no-session --no-msgwin --no-terminal "$ARTIFACTS_DIR/Files/Projects/sample.lua" &
     GEANY_PID=$!
     sleep 0.5
     setsid env XDG_CONFIG_HOME="$config" XDG_DATA_HOME="$config/data" XDG_CACHE_HOME="$config/cache" \
-        GIO_USE_VFS=local GSETTINGS_BACKEND=memory NO_AT_BRIDGE=1 GTK_USE_PORTAL=0 GTK_THEME="$gtk_theme" \
+        XDG_DATA_DIRS="${XDG_DATA_HOME:-$HOME/.local/share}:/usr/local/share:/usr/share" \
+        GIO_USE_VFS=local GSETTINGS_BACKEND=keyfile NO_AT_BRIDGE=1 GTK_USE_PORTAL=0 GTK_THEME="$gtk_theme" \
         dbus-run-session --config-file "$ARTIFACTS_DIR/session.conf" -- thunar --window "$ARTIFACTS_DIR/Files" &
     THUNAR_PID=$!
     sleep 2
     capture_app geany
     capture_app thunar
+    sleep 1
+    grim -o "$CAPTURE_MONITOR" "$ARTIFACTS_DIR/desktop.png"
     stop_capture_process "$GEANY_PID"
     GEANY_PID=""
     stop_capture_process "$THUNAR_PID"
     THUNAR_PID=""
     output_dir="$SCRIPT_DIR/$theme"
     mkdir -p "$output_dir"
-    background=$(awk -F '"' '/^background[[:space:]]*=/ { print $2; exit }' "$palette")
-    margin=$((CANVAS_WIDTH * 3 / 100))
-    gap=$((CANVAS_WIDTH * 2 / 100))
-    tile_width=$(((CANVAS_WIDTH - margin * 2 - gap) / 2))
-    tile_height=$((CANVAS_HEIGHT - margin * 2))
-    magick "$ARTIFACTS_DIR/geany.png" -resize "${tile_width}x${tile_height}" "$ARTIFACTS_DIR/geany-tile.png"
-    magick "$ARTIFACTS_DIR/thunar.png" -resize "${tile_width}x${tile_height}" "$ARTIFACTS_DIR/thunar-tile.png"
-    magick -size "${CANVAS_WIDTH}x${CANVAS_HEIGHT}" "xc:$background" \
-        "$ARTIFACTS_DIR/geany-tile.png" -geometry "+$margin+$margin" -composite \
-        "$ARTIFACTS_DIR/thunar-tile.png" -geometry "+$((margin + tile_width + gap))+$margin" -composite \
+    magick "$ARTIFACTS_DIR/desktop.png" -resize "${CANVAS_WIDTH}x${CANVAS_HEIGHT}" \
         -depth 8 -density 72 "PNG32:$output_dir/preview.png"
 done
 source "$PROJECT_DIR/scripts/lib/theme-preview.sh"

@@ -131,7 +131,7 @@ for installer in "$PROJECT_DIR"/conf/*/install.sh; do
 done
 
 for hook in hooks/theme-set.d/folder-color hooks/theme-set.d/micro-theme hooks/theme-set.d/btop-theme \
-            hooks/theme-set.d/shell-icons hooks/theme-set.d/yazi-theme hooks/theme-set.d/cli-theme hooks/theme-set.d/disk-theme \
+            hooks/theme-set.d/shell-icons hooks/theme-set.d/cli-theme hooks/theme-set.d/disk-theme \
             hooks/pre-refresh-pacman.d/99-omaconf-persist hooks/post-update.d/99-omaconf-persist; do
     assert_file_contains "$(basename "$(dirname "$hook")")/$(basename "$hook") bootstraps i18n" "$PROJECT_DIR/$hook" "i18n-boot.sh"
 done

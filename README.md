@@ -12,7 +12,7 @@ The repository is organized into functional components under dedicated paths, an
 
 ## Execution Workflows
 
-System operations run through the standard Makefile targets. Running `make setup` executes the full hardening and provisioning pipeline as root. Running `make verify` checks the security posture against the expected kernel, service and package assertions. Running `make test` executes the modular test suite. Running `make hook` installs the desktop theme hooks and the i18n runtime for the current user, while `make icons` forces an immediate color update for the active theme and `make theme` synchronizes folder icons together with editor themes. Running `make zed`, `make micro`, `make tode`, `make yazi` or `make cli` installs an individual configuration module, and `make editors` installs all of them. Running `make lang` lists the supported languages and marks the active one, while `make i18n-status` reports the resolved catalog and message count and `make clean` purges local execution logs.
+System operations run through the standard Makefile targets. Running `make setup` executes the full hardening and provisioning pipeline as root. Running `make verify` checks the security posture against the expected kernel, service and package assertions. Running `make test` executes the modular test suite. Running `make hook` installs the desktop theme hooks and the i18n runtime for the current user, while `make icons` forces an immediate color update for the active theme and `make theme` synchronizes folder icons together with editor themes. Running `make zed`, `make micro`, `make tode`, `make cli` installs an individual configuration module, and `make editors` installs all of them. Running `make lang` lists the supported languages and marks the active one, while `make i18n-status` reports the resolved catalog and message count and `make clean` purges local execution logs.
 
 ## Provisioning Modules
 
@@ -24,13 +24,13 @@ The `scripts/lib/` directory holds code that more than one component needs. The 
 
 ## Configuration Modules
 
-Each app configuration under `conf/` owns its files and user-scope installer. Configuration installers use the shared user config library; Terminal Code's installer fetches and verifies its upstream application archive. The CLI module installs shared shell helpers and quick cards. Micro merges its settings, installs editor bindings and adds its shell helper. Zed merges its base settings with the Linux overlay, installs the keymap and optional snippets. Yazi installs its configuration, theme, terminal desktop entry and shell helpers. Micro provides native completion and linting plus project run and build actions, symbol navigation, indentation detection, snippets and EditorConfig support. Terminal Code is the full project IDE.
+Each app configuration under `conf/` owns its files and user-scope installer. Configuration installers use the shared user config library; Terminal Code's installer fetches and verifies its upstream application archive. The CLI module installs shared shell helpers and quick cards. Micro merges its settings, installs editor bindings and adds its shell helper. Zed merges its base settings with the Linux overlay, installs the keymap and optional snippets. Micro provides native completion and linting plus project run and build actions, symbol navigation, indentation detection, snippets and EditorConfig support. Terminal Code is the full project IDE.
 
 Because every installer routes through the user config library, replacing a managed file keeps a single slot backup instead of an unbounded series of timestamped ones, and a managed shell block is removed and rewritten in place on every run. The result is that repeated installs converge on the same content rather than accumulating state.
 
 ## Application Keybindings
 
-Omarchy's Super shortcuts remain owned by Hyprland. In the apps, Ctrl+S saves, Ctrl+F searches the current document or filters Yazi's file list, Ctrl+C/X/V copy, cut and paste in each app's context, and Ctrl+Q closes the editor or browser. Zed and Terminal Code use the VS Code keymap; Micro and Yazi receive matching bindings. The private browser shortcut remains on Omarchy's Super+Shift+Alt+B chord and starts Brave in incognito mode.
+Omarchy's Super shortcuts remain owned by Hyprland. In the apps, Ctrl+S saves, Ctrl+F searches the current document, Ctrl+C/X/V copy, cut and paste in each app's context, and Ctrl+Q closes the editor or browser. Zed and Terminal Code use the VS Code keymap; Micro receives matching bindings. The private browser shortcut remains on Omarchy's Super+Shift+Alt+B chord and starts Brave in incognito mode.
 
 ## Theme Previews
 
@@ -38,7 +38,7 @@ Preview images must all share the same geometry, color depth and density, otherw
 
 ## Theme and Persistence Hooks
 
-The `hooks/theme-set.d/` directory holds the hooks that react to a theme change: folder colors, shell icon family, Micro colorschemes generated from the shared palette, Yazi theme, CLI colors and the system monitor restart. Each hook resolves the current theme name from the Omarchy state directory and picks the light or dark family accordingly. The `hooks/pre-refresh-pacman.d/` and `hooks/post-update.d/` directories each hold a single `99-omaconf-persist` hook that re-merges the pins, re-applies the removals, resets the MIME defaults, restores the shared GTK file chooser and Hyprland capture routing, masks the crash watcher and re-normalizes the previews. The update hook runs as root because the package manager requires it, and it sources the shared libraries it needs instead of carrying its own copy. Because the theming stage rewrites the Yazi configuration, the obscurity sub-project must be re-run after a full setup to regenerate its gate.
+The `hooks/theme-set.d/` directory holds the hooks that react to a theme change: folder colors, shell icon family, Micro colorschemes generated from the shared palette theme, CLI colors and the system monitor restart. Each hook resolves the current theme name from the Omarchy state directory and picks the light or dark family accordingly. The `hooks/pre-refresh-pacman.d/` and `hooks/post-update.d/` directories each hold a single `99-omaconf-persist` hook that re-merges the pins, re-applies the removals, resets the MIME defaults, restores the shared GTK file chooser and Hyprland capture routing, masks the crash watcher and re-normalizes the previews. The update hook runs as root because the package manager requires it, and it sources the shared libraries it needs instead of carrying its own copy.
 
 ## Security Posture and Kernel Protections
 
@@ -69,3 +69,7 @@ Battery longevity enforces a perpetual charging threshold defined in the project
 Follow the project conventions. Commit messages use the Conventional Commits format with a single colon. Scripts run under strict execution options, tolerate no Python dependency, and signal a non-critical failure with a warning instead of suppressing the error. Configuration installers never hardcode a user path. Run the modular suite before proposing a change.
 
 Report security issues through the [private vulnerability reporting policy](SECURITY.md).
+
+The setup pipeline discovers all `conf/*/install.sh` automatically, including Brave, and applies them in the correct user environment. New app configs need their native installer; browser profiles and personal data remain in their native directories. GTK uses Materia and exact Omarchy palette overrides, including libadwaita CSS variables. Folder icons use a generated Papirus accent overlay. First setup defaults to dark mode; subsequent user theme selections are preserved. Yazi and its managed integration are retired.
+
+`make setup REBUILD_PREVIEWS=1` applies every theme to the actual desktop and captures the entire monitor, including wallpaper, bar and sample application windows, before restoring the original theme, background and workspace.

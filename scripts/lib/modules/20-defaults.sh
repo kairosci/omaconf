@@ -6,6 +6,10 @@ log "defaults.browser_install"
 if ! pacman -Q brave-bin &>/dev/null; then
     aur_verified_install brave-bin || err "defaults.browser_failed"
 fi
+for _policy_dir in /etc/brave /etc/brave/policies /etc/brave/policies/managed; do
+    [[ ! -L "$_policy_dir" ]] || err "defaults.app_failed" "$_policy_dir"
+    install -d -m 755 -o root -g root "$_policy_dir"
+done
 
 log "defaults.browser"
 for user_home in /home/*; do
@@ -15,7 +19,7 @@ for user_home in /home/*; do
 done
 
 log "defaults.graphical_apps"
-pacman -S --noconfirm --needed geany papers loupe celluloid baobab resources || err "defaults.app_failed" "graphical desktop"
+pacman -S --noconfirm --needed geany papers loupe celluloid baobab resources materia-gtk-theme || err "defaults.app_failed" "graphical desktop"
 
 log "defaults.micro_install"
 for pkg in micro fzf universal-ctags shellcheck shfmt ruff yamllint; do
@@ -31,15 +35,6 @@ for pkg in slack-desktop discord; do
     fi
 done
 
-log "defaults.terminal_code"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/conf/terminal-code/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/terminal-code/install.sh" || err "defaults.app_failed" "terminal-code"
-    fi
-done
-
 log "defaults.editor"
 for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
@@ -47,15 +42,7 @@ for user_home in /home/*; do
     mkdir -p "$user_home/.local/state/omarchy/defaults"
     printf 'geany\n' > "$user_home/.local/state/omarchy/defaults/editor"
     chown -R "$_user":"$_user" "$user_home/.local/state" 2>/dev/null || warn "defaults.editor_state_failed" "$_user"
-    if [[ -x "$PROJECT_DIR/conf/micro/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/micro/install.sh" 2>/dev/null || warn "defaults.microconf_skipped" "$_user"
-    fi
 done
-
-log "defaults.yazi_install"
-if ! pacman -Q yazi &>/dev/null; then
-    pacman -S --noconfirm --needed yazi
-fi
 
 log "defaults.7zip_install"
 if ! pacman -Q 7zip &>/dev/null; then
@@ -72,37 +59,10 @@ for user_home in /home/*; do
     omarchy_as "$_user" default terminal kitty 2>/dev/null || warn "defaults.terminal_skipped" "$_user"
 done
 
-log "defaults.yaziconf"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/conf/yazi/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/yazi/install.sh" 2>/dev/null || warn "defaults.yaziconf_skipped" "$_user"
-    fi
-done
-
-log "defaults.herdrconf"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/conf/herdr/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/herdr/install.sh" 2>/dev/null || warn "defaults.herdrconf_skipped" "$_user"
-    fi
-done
-
 log "defaults.disk_install"
 if ! pacman -Q gdu &>/dev/null; then
     pacman -S --noconfirm --needed gdu || warn "defaults.disk_failed" "gdu"
 fi
-
-log "defaults.diskconf"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/conf/disk/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/disk/install.sh" 2>/dev/null || warn "defaults.diskconf_skipped" "$_user"
-    fi
-done
 
 log "defaults.trash_install"
 if ! pacman -Q trash-cli &>/dev/null; then
