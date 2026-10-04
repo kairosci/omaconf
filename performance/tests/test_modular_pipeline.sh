@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-MODULES_DIR="$PROJECT_DIR/scripts/modules"
+MODULES_DIR="$PROJECT_DIR/scripts/lib/modules"
 
 source "$SCRIPT_DIR/test_lib.sh"
 
@@ -23,7 +23,7 @@ for m in "${EXPECTED_MODULES[@]}"; do
     assert_file_contains "setup.sh references module $m" "$PROJECT_DIR/scripts/setup.sh" "$m"
 done
 
-assert_file_contains "performance setup sources the shared battery policy" "$PROJECT_DIR/scripts/setup.sh" "scripts/modules/89-battery-charge.sh"
+assert_file_contains "performance setup sources the shared battery policy" "$PROJECT_DIR/scripts/setup.sh" "scripts/lib/modules/89-battery-charge.sh"
 
 assert_file_contains "10-power defines UPower low battery policy" "$MODULES_DIR/10-power.sh" "PercentageLow=20"
 assert_file_contains "20-performance defines perf sysctl" "$MODULES_DIR/20-performance.sh" "99-perf.conf"

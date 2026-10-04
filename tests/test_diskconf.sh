@@ -7,8 +7,8 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 DISK_INSTALLER="$PROJECT_DIR/conf/disk/install.sh"
 DISK_DATA="$PROJECT_DIR/conf/disk/data/gdu.yaml"
 DISK_HOOK="$PROJECT_DIR/hooks/theme-set.d/disk-theme"
-DEFAULTS_MODULE="$PROJECT_DIR/scripts/modules/20-defaults.sh"
-DEBLOAT_MODULE="$PROJECT_DIR/scripts/modules/10-debloat.sh"
+DEFAULTS_MODULE="$PROJECT_DIR/scripts/lib/modules/20-defaults.sh"
+DEBLOAT_MODULE="$PROJECT_DIR/scripts/lib/modules/10-debloat.sh"
 
 source "$SCRIPT_DIR/test_lib.sh"
 

@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-SYSTEM_MODULE="$PROJECT_DIR/scripts/modules/10-system.sh"
+SYSTEM_MODULE="$PROJECT_DIR/scripts/lib/modules/10-system.sh"
 
 source "$SCRIPT_DIR/test_lib.sh"
 

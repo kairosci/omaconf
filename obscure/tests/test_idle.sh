@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-IDLE_MODULE="$PROJECT_DIR/scripts/modules/20-idle.sh"
+IDLE_MODULE="$PROJECT_DIR/scripts/lib/modules/20-idle.sh"
 
 source "$SCRIPT_DIR/test_lib.sh"
 

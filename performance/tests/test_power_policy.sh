@@ -10,8 +10,8 @@ source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Hardware & Battery Power Management Policy"
 
-POWER_MODULE="$PROJECT_ROOT/scripts/modules/89-battery-charge.sh"
-UPower_MODULE="$PROJECT_DIR/scripts/modules/10-power.sh"
+POWER_MODULE="$PROJECT_ROOT/scripts/lib/modules/89-battery-charge.sh"
+UPower_MODULE="$PROJECT_DIR/scripts/lib/modules/10-power.sh"
 assert_file_exists "power module exists" "$POWER_MODULE"
 assert_file_contains "power module provisions /etc/omaconf/power.conf" "$POWER_MODULE" "/etc/omaconf/power.conf"
 assert_file_contains "power module sets 75% battery limit policy" "$POWER_MODULE" "BATTERY_CHARGE_LIMIT=75"

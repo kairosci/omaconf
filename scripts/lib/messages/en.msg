@@ -469,3 +469,4 @@ check.desktop_no_foot=foot orphan entry absent
 check.desktop_disk_valid=disk usage entry points to an installed analyzer
 check.desktop_no_docker=docker orphan entry absent
 check.desktop_hook=desktop cleanup hook installed
+verify.tests_executed=Tests executed: %s

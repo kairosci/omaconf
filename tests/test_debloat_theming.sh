@@ -4,9 +4,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-DEBLOAT_MODULE="$PROJECT_DIR/scripts/modules/10-debloat.sh"
-DEFAULTS_MODULE="$PROJECT_DIR/scripts/modules/20-defaults.sh"
-THEMING_MODULE="$PROJECT_DIR/scripts/modules/30-theming.sh"
+DEBLOAT_MODULE="$PROJECT_DIR/scripts/lib/modules/10-debloat.sh"
+DEFAULTS_MODULE="$PROJECT_DIR/scripts/lib/modules/20-defaults.sh"
+THEMING_MODULE="$PROJECT_DIR/scripts/lib/modules/30-theming.sh"
 
 source "$SCRIPT_DIR/test_lib.sh"
 
@@ -191,7 +191,7 @@ assert_file_contains "defaults module enforces gio file manager default" "$DEFAU
 assert_file_contains "defaults module enforces mimeapps file manager" "$DEFAULTS_MODULE" "mimeapps"
 assert_file_contains "defaults module records file-manager state" "$DEFAULTS_MODULE" "defaults/file-manager"
 assert_file_contains "defaults module rebinding hypr file manager keys" "$DEFAULTS_MODULE" "omaconf-yazi-fm"
-PORTALS_MODULE="$PROJECT_DIR/scripts/modules/22-portals.sh"
+PORTALS_MODULE="$PROJECT_DIR/scripts/lib/modules/22-portals.sh"
 assert_file_contains "portals module installs termfilechooser portal" "$PORTALS_MODULE" "xdg-desktop-portal-termfilechooser"
 assert_file_contains "portals module routes FileChooser to termfilechooser" "$PORTALS_MODULE" "FileChooser=termfilechooser"
 assert_file_contains "portals module masks the gtk portal backend" "$PORTALS_MODULE" "mask xdg-desktop-portal-gtk.service"

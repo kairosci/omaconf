@@ -2,7 +2,7 @@
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-MODULES_DIR="$SCRIPT_DIR/modules"
+MODULES_DIR="$SCRIPT_DIR/lib/modules"
 LOG="${OMASEC_LOG:-$PROJECT_DIR/setup.log}"
 
 if [[ "${OMASEC_LOG_STDOUT:-0}" -eq 0 ]]; then

@@ -3,7 +3,7 @@
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 PROJECT_ROOT="$PROJECT_DIR"
-MODULES_DIR="$SCRIPT_DIR/modules"
+MODULES_DIR="$SCRIPT_DIR/lib/modules"
 LOG="${OMACONF_LOG:-$PROJECT_DIR/setup.log}"
 
 if [[ "${OMACONF_LOG_STDOUT:-0}" -eq 0 ]]; then

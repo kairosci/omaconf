@@ -20,7 +20,7 @@ lint:
 		exit 1; \
 	fi
 	shellcheck --severity=style \
-		scripts/*.sh scripts/lib/*.sh scripts/modules/*.sh \
+		scripts/*.sh scripts/lib/*.sh scripts/lib/modules/*.sh \
 		hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* \
 		conf/zed/*.sh conf/micro/*.sh conf/qutebrowser/*.sh conf/yazi/*.sh conf/cli/*.sh conf/herdr/*.sh conf/disk/*.sh conf/terminal-code/*.sh \
 		tests/*.sh
