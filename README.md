@@ -67,3 +67,5 @@ Battery longevity enforces a perpetual charging threshold defined in the project
 ## Contributing
 
 Follow the project conventions. Commit messages use the Conventional Commits format with a single colon. Scripts run under strict execution options, tolerate no Python dependency, and signal a non-critical failure with a warning instead of suppressing the error. Configuration installers never hardcode a user path. Run the modular suite before proposing a change.
+
+Report security issues through the [private vulnerability reporting policy](SECURITY.md).
