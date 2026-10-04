@@ -63,7 +63,7 @@ marker_copied = { fg = "${green}", bg = "${green}" }
 marker_cut = { fg = "${red}", bg = "${red}" }
 marker_marked = { fg = "${accent}", bg = "${accent}" }
 marker_selected = { fg = "${yellow}", bg = "${yellow}" }
-border_symbol = "│"
+border_symbol = "|"
 border_style = { fg = "${muted}" }
 
 [indicator]
@@ -75,8 +75,8 @@ active = { fg = "${bg}", bg = "${accent}", bold = true }
 inactive = { fg = "${muted}", bg = "${dark_bg}" }
 
 [status]
-sep_left = { open = "", close = "" }
-sep_right = { open = "", close = "" }
+sep_left = { open = "[", close = "]" }
+sep_right = { open = "[", close = "]" }
 progress_label = { fg = "${fg}", bold = true }
 progress_normal = { fg = "${accent}", bg = "${light_bg}" }
 progress_error = { fg = "${red}", bg = "${light_bg}" }
@@ -120,7 +120,7 @@ mask = { bg = "${selection}" }
 cand = { fg = "${cyan}" }
 rest = { fg = "${muted}" }
 desc = { fg = "${magenta}" }
-separator = "  "
+separator = " > "
 separator_style = { fg = "${muted}" }
 
 [help]
@@ -145,17 +145,17 @@ rules = [
 
 [icon]
 dirs = [
-  { name = "Desktop", text = "󰟀", fg = "${fg}" },
-  { name = "Documents", text = "󱔗", fg = "${fg}" },
-  { name = "Downloads", text = "󰉍", fg = "${fg}" },
-  { name = "Dropbox", text = "󰇣", fg = "${fg}" },
-  { name = "Music", text = "󱍙", fg = "${fg}" },
-  { name = "Pictures", text = "󰉏", fg = "${fg}" },
-  { name = "Public", text = "󰉐", fg = "${fg}" },
-  { name = "Videos", text = "󰉑", fg = "${fg}" },
+  { name = "Desktop", text = "D", fg = "${fg}" },
+  { name = "Documents", text = "D", fg = "${fg}" },
+  { name = "Downloads", text = "D", fg = "${fg}" },
+  { name = "Dropbox", text = "D", fg = "${fg}" },
+  { name = "Music", text = "D", fg = "${fg}" },
+  { name = "Pictures", text = "D", fg = "${fg}" },
+  { name = "Public", text = "D", fg = "${fg}" },
+  { name = "Videos", text = "D", fg = "${fg}" },
 ]
 conds = [
-  { if = "dir", text = "", fg = "${fg}" },
+  { if = "dir", text = "D", fg = "${fg}" },
 ]
 TOML
 }
