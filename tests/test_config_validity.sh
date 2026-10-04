@@ -7,7 +7,6 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 SHELL_PLUGINS_MODULE="$PROJECT_DIR/scripts/modules/35-shell-plugins.sh"
 YAZI_DATA="$PROJECT_DIR/yaziconf/data"
 CLICONF_DATA="$PROJECT_DIR/cliconf/data"
-NVIM_DATA="$PROJECT_DIR/nvimconf/data"
 
 source "$SCRIPT_DIR/test_lib.sh"
 
@@ -51,6 +50,14 @@ keys = mgr.get('prepend_keymap', []) + mgr.get('append_keymap', [])
 hits = [k for k in keys if 'Enter' in str(k.get('on', '')) and 'smart-enter' in str(k.get('run', ''))]
 assert hits, 'no Enter smart-enter binding found'
 \""
+    assert_true "yazi common keybindings map copy cut paste search and quit" "python3 -c \"
+import tomllib
+cfg = tomllib.load(open('$YAZI_DATA/keymap.toml','rb'))
+keys = cfg.get('mgr', {}).get('prepend_keymap', [])
+found = {entry['on']: entry['run'] for entry in keys}
+expected = {'<C-c>': 'yank', '<C-x>': 'yank --cut', '<C-v>': 'paste', '<C-q>': 'quit', '<C-f>': 'filter --smart'}
+assert all(found.get(key) == action for key, action in expected.items()), found
+\""
     assert_file_exists "yazi smart-enter plugin ships its entry point" "$YAZI_DATA/plugins/smart-enter.yazi/main.lua"
     assert_file_contains_literal "smart-enter enters directories" "$YAZI_DATA/plugins/smart-enter.yazi/main.lua" 'ya.emit("enter"'
     assert_file_contains_literal "smart-enter opens files" "$YAZI_DATA/plugins/smart-enter.yazi/main.lua" 'ya.emit("open"'
@@ -58,10 +65,12 @@ else
     assert_true "python3 available for TOML checks" "false"
 fi
 
-if command -v luac &>/dev/null; then
-    assert_true "nvim helpers lua syntax valid" "luac -p '$NVIM_DATA/omaconf-helpers.lua'"
-    assert_true "nvim completion lua syntax valid" "luac -p '$NVIM_DATA/omaconf-completion.lua'"
-fi
+assert_true "Micro settings JSON valid" "jq empty '$PROJECT_DIR/microconf/data/settings.json'"
+assert_true "Micro bindings JSON valid" "jq empty '$PROJECT_DIR/microconf/data/bindings.json'"
+assert_true "qutebrowser config Python syntax valid" "python3 -c \"compile(open('$PROJECT_DIR/quteconf/data/config.py').read(), 'config.py', 'exec')\""
+assert_file_contains_literal "Micro shares common editor bindings" "$PROJECT_DIR/microconf/data/bindings.json" '"Ctrl-s": "Save"'
+assert_file_contains_literal "Micro shares search and history bindings" "$PROJECT_DIR/microconf/data/bindings.json" '"Ctrl-z": "Undo"'
+assert_file_contains_literal "qutebrowser saves, searches and quits on common chords" "$PROJECT_DIR/quteconf/data/config.py" 'config.bind("<Ctrl+Q>", "quit")'
 
 assert_true "cliconf helpers bash syntax valid" "bash -n '$CLICONF_DATA/helpers.sh'"
 assert_true "cliconf installer bash syntax valid" "bash -n '$PROJECT_DIR/cliconf/install.sh'"
@@ -89,7 +98,7 @@ assert_true "user config library leaves caller shell options untouched" \
 assert_true "no installer keeps the ad hoc timestamped backup" \
     "! grep -qE 'bak-\\\$\\(date' '$PROJECT_DIR'/*conf/install.sh"
 
-for installer in cliconf herdrconf microconf nvimconf yaziconf zedconf diskconf; do
+for installer in cliconf herdrconf microconf quteconf yaziconf zedconf diskconf; do
     assert_file_contains "$installer sources the user config library" \
         "$PROJECT_DIR/$installer/install.sh" "userconf.sh"
 done

@@ -41,6 +41,10 @@ EOF
     chown -R "$_user":"$_user" "$user_home/.icons" 2>/dev/null || warn "theming.icons_chown" "$_user"
 
     _hyland="$user_home/.config/hypr/hyprland.lua"
+    if [[ -f "$_hyland" ]] && grep -q '^-- omablot cursor env (managed)$' "$_hyland"; then
+        sed -i '/^-- omablot cursor env (managed)$/,/^-- end omablot cursor env (managed)$/d' "$_hyland" || warn "theming.cursor_migration_skipped" "$_user"
+        chown "$_user":"$_user" "$_hyland" 2>/dev/null || warn "theming.hypr_chown" "$_user"
+    fi
     if [[ -f "$_hyland" ]] && ! grep -q 'omaconf cursor env' "$_hyland" 2>/dev/null; then
         cat >> "$_hyland" << 'LUAEOF'
 

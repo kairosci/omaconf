@@ -3,7 +3,7 @@ function helper() {
 	"" | list | ls)
 		cat << 'HELP'
 helper - one helper per tool. Usage: helper <name>
-  yazi/micro/nvim have built-in help: ~, Ctrl-g, <leader>hh
+  yazi and Micro have built-in help: ~, Ctrl-g
   yh/mh are terminal quick cards
   mpv ................ video and audio   mupdf .... pdf
   imv ................ images            fzf .... fuzzy search
@@ -108,12 +108,11 @@ AI CLI - no exceptions: default TUI only, no omaconf themes.
   Open the built-in help inside the app you are using.
 HELP
 		;;
-	yazi | micro | nvim)
+	yazi | micro)
 		cat << 'HELP'
 These have built-in help, always up to date:
   yazi ... press ~ inside yazi (or yh from terminal)
   micro .. press Ctrl-g inside micro (or mh from terminal)
-  nvim ... press <leader>hh inside nvim (searchable cheatsheet)
 HELP
 		;;
 	*)
