@@ -9,7 +9,7 @@ source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Script Syntax & Code Integrity"
 
-for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/scripts/modules/*.sh "$PROJECT_DIR"/tests/*.sh "$PROJECT_DIR"/bin/*; do
+for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/scripts/lib/modules/*.sh "$PROJECT_DIR"/tests/*.sh "$PROJECT_DIR"/bin/*; do
     [[ -f "$sh_file" ]] || continue
     fname=$(basename "$sh_file")
     assert_true "syntax check: $fname" "bash -n '$sh_file'"
@@ -20,7 +20,7 @@ assert_file_executable "scripts/verify.sh is executable" "$PROJECT_DIR/scripts/v
 assert_file_executable "scripts/launch.sh is executable" "$PROJECT_DIR/scripts/launch.sh"
 assert_file_executable "scripts/run-setup.sh is executable" "$PROJECT_DIR/scripts/run-setup.sh"
 
-for mod in "$PROJECT_DIR"/scripts/modules/*.sh; do
+for mod in "$PROJECT_DIR"/scripts/lib/modules/*.sh; do
     [[ -f "$mod" ]] || continue
     mname=$(basename "$mod")
     assert_file_executable "module $mname is executable" "$mod"

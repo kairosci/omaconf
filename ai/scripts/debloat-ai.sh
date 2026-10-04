@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-MODULES_DIR="$SCRIPT_DIR/modules"
+MODULES_DIR="$SCRIPT_DIR/lib/modules"
 
 log() { printf '%s\n' "$1"; }
 warn() { printf '%s\n' "warning: $1"; }

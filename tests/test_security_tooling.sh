@@ -4,11 +4,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-SEC_MODULE="$PROJECT_DIR/scripts/modules/85-security-stack.sh"
-POWER_MODULE="$PROJECT_DIR/scripts/modules/90-hardware-power.sh"
-MAINT_MODULE="$PROJECT_DIR/scripts/modules/95-maintenance.sh"
-SECURITY_STACK_MODULE="$PROJECT_DIR/scripts/modules/85-security-stack.sh"
-SERVICES_MODULE="$PROJECT_DIR/scripts/modules/80-services.sh"
+SEC_MODULE="$PROJECT_DIR/scripts/lib/modules/85-security-stack.sh"
+POWER_MODULE="$PROJECT_DIR/scripts/lib/modules/90-hardware-power.sh"
+MAINT_MODULE="$PROJECT_DIR/scripts/lib/modules/95-maintenance.sh"
+SECURITY_STACK_MODULE="$PROJECT_DIR/scripts/lib/modules/85-security-stack.sh"
+SERVICES_MODULE="$PROJECT_DIR/scripts/lib/modules/80-services.sh"
 
 source "$SCRIPT_DIR/test_lib.sh"
 

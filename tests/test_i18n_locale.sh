@@ -137,7 +137,7 @@ for hook in hooks/theme-set.d/folder-color hooks/theme-set.d/micro-theme hooks/t
     assert_file_contains "$(basename "$(dirname "$hook")")/$(basename "$hook") bootstraps i18n" "$PROJECT_DIR/$hook" "i18n-boot.sh"
 done
 
-for module in "$PROJECT_DIR"/scripts/modules/*.sh; do
+for module in "$PROJECT_DIR"/scripts/lib/modules/*.sh; do
     [[ -f "$module" ]] || continue
     mname=$(basename "$module")
     assert_true "module $mname has no untranslated literal message" \
@@ -177,23 +177,23 @@ done
 assert_true "verify.sh has no untranslated literal check" \
     "! grep -qE '^[[:space:]]+check \"[a-zA-Z]' '$PROJECT_DIR/scripts/verify.sh'"
 
-assert_file_exists "locale module exists" "$PROJECT_DIR/scripts/modules/05-locale.sh"
+assert_file_exists "locale module exists" "$PROJECT_DIR/scripts/lib/modules/05-locale.sh"
 assert_file_contains "setup.sh references locale module" "$PROJECT_DIR/scripts/setup.sh" "05-locale.sh"
 assert_file_exists "locale map library exists" "$PROJECT_DIR/scripts/lib/locale-map.sh"
-assert_file_contains "locale module sources the locale map" "$PROJECT_DIR/scripts/modules/05-locale.sh" "lib/locale-map.sh"
+assert_file_contains "locale module sources the locale map" "$PROJECT_DIR/scripts/lib/modules/05-locale.sh" "../locale-map.sh"
 assert_file_contains "locale map resolves target locale" "$PROJECT_DIR/scripts/lib/locale-map.sh" "resolve_target_locale\(\)"
 assert_file_contains "locale map resolves console keymap" "$PROJECT_DIR/scripts/lib/locale-map.sh" "resolve_target_keymap\(\)"
 assert_file_contains "locale map resolves xkb layout" "$PROJECT_DIR/scripts/lib/locale-map.sh" "resolve_target_xkb\(\)"
 assert_file_contains "locale map detects the system timezone" "$PROJECT_DIR/scripts/lib/locale-map.sh" "detect_system_timezone\(\)"
 assert_true "locale map is side effect free" "! grep -qE '(^|[[:space:]])(rm|mv|cp|sed -i|tee|localectl|locale-gen)([[:space:]]|$)' '$PROJECT_DIR/scripts/lib/locale-map.sh'"
-assert_file_contains "locale module writes locale.conf" "$PROJECT_DIR/scripts/modules/05-locale.sh" "/etc/locale.conf"
-assert_file_contains "locale module writes vconsole.conf" "$PROJECT_DIR/scripts/modules/05-locale.sh" "/etc/vconsole.conf"
-assert_file_contains "locale module writes profile snippet" "$PROJECT_DIR/scripts/modules/05-locale.sh" "omaconf-locale.sh"
-assert_file_contains "locale module enables locale.gen entries" "$PROJECT_DIR/scripts/modules/05-locale.sh" "locale_enable_gen\(\)"
-assert_file_contains "locale module applies Hyprland kb_layout" "$PROJECT_DIR/scripts/modules/05-locale.sh" "kb_layout"
+assert_file_contains "locale module writes locale.conf" "$PROJECT_DIR/scripts/lib/modules/05-locale.sh" "/etc/locale.conf"
+assert_file_contains "locale module writes vconsole.conf" "$PROJECT_DIR/scripts/lib/modules/05-locale.sh" "/etc/vconsole.conf"
+assert_file_contains "locale module writes profile snippet" "$PROJECT_DIR/scripts/lib/modules/05-locale.sh" "omaconf-locale.sh"
+assert_file_contains "locale module enables locale.gen entries" "$PROJECT_DIR/scripts/lib/modules/05-locale.sh" "locale_enable_gen\(\)"
+assert_file_contains "locale module applies Hyprland kb_layout" "$PROJECT_DIR/scripts/lib/modules/05-locale.sh" "kb_layout"
 assert_file_contains "locale map keeps a us locale entry for us zones" "$PROJECT_DIR/scripts/lib/locale-map.sh" "en_US.UTF-8"
-assert_file_contains "locale module keeps LC_COLLATE deterministic" "$PROJECT_DIR/scripts/modules/05-locale.sh" "LC_COLLATE=C"
-assert_file_contains "locale module sets LANGUAGE" "$PROJECT_DIR/scripts/modules/05-locale.sh" "LANGUAGE="
+assert_file_contains "locale module keeps LC_COLLATE deterministic" "$PROJECT_DIR/scripts/lib/modules/05-locale.sh" "LC_COLLATE=C"
+assert_file_contains "locale module sets LANGUAGE" "$PROJECT_DIR/scripts/lib/modules/05-locale.sh" "LANGUAGE="
 
 assert_true "locale module maps Europe/Rome to italian" \
     "bash -c 'source \"$PROJECT_DIR/scripts/lib/locale-map.sh\"; [[ \"\$(resolve_target_locale Europe/Rome)\" == it_IT.UTF-8 ]]'"
@@ -247,7 +247,7 @@ assert_true "locale map honours the forced timezone override" \
 
 test_section "Desktop Locale Application"
 
-LOCALE_MODULE="$PROJECT_DIR/scripts/modules/05-locale.sh"
+LOCALE_MODULE="$PROJECT_DIR/scripts/lib/modules/05-locale.sh"
 
 assert_file_contains "locale module is importable without side effects" "$LOCALE_MODULE" 'OMACONF_LOCALE_LIB_ONLY'
 assert_file_contains "locale module passes the resolved xkb layout, not the console keymap" "$LOCALE_MODULE" 'LOCALE_TARGET. ..LOCALE_XKB'

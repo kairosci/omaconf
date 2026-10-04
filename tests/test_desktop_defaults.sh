@@ -4,14 +4,14 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-OMAQT_MODULE="$PROJECT_DIR/scripts/modules/32-omaqt.sh"
+OMAQT_MODULE="$PROJECT_DIR/scripts/lib/modules/32-omaqt.sh"
 
 source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Independent Desktop Applications"
 
-ENV_MODULE="$PROJECT_DIR/scripts/modules/00-env.sh"
-THEMING_MODULE="$PROJECT_DIR/scripts/modules/30-theming.sh"
+ENV_MODULE="$PROJECT_DIR/scripts/lib/modules/00-env.sh"
+THEMING_MODULE="$PROJECT_DIR/scripts/lib/modules/30-theming.sh"
 
 assert_file_contains "env module defines the per-user command helper" "$ENV_MODULE" "user_as()"
 assert_file_contains "per-user helper forwards HOME" "$ENV_MODULE" 'HOME=.home.'
@@ -24,9 +24,9 @@ assert_file_contains "theming runs hooks through the per-user helper" "$THEMING_
 assert_file_not_contains "omaqt does not route xdg-mime through omarchy" "$OMAQT_MODULE" 'omarchy_as "$_user" xdg-mime'
 assert_file_not_contains "omaqt does not route gio through omarchy" "$OMAQT_MODULE" 'omarchy_as "$_user" gio'
 
-DEBLOAT_MODULE="$PROJECT_DIR/scripts/modules/10-debloat.sh"
-DEFAULTS_MODULE="$PROJECT_DIR/scripts/modules/20-defaults.sh"
-SHELL_PLUGINS_MODULE="$PROJECT_DIR/scripts/modules/35-shell-plugins.sh"
+DEBLOAT_MODULE="$PROJECT_DIR/scripts/lib/modules/10-debloat.sh"
+DEFAULTS_MODULE="$PROJECT_DIR/scripts/lib/modules/20-defaults.sh"
+SHELL_PLUGINS_MODULE="$PROJECT_DIR/scripts/lib/modules/35-shell-plugins.sh"
 
 assert_file_not_contains "defaults never sets the browser as root" "$DEFAULTS_MODULE" 'omarchy default browser'
 
@@ -42,8 +42,8 @@ assert_file_contains "defaults module installs gdu disk analyzer" "$DEFAULTS_MOD
 assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
 assert_file_contains "defaults module provisions diskconf" "$DEFAULTS_MODULE" "conf/disk/install.sh"
 assert_file_contains "shell plugins module uses canonical omamp source" "$SHELL_PLUGINS_MODULE" "omaconf/omamp.git"
-assert_file_contains "env module defines omarchy_as helper" "$PROJECT_DIR/scripts/modules/00-env.sh" "omarchy_as\(\)"
-assert_file_contains "omarchy_as forwards the user session bus" "$PROJECT_DIR/scripts/modules/00-env.sh" "DBUS_SESSION_BUS_ADDRESS"
+assert_file_contains "env module defines omarchy_as helper" "$PROJECT_DIR/scripts/lib/modules/00-env.sh" "omarchy_as\(\)"
+assert_file_contains "omarchy_as forwards the user session bus" "$PROJECT_DIR/scripts/lib/modules/00-env.sh" "DBUS_SESSION_BUS_ADDRESS"
 assert_file_contains "defaults module configures Brave through xdg-settings" "$DEFAULTS_MODULE" "xdg-settings set default-web-browser brave-browser.desktop"
 assert_file_contains "defaults module installs Brave" "$DEFAULTS_MODULE" "aur_verified_install brave-bin"
 assert_file_contains "defaults module installs Slack and Discord" "$DEFAULTS_MODULE" "for pkg in slack-desktop discord"
@@ -54,12 +54,12 @@ assert_file_contains "defaults module provides qutebrowser ad blocking" "$DEFAUL
 assert_file_contains "setup.sh references shell plugins module" "$PROJECT_DIR/scripts/setup.sh" "35-shell-plugins.sh"
 assert_file_contains "setup.sh references portals module" "$PROJECT_DIR/scripts/setup.sh" "22-portals.sh"
 assert_file_contains "setup.sh references keyring module" "$PROJECT_DIR/scripts/setup.sh" "62-keyring.sh"
-assert_file_contains "portals module configures termfilechooser" "$PROJECT_DIR/scripts/modules/22-portals.sh" "xdg-desktop-portal-termfilechooser"
-assert_file_contains "keyring module provisions libsecret and pass" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "libsecret"
-assert_file_contains "keyring module masks gnome-keyring" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "gnome-keyring-daemon"
-assert_file_contains "KeePassXC prevents GNOME keyring autostart" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "Hidden=true"
-assert_file_contains "keyring module exposes a backend switch function" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "keyring_switch()"
-assert_file_contains "keyring module provisions KeePassXC Secret Service" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "FdoSecrets"
+assert_file_contains "portals module configures termfilechooser" "$PROJECT_DIR/scripts/lib/modules/22-portals.sh" "xdg-desktop-portal-termfilechooser"
+assert_file_contains "keyring module provisions libsecret and pass" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "libsecret"
+assert_file_contains "keyring module masks gnome-keyring" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "gnome-keyring-daemon"
+assert_file_contains "KeePassXC prevents GNOME keyring autostart" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "Hidden=true"
+assert_file_contains "keyring module exposes a backend switch function" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "keyring_switch()"
+assert_file_contains "keyring module provisions KeePassXC Secret Service" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "FdoSecrets"
 assert_file_contains "keyring switch validates both supported backends" "$PROJECT_DIR/scripts/keyring-switch.sh" "keepassxc|gnome-keyring"
 assert_file_contains "Makefile exposes the keyring selection target" "$PROJECT_DIR/Makefile" "scripts/keyring-switch.sh"
 assert_file_contains "defaults provision quteconf" "$DEFAULTS_MODULE" "conf/qutebrowser/install.sh"

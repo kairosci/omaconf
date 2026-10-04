@@ -20,7 +20,7 @@ chmod 644 /etc/pacman.d/hooks/99-omaconf-desktop-cleanup.hook
 
 log "desktop.sweep"
 if [[ -f "$PROJECT_ROOT/scripts/lib/desktop-cleanup.sh" ]]; then
-    # shellcheck source=../lib/desktop-cleanup.sh
+    # shellcheck source=../desktop-cleanup.sh
     source "$PROJECT_ROOT/scripts/lib/desktop-cleanup.sh"
     desktop_cleanup_sweep || warn "desktop.refresh_skipped"
 fi

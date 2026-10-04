@@ -8,8 +8,6 @@ on:
 
 permissions:
   contents: read
-  # Needed to get the OIDC token for some actions if we ever add them
-  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,11 +20,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Validate Shell Syntax
         run: |
-          for sh_file in scripts/*.sh scripts/lib/*.sh scripts/modules/*.sh hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* conf/*/*.sh tests/*.sh */scripts/*.sh */scripts/lib/*.sh */scripts/modules/*.sh */hooks/theme-set.d/* */hooks/pre-refresh-pacman.d/* */hooks/post-update.d/* */tests/*.sh; do
+          for sh_file in scripts/*.sh scripts/lib/*.sh scripts/lib/modules/*.sh hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* conf/*/*.sh tests/*.sh */scripts/*.sh */scripts/lib/*.sh */scripts/lib/modules/*.sh */hooks/theme-set.d/* */hooks/pre-refresh-pacman.d/* */hooks/post-update.d/* */tests/*.sh; do
             [ -f "$sh_file" ] || continue
             bash -n "$sh_file"
           done
@@ -40,7 +38,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Install ShellCheck (v0.11.0)
         run: |
@@ -55,14 +53,14 @@ jobs:
       - name: Run ShellCheck
         run: |
           shellcheck --severity=style \
-            scripts/*.sh scripts/lib/*.sh scripts/modules/*.sh \
+            scripts/*.sh scripts/lib/*.sh scripts/lib/modules/*.sh \
             hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* \
             conf/*/*.sh \
             tests/*.sh \
-            clean/scripts/*.sh clean/scripts/modules/*.sh \
-            obscure/scripts/*.sh obscure/scripts/modules/*.sh \
-            ai/scripts/*.sh ai/scripts/modules/*.sh \
-            performance/scripts/*.sh performance/scripts/modules/*.sh
+            clean/scripts/*.sh clean/scripts/lib/modules/*.sh \
+            obscure/scripts/*.sh obscure/scripts/lib/modules/*.sh \
+            ai/scripts/*.sh ai/scripts/lib/modules/*.sh \
+            performance/scripts/*.sh performance/scripts/lib/modules/*.sh
 
   idempotency-and-safety:
     name: Automation Safety & Idempotency Rules
@@ -70,7 +68,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Run Idempotency & Safety Check
         run: bash tests/test_idempotency_safety.sh
@@ -81,7 +79,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Run Modular Architecture Tests
         run: bash tests/test_modular_pipeline.sh
@@ -98,7 +96,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
@@ -123,7 +121,7 @@ jobs:
           echo "testuser ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
       - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Run Full Test Suite
         run: bash tests/run-all.sh

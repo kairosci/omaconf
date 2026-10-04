@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-source "$(dirname "${BASH_SOURCE[0]}")/../lib/locale-map.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../locale-map.sh"
 
 LOCALE_PROFILE="/etc/profile.d/omaconf-locale.sh"
 HOMES_ROOT="${OMACONF_HOMES_ROOT:-/home}"

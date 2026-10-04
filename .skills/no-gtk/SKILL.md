@@ -31,4 +31,4 @@ The keyring backend is selected by `make keyring BACKEND=keepassxc` or `make key
 
 ## Removal procedure
 
-Remove unwanted packages through `DEBLOAT` in `scripts/modules/10-debloat.sh`, pin them in `IgnorePkg`, and update the package inventory and tests. Audit reverse dependencies first and document any system package that cannot be removed without losing a required function.
+Remove unwanted packages through `DEBLOAT` in `scripts/lib/modules/10-debloat.sh`, pin them in `IgnorePkg`, and update the package inventory and tests. Audit reverse dependencies first and document any system package that cannot be removed without losing a required function.

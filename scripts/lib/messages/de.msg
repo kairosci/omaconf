@@ -469,3 +469,4 @@ check.desktop_no_foot=verwaister Foot-Eintrag fehlt
 check.desktop_disk_valid=Datenträgereintrag zeigt auf installierten Analysator
 check.desktop_no_docker=verwaister Docker-Eintrag fehlt
 check.desktop_hook=Desktop-Bereinigungshook installiert
+verify.tests_executed=Ausgeführte Tests: %s

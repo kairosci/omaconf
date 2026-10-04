@@ -9,22 +9,22 @@ source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Automation Idempotency & Safety Rules"
 
-assert_false "No unverified aur_install calls in setup.sh" "grep -q 'aur_install ' '$PROJECT_DIR/scripts/setup.sh' '$PROJECT_DIR'/scripts/modules/*.sh"
-assert_false "No yay -S invocations in setup scripts" "grep -q 'yay -S' '$PROJECT_DIR/scripts/setup.sh' '$PROJECT_DIR'/scripts/modules/*.sh"
+assert_false "No unverified aur_install calls in setup.sh" "grep -q 'aur_install ' '$PROJECT_DIR/scripts/setup.sh' '$PROJECT_DIR'/scripts/lib/modules/*.sh"
+assert_false "No yay -S invocations in setup scripts" "grep -q 'yay -S' '$PROJECT_DIR/scripts/setup.sh' '$PROJECT_DIR'/scripts/lib/modules/*.sh"
 
 shell_sources() {
     local pattern file
     for pattern in \
         'scripts/*.sh' \
         'scripts/lib/*.sh' \
-        'scripts/modules/*.sh' \
+        'scripts/lib/modules/*.sh' \
         'hooks/theme-set.d/*' \
         'hooks/pre-refresh-pacman.d/*' \
         'hooks/post-update.d/*' \
         'conf/*/install.sh' \
         '*/scripts/*.sh' \
         '*/scripts/lib/*.sh' \
-        '*/scripts/modules/*.sh' \
+        '*/scripts/lib/modules/*.sh' \
         '*/hooks/theme-set.d/*' \
         '*/hooks/pre-refresh-pacman.d/*' \
         '*/hooks/post-update.d/*' \
@@ -43,14 +43,14 @@ production_sources() {
     for pattern in \
         'scripts/*.sh' \
         'scripts/lib/*.sh' \
-        'scripts/modules/*.sh' \
+        'scripts/lib/modules/*.sh' \
         'hooks/theme-set.d/*' \
         'hooks/pre-refresh-pacman.d/*' \
         'hooks/post-update.d/*' \
         'conf/*/install.sh' \
         '*/scripts/*.sh' \
         '*/scripts/lib/*.sh' \
-        '*/scripts/modules/*.sh' \
+        '*/scripts/lib/modules/*.sh' \
         '*/hooks/theme-set.d/*' \
         '*/hooks/pre-refresh-pacman.d/*' \
         '*/hooks/post-update.d/*'; do

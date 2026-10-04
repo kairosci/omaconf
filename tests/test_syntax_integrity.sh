@@ -9,7 +9,7 @@ source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Script Syntax & Code Integrity"
 
-for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/scripts/lib/*.sh "$PROJECT_DIR"/scripts/modules/*.sh "$PROJECT_DIR"/hooks/theme-set.d/* "$PROJECT_DIR"/hooks/pre-refresh-pacman.d/* "$PROJECT_DIR"/hooks/post-update.d/* "$PROJECT_DIR"/conf/zed/*.sh "$PROJECT_DIR"/conf/micro/*.sh "$PROJECT_DIR"/conf/qutebrowser/*.sh "$PROJECT_DIR"/conf/yazi/*.sh "$PROJECT_DIR"/conf/cli/*.sh "$PROJECT_DIR"/conf/herdr/*.sh "$PROJECT_DIR"/conf/disk/*.sh "$PROJECT_DIR"/conf/terminal-code/*.sh "$PROJECT_DIR"/tests/*.sh; do
+for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/scripts/lib/*.sh "$PROJECT_DIR"/scripts/lib/modules/*.sh "$PROJECT_DIR"/hooks/theme-set.d/* "$PROJECT_DIR"/hooks/pre-refresh-pacman.d/* "$PROJECT_DIR"/hooks/post-update.d/* "$PROJECT_DIR"/conf/zed/*.sh "$PROJECT_DIR"/conf/micro/*.sh "$PROJECT_DIR"/conf/qutebrowser/*.sh "$PROJECT_DIR"/conf/yazi/*.sh "$PROJECT_DIR"/conf/cli/*.sh "$PROJECT_DIR"/conf/herdr/*.sh "$PROJECT_DIR"/conf/disk/*.sh "$PROJECT_DIR"/conf/terminal-code/*.sh "$PROJECT_DIR"/tests/*.sh; do
     [[ -f "$sh_file" ]] || continue
     fname=$(basename "$sh_file")
     assert_true "syntax check: $fname" "bash -n '$sh_file'"
@@ -27,6 +27,11 @@ assert_file_contains "Dependabot tracks SAST dependencies" "$PROJECT_DIR/.github
 assert_file_exists "security policy exists" "$PROJECT_DIR/SECURITY.md"
 assert_file_contains "Arch CI installs the YAML test dependency" "$PROJECT_DIR/.github/workflows/ci.yml" 'base-devel git sudo jq python python-yaml'
 assert_true "CI checkout actions use immutable refs" "! grep -q 'uses: actions/checkout@v' '$PROJECT_DIR/.github/workflows/ci.yml'"
+assert_file_contains "test runner delegates to shared suite runner" "$PROJECT_DIR/tests/run-all.sh" 'run-suite-list.sh'
+assert_file_exists "shared suite runner exists" "$PROJECT_DIR/tests/run-suite-list.sh"
+assert_file_contains "shared suite runner reports executed assertions" "$PROJECT_DIR/tests/run-suite-list.sh" 'Tests Executed: %s'
+assert_file_contains "shared suite runner counts assertion results" "$PROJECT_DIR/tests/run-suite-list.sh" 'pass|fail|warn'
+assert_file_contains_literal "root modules live under lib" "$PROJECT_DIR/scripts/setup.sh" 'MODULES_DIR="$SCRIPT_DIR/lib/modules"'
 
 assert_file_executable "scripts/setup.sh is executable" "$PROJECT_DIR/scripts/setup.sh"
 assert_file_executable "scripts/verify.sh is executable" "$PROJECT_DIR/scripts/verify.sh"
@@ -46,7 +51,7 @@ assert_file_executable "conf/disk/install.sh is executable" "$PROJECT_DIR/conf/d
 assert_file_executable "disk-theme hook is executable" "$PROJECT_DIR/hooks/theme-set.d/disk-theme"
 assert_file_executable "herdr-keybindings-menu is executable" "$PROJECT_DIR/conf/herdr/data/herdr-keybindings-menu"
 
-for mod in "$PROJECT_DIR"/scripts/modules/*.sh; do
+for mod in "$PROJECT_DIR"/scripts/lib/modules/*.sh; do
     [[ -f "$mod" ]] || continue
     mname=$(basename "$mod")
     assert_file_executable "module $mname is executable" "$mod"

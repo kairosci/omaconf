@@ -469,3 +469,4 @@ check.desktop_no_foot=voce orfana di foot assente
 check.desktop_disk_valid=voce uso disco punta a un analizzatore installato
 check.desktop_no_docker=voce orfana di docker assente
 check.desktop_hook=hook di pulizia desktop installato
+verify.tests_executed=Test eseguiti: %s

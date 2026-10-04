@@ -469,3 +469,4 @@ check.desktop_no_foot=entrada huérfana de foot ausente
 check.desktop_disk_valid=entrada de disco apunta a un analizador instalado
 check.desktop_no_docker=entrada huérfana de docker ausente
 check.desktop_hook=hook de limpieza de escritorio instalado
+verify.tests_executed=Pruebas ejecutadas: %s

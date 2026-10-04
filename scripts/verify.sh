@@ -349,5 +349,6 @@ tcheck "verify.locale_catalogs" "catalog_check"
 tcheck "verify.locale_i18n" "[[ -n \"$I18N_LANG\" ]] && (( ${#OMACONF_I18N[@]} > 0 ))"
 
 printf '\n'
+printf '%s\n' "$(t verify.tests_executed "$((PASS + FAIL))")"
 printf '%b\n' "${BOLD}$(t verify.passed_summary "$PASS" "$FAIL")${NC}"
 [[ $FAIL -eq 0 ]] || exit 1

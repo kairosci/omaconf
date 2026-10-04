@@ -9,9 +9,9 @@ source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Hardware & Battery Power Management Policy"
 
-POWER_MODULE="$PROJECT_DIR/scripts/modules/89-battery-charge.sh"
-HARDWARE_POWER_MODULE="$PROJECT_DIR/scripts/modules/90-hardware-power.sh"
-SUSPEND_POWER_MODULE="$PROJECT_DIR/scripts/modules/91-suspend-resume.sh"
+POWER_MODULE="$PROJECT_DIR/scripts/lib/modules/89-battery-charge.sh"
+HARDWARE_POWER_MODULE="$PROJECT_DIR/scripts/lib/modules/90-hardware-power.sh"
+SUSPEND_POWER_MODULE="$PROJECT_DIR/scripts/lib/modules/91-suspend-resume.sh"
 assert_file_exists "hardware power module exists" "$POWER_MODULE"
 assert_file_exists "suspend power module exists" "$SUSPEND_POWER_MODULE"
 assert_file_contains "power module provisions /etc/omaconf/power.conf" "$POWER_MODULE" "/etc/omaconf/power.conf"
