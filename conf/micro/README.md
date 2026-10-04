@@ -1,6 +1,8 @@
 # microconf
 
-Micro is the default terminal editor. Its configuration uses native completion and the built-in linter, plus the official plugin channel's `detectindent`, `jump` and `snippets` plugins. `jump` needs universal-ctags. Project commands remain explicit through Micro's command line and the user's shell.
+Micro is the default terminal editor. Its configuration uses native completion and the built-in linter, with ShellCheck, shfmt, Ruff and yamllint available for supported file types. The official plugin channel provides `detectindent`, `jump`, `snippets`, `run` and `editorconfig`; `jump` uses universal-ctags. F4 navigates symbols, F5 runs supported files, F9 starts `make` in the background and F12 runs `make`.
+
+Terminal Code is available for projects that need the larger VS Code extension ecosystem. Micro remains the default editor for shell tools.
 
 Install with `make micro` or `bash conf/micro/install.sh`. `mh` prints the key reference; Ctrl+G opens Micro's current help.
 

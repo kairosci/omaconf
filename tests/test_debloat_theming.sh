@@ -27,6 +27,7 @@ assert_file_contains "no-gtk skill registered in the agent contract" "$PROJECT_D
 
 assert_file_exists "defaults module exists" "$DEFAULTS_MODULE"
 assert_file_contains "defaults module configures qutebrowser" "$DEFAULTS_MODULE" "qutebrowser"
+assert_true "Brave is not part of the DEBLOAT package list" "! sed -n '/^DEBLOAT=(/,/^)/p' '$DEBLOAT_MODULE' | grep -q brave-bin"
 assert_file_contains "defaults module configures micro editor" "$DEFAULTS_MODULE" "micro"
 assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
 assert_file_contains "defaults module provisions quteconf" "$DEFAULTS_MODULE" "conf/qutebrowser/install.sh"
@@ -140,7 +141,7 @@ if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pac
 
     assert_true "kitty terminal installed" "pacman -Q kitty &>/dev/null"
     assert_false "foot terminal removed" "pacman -Q foot &>/dev/null"
-    for debloated in chromium brave-origin-bin zathura zathura-pdf-mupdf nautilus yaru-icon-theme system-config-printer totem evince eog dolphin okular gwenview xdg-desktop-portal-kde breeze breeze-gtk haruna kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra sushi gtksourceview4 gst-plugin-gtk foot; do
+    for debloated in chromium zathura zathura-pdf-mupdf nautilus yaru-icon-theme system-config-printer totem evince eog dolphin okular gwenview xdg-desktop-portal-kde breeze breeze-gtk haruna kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra sushi gtksourceview4 gst-plugin-gtk foot neovim omarchy-nvim; do
         assert_false "debloat verified: $debloated removed" "pacman -Q '$debloated' &>/dev/null"
     done
     assert_false "docker daemon absent" "command -v dockerd &>/dev/null"

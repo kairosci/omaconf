@@ -6,6 +6,9 @@ log "defaults.browser_install"
 if ! pacman -Q qutebrowser &>/dev/null; then
     pacman -S --noconfirm --needed qutebrowser || err "defaults.browser_failed"
 fi
+if ! pacman -Q brave-bin &>/dev/null; then
+    aur_verified_install brave-bin || err "defaults.browser_failed"
+fi
 if ! pacman -Q python-adblock &>/dev/null; then
     pacman -S --noconfirm --needed python-adblock || warn "defaults.browser_adblock_failed"
 fi
@@ -14,13 +17,29 @@ log "defaults.browser"
 for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
     _user=$(basename "$user_home")
-    user_as "$_user" xdg-settings set default-web-browser org.qutebrowser.qutebrowser.desktop 2>/dev/null || warn "defaults.browser_skipped_user" "$_user"
+    user_as "$_user" xdg-settings set default-web-browser brave-browser.desktop 2>/dev/null || warn "defaults.browser_skipped_user" "$_user"
 done
 
 log "defaults.micro_install"
-for pkg in micro fzf universal-ctags; do
+for pkg in micro fzf universal-ctags shellcheck shfmt ruff yamllint; do
     if ! pacman -Q "$pkg" &>/dev/null; then
         pacman -S --noconfirm --needed "$pkg" || err "defaults.micro_dependency_failed" "$pkg"
+    fi
+done
+
+log "defaults.collaboration_apps"
+for pkg in slack-desktop discord; do
+    if ! pacman -Q "$pkg" &>/dev/null; then
+        aur_verified_install "$pkg" || err "defaults.app_failed" "$pkg"
+    fi
+done
+
+log "defaults.terminal_code"
+for user_home in /home/*; do
+    [[ -d "$user_home" ]] || continue
+    _user=$(basename "$user_home")
+    if [[ -x "$PROJECT_DIR/conf/terminal-code/install.sh" ]]; then
+        user_as "$_user" bash "$PROJECT_DIR/conf/terminal-code/install.sh" || err "defaults.app_failed" "terminal-code"
     fi
 done
 
@@ -166,11 +185,11 @@ o.bind("SUPER + ALT + SHIFT + F", "File manager (cwd)", "xdg-terminal-exec --dir
 LUAEOF
         chown "$_user":"$_user" "$_bindings" 2>/dev/null || warn "defaults.bindings_chown" "$_user"
     fi
-    if [[ -f "$_bindings" ]] && ! grep -q 'qutebrowser --temp-basedir' "$_bindings" 2>/dev/null; then
+    if [[ -f "$_bindings" ]] && ! grep -q 'brave --incognito' "$_bindings" 2>/dev/null; then
         cat >> "$_bindings" << 'LUAEOF'
 
 hl.unbind("SUPER + SHIFT + ALT + B")
-o.bind("SUPER + SHIFT + ALT + B", "Private browser", { launch = "qutebrowser --temp-basedir" })
+o.bind("SUPER + SHIFT + ALT + B", "Private browser", { launch = "brave --incognito" })
 LUAEOF
         chown "$_user":"$_user" "$_bindings" 2>/dev/null || warn "defaults.bindings_chown" "$_user"
     fi
