@@ -27,3 +27,9 @@ Apply this runbook to every repository change. Treat configuration, code, tests,
 ## Review
 
 Before committing, inspect the complete diff for behavior drift, duplication, generated noise, accidental whitespace, comments, glyphs, unsafe shell patterns, and untested paths. Confirm the worktree is clean after committing and the feature branch is pushed for review.
+
+## Required Context and Main Protection
+
+Read every local `.skills/*/SKILL.md` at the start of each task as required by root `AGENTS.md`; keep its skill inventory synchronized in every skill change. Preserve functional config block markers alongside shebangs, linter directives and parser fixtures.
+
+Use `.github/main-ruleset.json` as the canonical main protection policy. Require signed commits, linear history, squash-only PRs, two independent approvals, dismissal of stale approvals, approval of the latest push, resolved threads and up-to-date CI and SAST checks. Allow no bypass actors, branch recreation, deletion or force pushes. Never lock all updates because that also prevents PR merges. Already published main commits cannot be moved retroactively without rewriting history; propose corrective PRs instead.

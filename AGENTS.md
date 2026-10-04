@@ -54,3 +54,11 @@ All commit messages must follow the Conventional Commits standard formatted stri
 
 ## Scripting Rules and Constraints
 Scripts must use strict execution modes `set -euo pipefail` in pure native Bash without Python dependencies. Never use `|| true` to suppress failures; use `|| warn "message"` for non-critical steps that can fail gracefully. Do not add comments to Makefile or hook scripts. Do not hardcode user paths; derive directories from `$HOME` or `/home/*`. All operations must run in the foreground without `systemd-run`. All modifications to `scripts/setup.sh` and `scripts/verify.sh` must remain strictly idempotent.
+
+## Mandatory Skill Loading and Pull Requests
+
+At the start of every task, read every `.skills/*/SKILL.md` into the agent context. This inventory must contain every local skill; update it in the same change whenever a skill is created, renamed or removed. Subproject agents inherit this rule from the root AGENTS.md.
+
+Treat `main` as read-only. All changes, including maintenance and GitHub policy changes, originate on a feature branch and enter `main` through a pull request. Never push directly to `main`, force push it, or rewrite its published history. Published commits remain historical facts; corrections and reversions also require pull requests.
+
+The canonical GitHub ruleset is `.github/main-ruleset.json`: no bypass actors, no branch creation or deletion, no force pushes, signed commits, linear history, squash-only pull requests, two approvals, stale approval dismissal, approval of the latest push, resolved review threads, and successful CI and SAST checks against the latest base. Do not enable the blanket update restriction: without bypass actors it also blocks legitimate PR merges. Apply repository settings with the GitHub API and verify the active ruleset after applying it.
