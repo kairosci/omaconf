@@ -9,7 +9,7 @@ help:
 	@printf '%s\n' "clean       Remove setup log"
 
 setup:
-	pkexec bash scripts/setup.sh
+	pkexec bash "$(CURDIR)/scripts/setup.sh"
 
 verify:
 	bash scripts/verify.sh

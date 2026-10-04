@@ -21,8 +21,8 @@ assert_file_exists "plugin main.lua exists" "$PLUGIN"
 if command -v luac &>/dev/null; then
     assert_true "plugin passes luac syntax check" "luac -p '$PLUGIN'"
 fi
-assert_file_contains "plugin renders lock screen" "$PLUGIN" "Locked by obscure"
-assert_file_contains "plugin shows the lock message without decoration" "$PLUGIN" "Locked by obscure"
+assert_file_contains "plugin renders the lock message" "$PLUGIN" "Locked by obscure"
+assert_false "plugin contains no emoji decorations" "grep -qP '[\\x{1F300}-\\x{1FAFF}\\x{2600}-\\x{27BF}]' '$PLUGIN'"
 assert_file_contains "plugin implements peek" "$PLUGIN" "function M:peek"
 assert_file_contains "plugin implements seek" "$PLUGIN" "function M:seek"
 assert_false "plugin never leaks content via code preview" "grep -q 'preview_code' '$PLUGIN'"
@@ -37,6 +37,7 @@ assert_file_contains "yazi module syncs patterns per user" "$YAZI_MODULE" "patte
 assert_file_contains "yazi module fixes ownership" "$YAZI_MODULE" "chown"
 assert_file_contains "verify checks previewer gate" "$PROJECT_DIR/scripts/verify.sh" 'run = "obscure"'
 assert_file_contains "verify checks open gate" "$PROJECT_DIR/scripts/verify.sh" 'use = "obscure-view"'
+assert_true "Obscure setup passes an absolute path through pkexec" "grep -qF '\$(CURDIR)/scripts/setup.sh' '$PROJECT_DIR/Makefile'"
 
 merge_simulation() {
     local work=""
