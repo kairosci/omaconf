@@ -2,16 +2,19 @@
 
 set -euo pipefail
 
-log "defaults.brave_install"
-if ! pacman -Q brave-origin-bin &>/dev/null; then
-    aur_verified_install brave-origin-bin || err "defaults.brave_failed"
+log "defaults.browser_install"
+if ! pacman -Q qutebrowser &>/dev/null; then
+    pacman -S --noconfirm --needed qutebrowser || err "defaults.browser_failed"
+fi
+if ! pacman -Q python-adblock &>/dev/null; then
+    pacman -S --noconfirm --needed python-adblock || warn "defaults.browser_adblock_failed"
 fi
 
 log "defaults.browser"
 for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
     _user=$(basename "$user_home")
-    omarchy_as "$_user" default browser brave-origin 2>/dev/null || warn "defaults.browser_skipped_user" "$_user"
+    user_as "$_user" xdg-settings set default-web-browser org.qutebrowser.qutebrowser.desktop 2>/dev/null || warn "defaults.browser_skipped_user" "$_user"
 done
 
 log "defaults.micro_install"
@@ -98,16 +101,16 @@ if ! pacman -Q mpv &>/dev/null; then
     pacman -S --noconfirm --needed mpv
 fi
 
-log "defaults.zathura_install"
-if ! pacman -Q zathura &>/dev/null || ! pacman -Q zathura-pdf-mupdf &>/dev/null; then
-    pacman -S --noconfirm --needed zathura zathura-pdf-mupdf
+log "defaults.pdf_install"
+if ! pacman -Q mupdf &>/dev/null; then
+    pacman -S --noconfirm --needed mupdf
 fi
 
 log "defaults.pdf"
 for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
     _user=$(basename "$user_home")
-    user_as "$_user" xdg-mime default org.pwmt.zathura.desktop application/pdf 2>/dev/null || warn "defaults.pdf_skipped" "$_user"
+    user_as "$_user" xdg-mime default mupdf.desktop application/pdf 2>/dev/null || warn "defaults.pdf_skipped" "$_user"
 done
 
 log "defaults.filemanager"
@@ -127,7 +130,7 @@ for user_home in /home/*; do
         else
             sed -i "/^\[Default Applications\]/a inode/directory=$_fm" "$_mimeapps" 2>/dev/null || warn "defaults.fm_insert_skipped" "$_user"
         fi
-        sed -i "s|=org.gnome.Nautilus.desktop|=$_fm|g; s|=org.kde.gwenview.desktop|=imv.desktop|g; s|=org.gnome.Evince.desktop|=org.pwmt.zathura.desktop|g" "$_mimeapps" 2>/dev/null || warn "defaults.fm_stale_skipped" "$_user"
+        sed -i "s|=org.gnome.Nautilus.desktop|=$_fm|g; s|=org.kde.gwenview.desktop|=imv.desktop|g; s|=org.gnome.Evince.desktop|=mupdf.desktop|g; s|=org.pwmt.zathura.desktop|=mupdf.desktop|g" "$_mimeapps" 2>/dev/null || warn "defaults.fm_stale_skipped" "$_user"
         chown "$_user":"$_user" "$_mimeapps" 2>/dev/null || warn "defaults.fm_mimeapps_chown" "$_user"
     fi
     mkdir -p "$user_home/.local/state/omarchy/defaults"
@@ -203,3 +206,10 @@ for user_home in /home/*; do
         chown "$_user":"$_user" "$_btop_conf" 2>/dev/null || warn "defaults.btop_conf_chown" "$_user"
     fi
 done
+
+log "desktop.sweep"
+if [[ -f "$PROJECT_DIR/scripts/lib/desktop-cleanup.sh" ]]; then
+    # shellcheck source=../lib/desktop-cleanup.sh
+    source "$PROJECT_DIR/scripts/lib/desktop-cleanup.sh"
+    desktop_cleanup_sweep || warn "desktop.refresh_skipped"
+fi

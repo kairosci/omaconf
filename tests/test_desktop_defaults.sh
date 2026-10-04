@@ -24,7 +24,6 @@ assert_file_contains "theming runs hooks through the per-user helper" "$THEMING_
 assert_file_not_contains "omaqt does not route xdg-mime through omarchy" "$OMAQT_MODULE" 'omarchy_as "$_user" xdg-mime'
 assert_file_not_contains "omaqt does not route gio through omarchy" "$OMAQT_MODULE" 'omarchy_as "$_user" gio'
 
-
 DEBLOAT_MODULE="$PROJECT_DIR/scripts/modules/10-debloat.sh"
 DEFAULTS_MODULE="$PROJECT_DIR/scripts/modules/20-defaults.sh"
 SHELL_PLUGINS_MODULE="$PROJECT_DIR/scripts/modules/35-shell-plugins.sh"
@@ -34,7 +33,7 @@ assert_file_not_contains "defaults never sets the browser as root" "$DEFAULTS_MO
 assert_file_contains "debloat module merges pins instead of overwriting" "$DEBLOAT_MODULE" "EXISTING_PINS"
 assert_file_contains "debloat module installs persistence hooks" "$DEBLOAT_MODULE" "99-omaconf-persist"
 assert_file_contains "yaziconf installer enforces yazi file manager" "$PROJECT_DIR/yaziconf/install.sh" 'inode/directory'
-assert_file_contains "yaziconf installer pins the terminal desktop entry" "$PROJECT_DIR/yaziconf/install.sh" 'FM_DESKTOP="yazi-terminal.desktop"' 
+assert_file_contains "yaziconf installer pins the terminal desktop entry" "$PROJECT_DIR/yaziconf/install.sh" 'FM_DESKTOP="yazi-terminal.desktop"'
 assert_file_contains "yaziconf installer registers the desktop entry" "$PROJECT_DIR/yaziconf/install.sh" "xdg-mime default"
 assert_file_contains "defaults module records file-manager state" "$DEFAULTS_MODULE" "defaults/file-manager"
 assert_file_contains "defaults module rebinds file manager keys to yazi" "$DEFAULTS_MODULE" "omaconf-yazi-fm"
@@ -44,7 +43,8 @@ assert_file_contains "defaults module provisions diskconf" "$DEFAULTS_MODULE" "d
 assert_file_contains "shell plugins module uses canonical omamp source" "$SHELL_PLUGINS_MODULE" "omaconf/omamp.git"
 assert_file_contains "env module defines omarchy_as helper" "$PROJECT_DIR/scripts/modules/00-env.sh" "omarchy_as\(\)"
 assert_file_contains "omarchy_as forwards the user session bus" "$PROJECT_DIR/scripts/modules/00-env.sh" "DBUS_SESSION_BUS_ADDRESS"
-assert_file_contains "defaults module routes browser through omarchy_as" "$DEFAULTS_MODULE" "omarchy_as"
+assert_file_contains "defaults module configures the browser through xdg-settings" "$DEFAULTS_MODULE" "xdg-settings set default-web-browser org.qutebrowser.qutebrowser.desktop"
+assert_file_contains "defaults module provides qutebrowser ad blocking" "$DEFAULTS_MODULE" "python-adblock"
 assert_file_contains "setup.sh references nvim module" "$PROJECT_DIR/scripts/setup.sh" "33-nvim.sh"
 assert_file_contains "setup.sh references shell plugins module" "$PROJECT_DIR/scripts/setup.sh" "35-shell-plugins.sh"
 assert_file_contains "setup.sh references portals module" "$PROJECT_DIR/scripts/setup.sh" "22-portals.sh"
@@ -52,6 +52,11 @@ assert_file_contains "setup.sh references keyring module" "$PROJECT_DIR/scripts/
 assert_file_contains "portals module configures termfilechooser" "$PROJECT_DIR/scripts/modules/22-portals.sh" "xdg-desktop-portal-termfilechooser"
 assert_file_contains "keyring module provisions libsecret and pass" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "libsecret"
 assert_file_contains "keyring module masks gnome-keyring" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "gnome-keyring-daemon"
+assert_file_contains "KeePassXC prevents GNOME keyring autostart" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "Hidden=true"
+assert_file_contains "keyring module exposes a backend switch function" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "keyring_switch()"
+assert_file_contains "keyring module provisions KeePassXC Secret Service" "$PROJECT_DIR/scripts/modules/62-keyring.sh" "FdoSecrets"
+assert_file_contains "keyring switch validates both supported backends" "$PROJECT_DIR/scripts/keyring-switch.sh" "keepassxc|gnome-keyring"
+assert_file_contains "Makefile exposes the keyring selection target" "$PROJECT_DIR/Makefile" "scripts/keyring-switch.sh"
 assert_file_contains "nvim module provisions root nvimconf" "$PROJECT_DIR/scripts/modules/33-nvim.sh" "nvimconf/install.sh"
 
 PERSIST_PRE="$PROJECT_DIR/hooks/pre-refresh-pacman.d/99-omaconf-persist"
@@ -63,7 +68,7 @@ PERSIST_POST="$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist"
 assert_file_exists "post-update persist hook exists in repo" "$PERSIST_POST"
 assert_file_executable "post-update persist hook executable" "$PERSIST_POST"
 assert_file_contains "post-update hook reapplies yazi default" "$PERSIST_POST" "yazi-terminal.desktop inode/directory"
-assert_file_contains "post-update hook reapplies zathura default" "$PERSIST_POST" "org.pwmt.zathura.desktop application/pdf"
+assert_file_contains "post-update hook reapplies MuPDF default" "$PERSIST_POST" "mupdf.desktop application/pdf"
 assert_file_contains "post-update hook reapplies image defaults" "$PERSIST_POST" "imv.desktop image/png"
 assert_file_contains "post-update hook reapplies media defaults" "$PERSIST_POST" "mpv.desktop video/mp4"
 assert_file_contains "post-update hook removes crash-watch" "$PERSIST_POST" "omarchy-crash-watch.service"
@@ -89,7 +94,7 @@ assert_file_contains "defaults module falls back to system yazi.desktop" "$DEFAU
 
 OMAQT_DIR="/usr/share/omarchy/omaqt"
 if [[ -x "$OMAQT_DIR/install.sh" ]]; then
-    for app in yazi zathura imv mpv papirus-icon-theme; do
+    for app in yazi imv mpv papirus-icon-theme; do
         assert_file_contains "omaqt installer installs $app" "$OMAQT_DIR/install.sh" "$app"
     done
     for app in nautilus totem evince eog yaru-icon-theme dolphin okular gwenview \
@@ -101,7 +106,6 @@ if [[ -x "$OMAQT_DIR/install.sh" ]]; then
     assert_file_contains "omaqt installer removes packages recursively" "$OMAQT_DIR/install.sh" "Rns --noconfirm"
     assert_false "omaqt installer does not install kde portal" "sed -n '/^APP_PKGS=/,/^)/p' $OMAQT_DIR/install.sh | grep -q 'xdg-desktop-portal-kde'"
     assert_file_contains "omaqt installer removes system portal override" "$OMAQT_DIR/install.sh" "portals.conf"
-    assert_file_contains "omaqt installer sets zathura mime default" "$OMAQT_DIR/install.sh" "org.pwmt.zathura.desktop application/pdf"
     assert_file_contains "omaqt installer sets imv mime default" "$OMAQT_DIR/install.sh" "imv.desktop image"
     assert_file_contains "omaqt installer sets mpv mime default" "$OMAQT_DIR/install.sh" "mpv.desktop video"
     assert_true "omaqt installer sets a yazi mime default" \
@@ -110,7 +114,7 @@ if [[ -x "$OMAQT_DIR/install.sh" ]]; then
 fi
 
 if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pacman.d/omaconf/ignore-pkgs.list ]]; then
-    for app in yazi zathura imv mpv papirus-icon-theme; do
+    for app in yazi imv mpv papirus-icon-theme; do
         assert_true "$app installed" "pacman -Q $app &>/dev/null"
     done
     for app in nautilus totem evince eog yaru-icon-theme dolphin okular gwenview \
@@ -120,7 +124,7 @@ if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pac
 fi
 
 if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/mime.types ]]; then
-    assert_true "pdf default is zathura" "xdg-mime query default application/pdf 2>/dev/null | grep -q 'zathura'"
+    assert_true "pdf default is MuPDF" "xdg-mime query default application/pdf 2>/dev/null | grep -q 'mupdf'"
     assert_true "image default is imv" "xdg-mime query default image/jpeg 2>/dev/null | grep -q 'imv'"
     assert_true "video default is mpv" "xdg-mime query default video/mp4 2>/dev/null | grep -q 'mpv'"
     assert_true "directory default is yazi-terminal" "xdg-mime query default inode/directory 2>/dev/null | grep -q 'yazi-terminal'"

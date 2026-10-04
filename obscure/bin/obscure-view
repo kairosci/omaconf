@@ -67,12 +67,12 @@ for target in "$@"; do
     if is_text "$target"; then
         "$PAGER_BIN" "$target" 2>/dev/null || warn "pager skipped for $target"
     elif is_pdf "$target"; then
-        if [[ -n "${WAYLAND_DISPLAY:-}" || -n "${DISPLAY:-}" ]] && command -v zathura &>/dev/null; then
-            (setsid zathura "$target" >/dev/null 2>&1 &) || xdg-open "$target" 2>/dev/null || warn "pdf viewer skipped for $target"
+        if [[ -n "${WAYLAND_DISPLAY:-}" || -n "${DISPLAY:-}" ]] && command -v mupdf &>/dev/null; then
+            (setsid mupdf "$target" >/dev/null 2>&1 &) || xdg-open "$target" 2>/dev/null || warn "pdf viewer skipped for $target"
         elif command -v pdftotext &>/dev/null; then
             pdftotext "$target" - 2>/dev/null | "$PAGER_BIN" || xdg-open "$target" 2>/dev/null || warn "pdf viewer skipped for $target"
-        elif command -v zathura &>/dev/null; then
-            (setsid zathura "$target" >/dev/null 2>&1 &) || xdg-open "$target" 2>/dev/null || warn "pdf viewer skipped for $target"
+        elif command -v mupdf &>/dev/null; then
+            (setsid mupdf "$target" >/dev/null 2>&1 &) || xdg-open "$target" 2>/dev/null || warn "pdf viewer skipped for $target"
         else
             xdg-open "$target" 2>/dev/null || warn "open skipped for $target"
         fi

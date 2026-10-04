@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 I18N_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 I18N_DIR="${OMACONF_I18N_DIR:-$I18N_LIB_DIR/messages}"
 I18N_SUPPORTED=(en it fr de es pt)

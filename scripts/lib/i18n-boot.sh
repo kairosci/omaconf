@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 _omaconf_i18n_stub() {
     t() { printf -- '%s' "$1"; }
     log() { printf '%s\n' "$1"; }

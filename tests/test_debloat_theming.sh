@@ -17,9 +17,14 @@ assert_file_contains "debloat module defines package removal" "$DEBLOAT_MODULE" 
 assert_file_contains "debloat module defines IgnorePkg pinning" "$DEBLOAT_MODULE" "IgnorePkg.*MERGED_PINS"
 assert_file_contains "debloat module merges pins instead of overwriting" "$DEBLOAT_MODULE" "EXISTING_PINS"
 assert_file_contains "debloat module installs persistence hooks" "$DEBLOAT_MODULE" "99-omaconf-persist"
+assert_file_contains "debloat module removes the sushi previewer orphan" "$DEBLOAT_MODULE" "sushi"
+assert_file_contains "debloat module removes the sushi sourceview dependency" "$DEBLOAT_MODULE" "gtksourceview4"
+assert_file_contains "debloat module removes the sushi gtk plugin dependency" "$DEBLOAT_MODULE" "gst-plugin-gtk"
+assert_file_exists "no-gtk skill exists" "$PROJECT_DIR/.skills/no-gtk/SKILL.md"
+assert_file_contains "no-gtk skill registered in the agent contract" "$PROJECT_DIR/AGENTS.md" "no-gtk"
 
 assert_file_exists "defaults module exists" "$DEFAULTS_MODULE"
-assert_file_contains "defaults module configures brave-origin" "$DEFAULTS_MODULE" "brave-origin"
+assert_file_contains "defaults module configures qutebrowser" "$DEFAULTS_MODULE" "qutebrowser"
 assert_file_contains "defaults module configures micro editor" "$DEFAULTS_MODULE" "micro"
 assert_file_contains "defaults module configures yazi file manager" "$DEFAULTS_MODULE" "yazi"
 assert_file_contains "defaults module configures 7zip archive support" "$DEFAULTS_MODULE" "7zip"
@@ -27,10 +32,14 @@ assert_file_contains "defaults module installs Kitty" "$DEFAULTS_MODULE" "pacman
 assert_file_contains "defaults module configures imv image viewer" "$DEFAULTS_MODULE" "imv"
 assert_file_contains "defaults module configures trash-cli safe delete" "$DEFAULTS_MODULE" "trash-cli"
 assert_file_contains "defaults module configures mpv player" "$DEFAULTS_MODULE" "mpv"
-assert_file_contains "defaults module configures zathura pdf viewer" "$DEFAULTS_MODULE" "zathura"
+assert_file_contains "defaults module configures MuPDF pdf viewer" "$DEFAULTS_MODULE" "mupdf"
 
 assert_file_exists "theming module exists" "$THEMING_MODULE"
 assert_file_contains "theming module installs hooks" "$THEMING_MODULE" "hooks/theme-set.d"
+assert_file_not_contains "theming module does not set a GTK theme" "$THEMING_MODULE" "gsettings set org.gnome.desktop.interface gtk-theme"
+assert_file_contains "theming module propagates color-scheme from the active theme" "$THEMING_MODULE" "gsettings set org.gnome.desktop.interface color-scheme"
+assert_file_not_contains "theming module does not write GTK settings" "$THEMING_MODULE" "gtk-settings"
+assert_file_contains "theming module routes Qt through the xdgdesktop platform theme" "$THEMING_MODULE" 'QT_QPA_PLATFORMTHEME", "xdgdesktop"'
 assert_file_exists "theme preview apply helper exists" "$PROJECT_DIR/theme-previews/apply.sh"
 assert_file_contains "theme preview apply creates missing user overlays" "$PROJECT_DIR/theme-previews/apply.sh" 'install -d -m 700'
 assert_file_contains "theme preview apply clears selector cache" "$PROJECT_DIR/theme-previews/apply.sh" 'theme-selector'
@@ -114,20 +123,20 @@ fi
 if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pacman.d/omaconf/ignore-pkgs.list ]]; then
     assert_true "herdr installed" "pacman -Q herdr &>/dev/null"
     assert_true "gum installed" "pacman -Q gum &>/dev/null"
-    assert_true "brave-origin-bin installed" "pacman -Q brave-origin-bin &>/dev/null"
+    assert_true "qutebrowser installed" "pacman -Q qutebrowser &>/dev/null"
     assert_true "micro installed" "pacman -Q micro &>/dev/null"
     assert_true "yazi installed" "pacman -Q yazi &>/dev/null"
     assert_true "7zip installed" "pacman -Q 7zip &>/dev/null"
     assert_true "imv installed" "pacman -Q imv &>/dev/null"
     assert_true "mpv installed" "pacman -Q mpv &>/dev/null"
-    assert_true "zathura installed" "pacman -Q zathura &>/dev/null"
+    assert_true "mupdf installed" "pacman -Q mupdf &>/dev/null"
     assert_true "btop installed" "pacman -Q btop &>/dev/null"
     assert_true "capitaine-cursors installed" "pacman -Q capitaine-cursors &>/dev/null"
     assert_true "papirus-icon-theme installed" "pacman -Q papirus-icon-theme &>/dev/null"
 
     assert_true "kitty terminal installed" "pacman -Q kitty &>/dev/null"
     assert_false "foot terminal removed" "pacman -Q foot &>/dev/null"
-    for debloated in chromium nautilus yaru-icon-theme system-config-printer totem evince eog dolphin okular gwenview xdg-desktop-portal-kde breeze breeze-gtk haruna kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra foot; do
+    for debloated in chromium brave-origin-bin zathura zathura-pdf-mupdf nautilus yaru-icon-theme system-config-printer totem evince eog dolphin okular gwenview xdg-desktop-portal-kde breeze breeze-gtk haruna kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra sushi gtksourceview4 gst-plugin-gtk foot; do
         assert_false "debloat verified: $debloated removed" "pacman -Q '$debloated' &>/dev/null"
     done
     assert_false "docker daemon absent" "command -v dockerd &>/dev/null"
@@ -157,6 +166,10 @@ assert_file_exists "post-update persist hook exists in repo" "$PERSIST_POST"
 assert_file_executable "post-update persist hook executable" "$PERSIST_POST"
 assert_file_contains "post-update hook reapplies yazi default" "$PERSIST_POST" "yazi-terminal.desktop inode/directory"
 assert_file_contains "post-update hook reapplies termfilechooser routing" "$PERSIST_POST" "FileChooser=termfilechooser"
+assert_file_not_contains "post-update hook does not set a GTK theme" "$PERSIST_POST" 'gtk-theme'
+assert_file_contains "post-update hook reapplies color-scheme" "$PERSIST_POST" 'gsettings set org.gnome.desktop.interface color-scheme'
+assert_file_contains "post-update hook stops only the gnome portal backend" "$PERSIST_POST" "stop xdg-desktop-portal-gnome.service"
+assert_file_contains "post-update hook stops the gtk portal backend" "$PERSIST_POST" "stop xdg-desktop-portal-gtk"
 assert_file_contains "post-update hook reloads portal after routing reapply" "$PERSIST_POST" "systemctl --user restart xdg-desktop-portal.service"
 
 assert_file_exists "plugin index exists" "$PROJECT_DIR/plugins/index.json"
@@ -176,7 +189,10 @@ assert_file_contains "defaults module rebinding hypr file manager keys" "$DEFAUL
 PORTALS_MODULE="$PROJECT_DIR/scripts/modules/22-portals.sh"
 assert_file_contains "portals module installs termfilechooser portal" "$PORTALS_MODULE" "xdg-desktop-portal-termfilechooser"
 assert_file_contains "portals module routes FileChooser to termfilechooser" "$PORTALS_MODULE" "FileChooser=termfilechooser"
-assert_file_contains "portals module stops stale gtk/gnome backends" "$PORTALS_MODULE" "stop xdg-desktop-portal-gtk.service xdg-desktop-portal-gnome.service"
+assert_file_contains "portals module masks the gtk portal backend" "$PORTALS_MODULE" "mask xdg-desktop-portal-gtk.service"
+assert_file_contains "portals module keeps the gnome portal masked" "$PORTALS_MODULE" "mask xdg-desktop-portal-gnome.service"
+assert_file_contains "portals module stops only the stale gnome backend" "$PORTALS_MODULE" "stop xdg-desktop-portal-gnome.service"
+assert_file_contains "portals module stops the gtk portal backend" "$PORTALS_MODULE" "stop xdg-desktop-portal-gtk"
 assert_file_contains "portals module reloads portal after routing" "$PORTALS_MODULE" "systemctl --user restart xdg-desktop-portal.service"
 assert_file_contains "yaziconf template uses current file placeholders" "$PROJECT_DIR/yaziconf/data/yazi.toml" "%s"
 assert_file_contains "yaziconf template respects EDITOR with micro fallback" "$PROJECT_DIR/yaziconf/data/yazi.toml" "EDITOR:-micro"

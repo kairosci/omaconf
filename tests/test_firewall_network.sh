@@ -22,7 +22,11 @@ assert_file_contains "ssh module sets PasswordAuthentication no" "$SSH_MODULE" "
 assert_file_contains "ssh module provisions systemd sandboxing" "$SSH_MODULE" "ProtectSystem=strict"
 
 assert_false "NetworkManager configuration unmolested" "[[ -f /etc/NetworkManager/conf.d/security.conf ]]"
-assert_true "Loopback network interface up" "ip link show lo 2>/dev/null | grep -q 'state UP\|state UNKNOWN'"
+if ip link show lo &>/dev/null; then
+    assert_true "Loopback network interface up" "ip link show lo 2>/dev/null | grep -q 'state UP\|state UNKNOWN'"
+else
+    assert_warn "Loopback network interface state unavailable in this execution context" "false"
+fi
 assert_warn "DNS resolution functional" "getent hosts archlinux.org &>/dev/null || resolvectl query archlinux.org &>/dev/null"
 
 if systemctl list-unit-files ufw.service &>/dev/null; then

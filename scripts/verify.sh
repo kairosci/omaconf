@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 set -uo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
@@ -37,6 +36,20 @@ priv() {
     sudo -n "$@"
 }
 
+can_inspect_system() {
+    [[ $EUID -eq 0 ]] || sudo -n true 2>/dev/null
+}
+
+disk_entry_valid() {
+    local disk_entry="/usr/share/omarchy/applications/Disk Usage.desktop"
+    [[ -f "$disk_entry" ]] || return 0
+    if grep -q 'dua' "$disk_entry" 2>/dev/null; then
+        command -v dua &>/dev/null
+    else
+        command -v gdu &>/dev/null
+    fi
+}
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BOLD='\033[1m'
@@ -67,7 +80,9 @@ tcheck() {
 }
 
 section verify.sec_packages
-tcheck "check.pkg_installed" "pacman -Q brave-origin-bin &>/dev/null" brave-origin-bin
+tcheck "check.pkg_installed" "pacman -Q qutebrowser &>/dev/null" qutebrowser
+tcheck "check.pkg_installed" "pacman -Q python-adblock &>/dev/null" python-adblock
+tcheck "check.pkg_removed" "! pacman -Q brave-origin-bin &>/dev/null" brave-origin-bin
 tcheck "check.pkg_removed" "! pacman -Q chromium &>/dev/null" chromium
 tcheck "check.pkg_installed" "pacman -Q neovim &>/dev/null" neovim
 tcheck "check.pkg_installed" "pacman -Q omarchy-nvim &>/dev/null" omarchy-nvim
@@ -76,8 +91,9 @@ tcheck "check.pkg_installed" "pacman -Q yazi &>/dev/null" yazi
 tcheck "check.pkg_installed" "pacman -Q 7zip &>/dev/null" 7zip
 tcheck "check.pkg_installed" "pacman -Q imv &>/dev/null" imv
 tcheck "check.pkg_installed" "pacman -Q trash-cli &>/dev/null" trash-cli
-tcheck "check.pkg_installed" "pacman -Q zathura &>/dev/null" zathura
-tcheck "check.pkg_installed" "pacman -Q zathura-pdf-mupdf &>/dev/null" zathura-pdf-mupdf
+tcheck "check.pkg_installed" "pacman -Q mupdf &>/dev/null" mupdf
+tcheck "check.pkg_removed" "! pacman -Q zathura &>/dev/null" zathura
+tcheck "check.pkg_removed" "! pacman -Q zathura-pdf-mupdf &>/dev/null" zathura-pdf-mupdf
 tcheck "check.pkg_removed" "! pacman -Q nautilus &>/dev/null" nautilus
 tcheck "check.pkg_removed" "! pacman -Q yaru-icon-theme &>/dev/null" yaru-icon-theme
 tcheck "check.pkg_removed" "! pacman -Q system-config-printer &>/dev/null" system-config-printer
@@ -106,14 +122,11 @@ tcheck "check.tool_present" "pacman -Q herdr &>/dev/null" herdr
 tcheck "check.tool_present" "pacman -Q gum &>/dev/null" gum
 
 section verify.sec_browser
-tcheck "check.default_browser" "[[ \"\$(omarchy default browser 2>/dev/null)\" == brave-origin ]]"
+tcheck "check.default_browser" "[[ \"\$(xdg-settings get default-web-browser 2>/dev/null)\" == org.qutebrowser.qutebrowser.desktop ]]"
 tcheck "check.default_editor"  "[[ \"\$(cat \$HOME/.local/state/omarchy/defaults/editor 2>/dev/null)\" == micro ]]"
 tcheck "check.yazi_config" "[[ -f \$HOME/.config/yazi/yazi.toml ]]"
 tcheck "check.yazi_syntax_current" "grep -q '%s' \$HOME/.config/yazi/yazi.toml"
-tcheck "check.yazi_syntax_legacy" "! grep -qF '\"\$@\"' \$HOME/.config/yazi/yazi.toml"
-
-
-
+tcheck "check.yazi_syntax_legacy" "! grep -qF '"\$@"' \$HOME/.config/yazi/yazi.toml"
 section verify.sec_firewall
 if UFW_STATUS=$(priv ufw status 2>/dev/null); then
     tcheck "check.ufw_active"          "echo '$UFW_STATUS' | grep -q 'Status: active'"
@@ -122,9 +135,14 @@ if UFW_STATUS=$(priv ufw status 2>/dev/null); then
 else
     skip "$(t verify.skip_root)"
 fi
-tcheck "check.ufw_boot"     "systemctl is-enabled ufw.service &>/dev/null"
+if can_inspect_system; then
+    tcheck "check.ufw_boot" "priv systemctl is-enabled ufw.service &>/dev/null"
+else
+    skip "$(t verify.skip_root)"
+fi
 
 section verify.sec_kernel
+if can_inspect_system; then
 for setting in \
     "kernel.randomize_va_space	2" \
     "kernel.kptr_restrict	2" \
@@ -148,8 +166,11 @@ for setting in \
     ; do
     key="${setting%%	*}"
     expected="${setting##*	}"
-    check "$key = $expected" "[[ \"\$(cat /proc/sys/\${key//./\/})\" == $expected ]]"
+    check "$key = $expected" "[[ \"\$(priv sysctl -n $key 2>/dev/null)\" == $expected ]]"
 done
+else
+    skip "$(t verify.skip_root)"
+fi
 tcheck "check.sysctl_persisted"         "[[ -f /etc/sysctl.d/99-security.conf ]]"
 tcheck "check.coredump_disabled"             "[[ -f /etc/security/limits.d/99-no-core.conf ]]"
 
@@ -173,9 +194,12 @@ else
 fi
 
 section verify.sec_services
-tcheck "check.avahi_disabled"   "! systemctl is-enabled avahi-daemon.service 2>/dev/null | grep -q '^enabled$'"
-tcheck "check.cups_disabled"           "! systemctl is-enabled cups.service 2>/dev/null | grep -q '^enabled$'"
-tcheck "check.bluetooth_enabled"       "systemctl is-enabled bluetooth.service 2>/dev/null | grep -q '^enabled$'"
+if can_inspect_system; then
+    tcheck "check.avahi_disabled" "! priv systemctl is-enabled avahi-daemon.service 2>/dev/null | grep -q '^enabled$'"
+    tcheck "check.cups_disabled" "! priv systemctl is-enabled cups.service 2>/dev/null | grep -q '^enabled$'"
+else
+    skip "$(t verify.skip_root)"
+fi
 tcheck "check.sshd_service_hardened"   "[[ -f /etc/systemd/system/sshd.service.d/hardened.conf ]]"
 tcheck "check.networkmanager_intact" "! [[ -f /etc/NetworkManager/conf.d/security.conf ]]"
 tcheck "check.resolved_hardened" "[[ -f /etc/systemd/resolved.conf.d/hardened.conf ]]"
@@ -260,6 +284,11 @@ tcheck "check.lazygit_config"   "[[ -f \$HOME/.config/lazygit/config.yml ]]"
 tcheck "check.portals_conf"     "[[ -f \$HOME/.config/xdg-desktop-portal/portals.conf ]] && grep -q 'FileChooser=termfilechooser' \$HOME/.config/xdg-desktop-portal/portals.conf"
 tcheck "check.termfilechooser_conf" "[[ -f \$HOME/.config/xdg-desktop-portal-termfilechooser/config ]]"
 tcheck "check.keyring_disabled" "! grep -rq 'pam_gnome_keyring' /etc/pam.d/sddm /etc/pam.d/sddm-autologin 2>/dev/null"
+tcheck "check.keyring_backend" "grep -Eq '^(keepassxc|gnome-keyring)$' /etc/omaconf/keyring-backend"
+if [[ -f /etc/omaconf/keyring-backend ]] && grep -qx keepassxc /etc/omaconf/keyring-backend; then
+    tcheck "check.keyring_provider" "pacman -Q keepassxc &>/dev/null"
+fi
+tcheck "check.no_gtk_defaults" "! pacman -Q brave-origin-bin &>/dev/null && ! pacman -Q zathura &>/dev/null && ! pacman -Q zathura-pdf-mupdf &>/dev/null"
 tcheck "check.cli_secrets"      "command -v secret-tool &>/dev/null && command -v pass &>/dev/null"
 tcheck "check.disk_config"      "[[ -f \$HOME/.config/gdu/gdu.yaml ]]"
 
@@ -272,6 +301,12 @@ tcheck "check.folder_color_hook"        "[[ -x $HOME/.config/omarchy/hooks/theme
 tcheck "check.micro_theme_hook"         "[[ -x $HOME/.config/omarchy/hooks/theme-set.d/micro-theme ]]"
 tcheck "check.disk_theme_hook"          "[[ -x \$HOME/.config/omarchy/hooks/theme-set.d/disk-theme ]]"
 tcheck "check.micro_colorscheme" "[[ -f $HOME/.config/micro/colorschemes/omarchy.micro ]]"
+
+section verify.sec_desktop
+tcheck "check.desktop_no_foot" "pacman -Q foot &>/dev/null || [[ ! -f \"/usr/share/omarchy/applications/foot.desktop\" ]]"
+tcheck "check.desktop_disk_valid" "disk_entry_valid"
+tcheck "check.desktop_no_docker" "command -v lazydocker &>/dev/null || [[ ! -f \"/usr/share/omarchy/applications/Docker.desktop\" ]]"
+tcheck "check.desktop_hook" "[[ -f /etc/pacman.d/hooks/99-omaconf-desktop-cleanup.hook ]] && [[ -x /usr/local/libexec/omaconf-desktop-cleanup ]]"
 
 section verify.sec_aur
 tcheck "check.no_unverified_aur" "! grep -q 'aur_install ' '$SCRIPT_DIR/setup.sh'"

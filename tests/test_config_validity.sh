@@ -34,6 +34,26 @@ assert ops, 'no openers found'
 bad = [k for k, v in ops.items() if not all('run' in e for e in v)]
 assert not bad, f'openers without run: {bad}'
 \""
+    assert_true "yazi open rules end with a catch-all reveal fallback" "python3 -c \"
+import tomllib
+cfg = tomllib.load(open('$YAZI_DATA/yazi.toml','rb'))
+rules = cfg.get('open', {}).get('rules', [])
+assert rules and rules[-1].get('url') == '*' and rules[-1].get('use') == 'reveal', f'no catch-all reveal fallback: {rules[-1] if rules else None}'
+ops = cfg.get('opener', {})
+assert 'reveal' in ops and all('run' in e for e in ops['reveal']), 'reveal opener missing or without run'
+\""
+    assert_true "yazi keymap.toml parses as TOML" "python3 -c \"import tomllib; tomllib.load(open('$YAZI_DATA/keymap.toml','rb'))\""
+    assert_true "yazi Enter key enters directories or opens files" "python3 -c \"
+import tomllib
+cfg = tomllib.load(open('$YAZI_DATA/keymap.toml','rb'))
+mgr = cfg.get('mgr', {})
+keys = mgr.get('prepend_keymap', []) + mgr.get('append_keymap', [])
+hits = [k for k in keys if 'Enter' in str(k.get('on', '')) and 'smart-enter' in str(k.get('run', ''))]
+assert hits, 'no Enter smart-enter binding found'
+\""
+    assert_file_exists "yazi smart-enter plugin ships its entry point" "$YAZI_DATA/plugins/smart-enter.yazi/main.lua"
+    assert_file_contains_literal "smart-enter enters directories" "$YAZI_DATA/plugins/smart-enter.yazi/main.lua" 'ya.emit("enter"'
+    assert_file_contains_literal "smart-enter opens files" "$YAZI_DATA/plugins/smart-enter.yazi/main.lua" 'ya.emit("open"'
 else
     assert_true "python3 available for TOML checks" "false"
 fi
@@ -48,7 +68,7 @@ assert_true "cliconf installer bash syntax valid" "bash -n '$PROJECT_DIR/cliconf
 assert_true "herdr menu bash syntax valid" "bash -n '$PROJECT_DIR/herdrconf/data/herdr-keybindings-menu'"
 assert_true "herdr installer bash syntax valid" "bash -n '$PROJECT_DIR/herdrconf/install.sh'"
 
-for tool in mpv zathura imv fzf rg fd bat eza zoxide git lazygit gum ai gdu; do
+for tool in mpv mupdf imv fzf rg fd bat eza zoxide git lazygit gum ai gdu; do
     assert_file_contains "cliconf covers $tool" "$CLICONF_DATA/helpers.sh" "$tool)"
 done
 

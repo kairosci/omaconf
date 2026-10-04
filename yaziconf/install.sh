@@ -17,9 +17,12 @@ source "$I18N_LIB/userconf.sh"
 
 i18n_init
 
-for cfg in yazi.toml theme.toml; do
+for cfg in yazi.toml keymap.toml theme.toml; do
     install_user_file "$SCRIPT_DIR/data/$cfg" "$CONFIG_DIR/$cfg"
 done
+
+mkdir -p "$CONFIG_DIR/plugins/smart-enter.yazi"
+install_user_file "$SCRIPT_DIR/data/plugins/smart-enter.yazi/main.lua" "$CONFIG_DIR/plugins/smart-enter.yazi/main.lua"
 
 if [[ -x "$PROJECT_DIR/hooks/theme-set.d/yazi-theme" ]]; then
     bash "$PROJECT_DIR/hooks/theme-set.d/yazi-theme" 2>/dev/null || warn "install.theme_sync_skipped"
@@ -53,14 +56,14 @@ function yh() {
 	cat << 'HELP'
 yazi - navigation (vim-style)           quick openers
   k/j up/down .... up/down               text/md ..... micro
-  h/l left/right . back/forward          pdf ....... zathura
+  h/l left/right . back/forward          pdf ....... mupdf
   gg/G ........... start/end             images ...... imv
   z/Z ............ jump with fzf/zoxide  audio/video . mpv
   o/O ............ open / open-with      archives .... extract here
   y/x/p .......... copy/cut/paste
   Tab ............ select, v visual      ~ ........... full help
    : .............. command, Q quit       ya .......... quit staying here
-   picker ....... Enter confirms, q cancels (Space multi-selects)
+   picker ....... file Enter confirms+quits, dir Enter enters, q cancels
 HELP
 }
 SHELLBLOCK

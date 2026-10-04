@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 PROJECT_ROOT="$PROJECT_DIR"
@@ -29,6 +28,7 @@ MODULE_FILES=(
     "$MODULES_DIR/10-debloat.sh"
     "$MODULES_DIR/20-defaults.sh"
     "$MODULES_DIR/22-portals.sh"
+    "$MODULES_DIR/25-desktop-cleanup.sh"
     "$MODULES_DIR/30-theming.sh"
     "$MODULES_DIR/32-omaqt.sh"
     "$MODULES_DIR/33-nvim.sh"

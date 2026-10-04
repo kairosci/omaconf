@@ -22,10 +22,10 @@ edit = [
 	{ run = '${EDITOR:-micro} %s', desc = "Edit with micro", block = true, for = "unix" },
 ]
 reveal = [
-	{ run = 'xdg-open %s', desc = "Open with system default", for = "linux" },
+	{ run = 'xdg-open %s', desc = "Open with system default", orphan = true, for = "unix" },
 ]
 view = [
-	{ run = 'zathura %s', desc = "View PDF with zathura", orphan = true, for = "unix" },
+	{ run = 'mupdf %s', desc = "View PDF with mupdf", orphan = true, for = "unix" },
 ]
 img = [
 	{ run = 'imv %s', desc = "View image with imv", orphan = true, for = "unix" },
@@ -75,6 +75,7 @@ rules = [
 	{ mime = "application/x-xz", use = "extract" },
 	{ mime = "application/x-7z-compressed", use = "extract" },
 	{ url = "*.md", use = "edit" },
+	{ url = "*", use = "reveal" },
 ]
 # >>> omaconf obscure >>>
 [plugin]

@@ -70,7 +70,7 @@ FALLBACK_LANG=$(OMACONF_LANG=zz bash "$LIB_DIR/i18n.sh" 2>/dev/null | sed -n 's/
 WARNING_IT=$(OMACONF_LANG=it bash -c 'source "$1/i18n.sh"; i18n_init >/dev/null 2>&1; t "__warning"' _ "$LIB_DIR")
 ERROR_DE=$(OMACONF_LANG=de bash -c 'source "$1/i18n.sh"; i18n_init >/dev/null 2>&1; t "__error"' _ "$LIB_DIR")
 UNKNOWN_IT=$(OMACONF_LANG=it bash -c 'source "$1/i18n.sh"; i18n_init >/dev/null 2>&1; t "totally.unknown.key"' _ "$LIB_DIR")
-PKG_IT=$(OMACONF_LANG=it bash -c 'source "$1/i18n.sh"; i18n_init >/dev/null 2>&1; t "check.pkg_installed" "brave-origin"' _ "$LIB_DIR")
+PKG_IT=$(OMACONF_LANG=it bash -c 'source "$1/i18n.sh"; i18n_init >/dev/null 2>&1; t "check.pkg_installed" "qutebrowser"' _ "$LIB_DIR")
 HELP_IT=$(OMACONF_LANG=it bash "$LIB_DIR/help.sh" 2>/dev/null | sed -n 's/^  setup *//p')
 
 eq() { [[ "$1" == "$2" ]]; }
@@ -93,7 +93,7 @@ assert_true "engine renders french"                   "ne \"\$COMPLETE_FR\" \"\$
 assert_true "engine renders german"                   "ne \"\$COMPLETE_DE\" \"\$COMPLETE_EN\""
 assert_true "engine renders spanish"                  "ne \"\$COMPLETE_ES\" \"\$COMPLETE_EN\""
 assert_true "engine renders portuguese"               "ne \"\$COMPLETE_PT\" \"\$COMPLETE_EN\""
-assert_true "engine substitutes printf arguments"     "eq \"\$PKG_IT\" 'brave-origin installato'"
+assert_true "engine substitutes printf arguments"     "eq \"\$PKG_IT\" 'qutebrowser installato'"
 assert_true "engine handles multiple printf arguments" "eq \"\$SUMMARY_IT\" 'Superati: 7  Falliti: 2'"
 assert_true "engine substitutes arguments in any key"  "eq \"\$KEYMAP_IT\" 'Tastiera console di destinazione: it'"
 assert_true "engine falls back for unknown key"       "eq \"\$UNKNOWN_IT\" 'totally.unknown.key'"

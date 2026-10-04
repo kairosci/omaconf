@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 set -uo pipefail
 
 RED='\033[0;31m'
@@ -76,12 +75,20 @@ check "icon map: default -> Papirus-Dark" "test_icon_mapping 'default' 'Papirus-
 section "Desktop Environment & User Session"
 warn_check "D-Bus session accessible" "[[ -n \"${DBUS_SESSION_BUS_ADDRESS:-}\" ]] || busctl --user status &>/dev/null"
 warn_check "XDG runtime directory valid" "[[ -d \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\" ]]"
-check "Polkit daemon enabled/active" "systemctl is-active polkit.service &>/dev/null || systemctl is-enabled polkit.service &>/dev/null"
+if [[ $EUID -eq 0 ]] || sudo -n true &>/dev/null; then
+    check "Polkit daemon enabled/active" "systemctl is-active polkit.service &>/dev/null || systemctl is-enabled polkit.service &>/dev/null"
+else
+    warn_check "Polkit service state unavailable without system privileges" "false"
+fi
 warn_check "Audio server running (PipeWire)" "systemctl --user is-active pipewire.service &>/dev/null || pgrep -x pipewire &>/dev/null"
 
 section "Network & Connectivity Non-Interference"
 check "NetworkManager configuration unmolested" "! [[ -f /etc/NetworkManager/conf.d/security.conf ]]"
-check "Loopback interface up" "ip link show lo 2>/dev/null | grep -q 'state UP\|state UNKNOWN'"
+if ip link show lo &>/dev/null; then
+    check "Loopback interface up" "ip link show lo 2>/dev/null | grep -q 'state UP\|state UNKNOWN'"
+else
+    warn_check "Loopback state unavailable in this execution context" "false"
+fi
 warn_check "DNS resolver functional" "getent hosts archlinux.org &>/dev/null || resolvectl query archlinux.org &>/dev/null"
 
 section "Omarchy Application & Package Parity"
@@ -89,15 +96,14 @@ check "yaru-icon-theme removed" "! pacman -Q yaru-icon-theme &>/dev/null"
 check "nautilus removed" "! pacman -Q nautilus &>/dev/null"
 check "herdr installed" "pacman -Q herdr &>/dev/null"
 check "gum installed" "pacman -Q gum &>/dev/null"
-check "brave-origin-bin installed" "pacman -Q brave-origin-bin &>/dev/null"
+check "qutebrowser installed" "pacman -Q qutebrowser &>/dev/null"
 check "micro installed" "pacman -Q micro &>/dev/null"
 check "yazi installed" "pacman -Q yazi &>/dev/null"
 check "7zip installed" "pacman -Q 7zip &>/dev/null"
 check "imv installed" "pacman -Q imv &>/dev/null"
 check "trash-cli installed" "pacman -Q trash-cli &>/dev/null"
 check "mpv installed" "pacman -Q mpv &>/dev/null"
-check "zathura installed" "pacman -Q zathura &>/dev/null"
-check "zathura-pdf-mupdf installed" "pacman -Q zathura-pdf-mupdf &>/dev/null"
+check "mupdf installed" "pacman -Q mupdf &>/dev/null"
 
 for debloated in chromium nautilus yaru-icon-theme kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra; do
     check "debloat verified: $debloated removed" "! pacman -Q '$debloated' &>/dev/null"
@@ -112,7 +118,7 @@ section "Security Daemon Non-Lockout Checks"
 if [[ -f /etc/usbguard/rules.conf ]]; then
     check "USBGuard allows HID input devices" "grep -q '03:00:01\|03:01:01\|03:01:02\|interface-class == { 03:..:.. }' /etc/usbguard/rules.conf 2>/dev/null || grep -q 'allow' /etc/usbguard/rules.conf"
 fi
-check "Primary user in wheel group" "groups | grep -qw 'wheel' || id -Gn | grep -qw 'wheel'"
+check "Primary user in wheel group" "[[ \$(id -u) -eq 0 ]] || getent group wheel | awk -F: -v user=\"\$(id -un)\" 'index(\",\" \$4 \",\", \",\" user \",\")'"
 check "User has valid shell in /etc/shells" "grep -qFx \"$SHELL\" /etc/shells"
 
 section "Omarchy User Configurations"

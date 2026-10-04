@@ -97,7 +97,6 @@ EOF
     done
 }
 
-
 locale_main() {
     log "locale.detect"
 

@@ -82,6 +82,11 @@ if [[ -n "$PINS" ]]; then
     fi
   fi
 fi
+if [[ -x /usr/local/libexec/omaconf-desktop-cleanup ]]; then
+  /usr/local/libexec/omaconf-desktop-cleanup 2>/dev/null || warn "hooks.desktop_reapply_skipped" "all"
+elif [[ -x "$SCRIPT_DIR/../../scripts/lib/desktop-cleanup.sh" ]]; then
+  "$SCRIPT_DIR/../../scripts/lib/desktop-cleanup.sh" 2>/dev/null || warn "hooks.desktop_reapply_skipped" "all"
+fi
 for user_home in /home/*; do
   [[ -d "$user_home" ]] || continue
   _user=$(basename "$user_home")
@@ -92,14 +97,15 @@ for user_home in /home/*; do
       _tname=$(tr '[:upper:]' '[:lower:]' < "$user_home/.local/state/omarchy/current/theme.name" | tr ' ' '-')
     fi
     case "$_tname" in
-      white|flexoki-light|catppuccin-latte|solarized-light) _it="Papirus" ;;
-      *) _it="Papirus-Dark" ;;
+      white|flexoki-light|catppuccin-latte|solarized-light) _it="Papirus"; _cs="default" ;;
+      *) _it="Papirus-Dark"; _cs="prefer-dark" ;;
     esac
     run_as_user "$_user" env XDG_RUNTIME_DIR="/run/user/$_uid" gsettings set org.gnome.desktop.interface icon-theme "$_it" 2>/dev/null || warn "hooks.icons_reapply_skipped" "$_user"
     run_as_user "$_user" env XDG_RUNTIME_DIR="/run/user/$_uid" gsettings set org.gnome.desktop.interface cursor-theme "capitaine-cursors" 2>/dev/null || warn "hooks.cursor_reapply_skipped" "$_user"
+    run_as_user "$_user" env XDG_RUNTIME_DIR="/run/user/$_uid" gsettings set org.gnome.desktop.interface color-scheme "$_cs" 2>/dev/null || warn "hooks.cscheme_reapply_skipped" "$_user"
   fi
   run_as_user "$_user" xdg-mime default yazi-terminal.desktop inode/directory 2>/dev/null || warn "hooks.yazi_reapply_skipped" "$_user"
-  run_as_user "$_user" xdg-mime default org.pwmt.zathura.desktop application/pdf 2>/dev/null || warn "hooks.pdf_reapply_skipped" "$_user"
+  run_as_user "$_user" xdg-mime default mupdf.desktop application/pdf 2>/dev/null || warn "hooks.pdf_reapply_skipped" "$_user"
   run_as_user "$_user" xdg-mime default imv.desktop image/png image/jpeg image/gif image/webp 2>/dev/null || warn "hooks.image_reapply_skipped" "$_user"
   run_as_user "$_user" xdg-mime default mpv.desktop video/mp4 video/x-matroska video/webm audio/mpeg 2>/dev/null || warn "hooks.media_reapply_skipped" "$_user"
   if [[ -n "$_uid" && -d "/run/user/$_uid" ]]; then
@@ -122,6 +128,7 @@ TFEOF
   fi
   sed -i 's|env=TERMCMD=.*|env=TERMCMD=kitty --title "termfilechooser"|' "$_tf_dir/config" 2>/dev/null || warn "hooks.portal_config_reapply_skipped" "$_user"
   omarchy default terminal kitty 2>/dev/null || warn "hooks.terminal_reapply_skipped" "$_user"
+  run_as_user "$_user" xdg-settings set default-web-browser org.qutebrowser.qutebrowser.desktop 2>/dev/null || warn "defaults.browser_skipped_user" "$_user"
   for _pc in portals.conf hyprland-portals.conf; do
     _pf="$_portal_dir/$_pc"
     if grep -q '^org\.freedesktop\.impl\.portal\.FileChooser=' "$_pf" 2>/dev/null; then
@@ -134,7 +141,9 @@ TFEOF
   chown -R "$_user":"$_user" "$_portal_dir" "$_tf_dir" 2>/dev/null || warn "hooks.portal_chown_failed" "$_user"
   if [[ -n "$_uid" && -e "/run/user/$_uid/bus" ]]; then
     _portal_env=(env "XDG_RUNTIME_DIR=/run/user/$_uid" "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$_uid/bus")
-    run_as_user "$_user" "${_portal_env[@]}" systemctl --user stop xdg-desktop-portal-gtk.service xdg-desktop-portal-gnome.service 2>/dev/null || warn "hooks.portal_reload_skipped" "$_user"
+    run_as_user "$_user" "${_portal_env[@]}" systemctl --user mask xdg-desktop-portal-gtk.service 2>/dev/null || warn "portals.gtk_mask_skipped" "$_user"
+    run_as_user "$_user" "${_portal_env[@]}" systemctl --user stop xdg-desktop-portal-gtk.service 2>/dev/null || warn "portals.stop_skipped" "$_user"
+    run_as_user "$_user" "${_portal_env[@]}" systemctl --user stop xdg-desktop-portal-gnome.service 2>/dev/null || warn "hooks.portal_reload_skipped" "$_user"
     run_as_user "$_user" "${_portal_env[@]}" systemctl --user restart xdg-desktop-portal.service 2>/dev/null || warn "hooks.portal_reload_skipped" "$_user"
   fi
 done
