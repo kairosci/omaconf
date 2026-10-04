@@ -19,8 +19,10 @@ assert_true "syntax check: herdr-keybindings-menu" "bash -n '$PROJECT_DIR/conf/h
 assert_true "Yazi theme has no emoji or private-use glyphs" "! grep -Pq '[\x{E000}-\x{F8FF}\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}]' '$PROJECT_DIR/conf/yazi/data/theme.toml' '$PROJECT_DIR/hooks/theme-set.d/yazi-theme'"
 assert_file_exists "Bash SAST workflow exists" "$PROJECT_DIR/.github/workflows/sast.yml"
 assert_file_exists "SAST dependency manifest exists" "$PROJECT_DIR/requirements-sast.txt"
+assert_file_exists "Local Bash SAST rules exist" "$PROJECT_DIR/.semgrep.yml"
 assert_file_contains "SAST dependency is version pinned" "$PROJECT_DIR/requirements-sast.txt" '^semgrep==[0-9.]+$'
 assert_file_contains "Bash SAST uploads SARIF" "$PROJECT_DIR/.github/workflows/sast.yml" 'upload-sarif@'
+assert_file_contains "Bash SAST uses local rules" "$PROJECT_DIR/.github/workflows/sast.yml" 'config .semgrep.yml'
 assert_file_contains "Dependabot tracks SAST dependencies" "$PROJECT_DIR/.github/dependabot.yml" 'package-ecosystem: pip'
 assert_file_exists "security policy exists" "$PROJECT_DIR/SECURITY.md"
 assert_file_contains "Arch CI installs the YAML test dependency" "$PROJECT_DIR/.github/workflows/ci.yml" 'base-devel git sudo jq python python-yaml'

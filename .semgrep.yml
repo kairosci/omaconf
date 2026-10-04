@@ -1,0 +1,11 @@
+rules:
+  - id: bash.security.remote-script-execution
+    message: Downloaded content is piped directly into a shell.
+    severity: ERROR
+    languages:
+      - bash
+    pattern-either:
+      - pattern: curl ... | sh
+      - pattern: curl ... | bash
+      - pattern: wget ... | sh
+      - pattern: wget ... | bash
