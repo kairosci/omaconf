@@ -18,6 +18,12 @@ source "$SCRIPT_DIR/lib/target-user.sh"
 
 i18n_init
 
+if [[ "${1:-}" == --rebuild-previews ]]; then
+    OMACONF_REBUILD_PREVIEWS=1
+    shift
+fi
+(($# == 0)) || err "setup.invalid_args"
+
 [[ $EUID -eq 0 ]] || err "__root_required"
 
 PRIMARY_USER=$(target_user_resolve) || err "__cannot_determine_user"
@@ -52,5 +58,7 @@ for mod in "${MODULE_FILES[@]}"; do
     # shellcheck disable=SC1090
     source "$mod"
 done
+
+OMASEC_LOG_STDOUT=1 bash "$PROJECT_DIR/obscure/scripts/setup.sh"
 
 log "__complete"

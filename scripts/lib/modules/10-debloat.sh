@@ -3,6 +3,9 @@
 set -euo pipefail
 
 DEBLOAT=(
+    qutebrowser
+    python-adblock
+    xdg-desktop-portal-termfilechooser
     kdenlive
     obs-studio
     obsidian

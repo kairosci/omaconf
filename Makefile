@@ -3,6 +3,11 @@ PROJECT_ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 .DEFAULT_GOAL := help
 BACKEND ?= keepassxc
+REBUILD_PREVIEWS ?= 0
+
+ifeq ($(filter $(REBUILD_PREVIEWS),0 1),)
+$(error REBUILD_PREVIEWS must be 0 or 1)
+endif
 
 ifeq ($(BACKEND),keepassxc)
 KEYRING_BACKEND := keepassxc
@@ -12,7 +17,7 @@ else
 $(error BACKEND must be keepassxc or gnome-keyring)
 endif
 
-.PHONY: help setup keyring verify test hook icons theme zed micro qute yazi cli herdr disk editors tode clean lang i18n-status lint
+.PHONY: help setup keyring verify test hook icons theme zed micro yazi cli herdr disk editors tode clean lang i18n-status lint
 
 lint:
 	@if ! command -v shellcheck &> /dev/null; then \
@@ -22,14 +27,14 @@ lint:
 	shellcheck --severity=style \
 		scripts/*.sh scripts/lib/*.sh scripts/lib/modules/*.sh \
 		hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* \
-		conf/zed/*.sh conf/micro/*.sh conf/qutebrowser/*.sh conf/yazi/*.sh conf/cli/*.sh conf/herdr/*.sh conf/disk/*.sh conf/terminal-code/*.sh \
+		conf/zed/*.sh conf/micro/*.sh conf/yazi/*.sh conf/cli/*.sh conf/herdr/*.sh conf/disk/*.sh conf/terminal-code/*.sh \
 		tests/*.sh
 
 help:
 	@bash scripts/lib/help.sh
 
 setup:
-	pkexec bash $(PROJECT_ROOT)/scripts/setup.sh
+	pkexec bash $(PROJECT_ROOT)/scripts/setup.sh $(if $(filter 1,$(REBUILD_PREVIEWS)),--rebuild-previews)
 
 keyring:
 	bash $(PROJECT_ROOT)/scripts/keyring-switch.sh "$(KEYRING_BACKEND)"
@@ -59,9 +64,6 @@ zed:
 
 micro:
 	bash conf/micro/install.sh
-
-qute:
-	bash conf/qutebrowser/install.sh
 
 yazi:
 	bash conf/yazi/install.sh

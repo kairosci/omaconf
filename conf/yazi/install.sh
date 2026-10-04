@@ -31,18 +31,6 @@ fi
 install_user_file "$SCRIPT_DIR/data/$FM_DESKTOP" "$APP_DIR/$FM_DESKTOP"
 update-desktop-database "$APP_DIR" 2>/dev/null || warn "install.desktopdb_skipped"
 
-xdg-mime default "$FM_DESKTOP" inode/directory 2>/dev/null || warn "install.xdgmime_skipped"
-gio mime inode/directory "$FM_DESKTOP" 2>/dev/null || warn "install.giomime_skipped"
-
-_mimeapps="${XDG_CONFIG_HOME:-$HOME/.config}/mimeapps.list"
-if [[ -f "$_mimeapps" ]]; then
-    if grep -q '^inode/directory=' "$_mimeapps"; then
-        sed -i "s|^inode/directory=.*|inode/directory=$FM_DESKTOP|" "$_mimeapps"
-    else
-        sed -i "/^\[Default Applications\]/a inode/directory=$FM_DESKTOP" "$_mimeapps"
-    fi
-fi
-
 install_shell_block "$HOME/.bashrc" "$MARK_BEGIN" "$MARK_END" << 'SHELLBLOCK'
 function ya() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd

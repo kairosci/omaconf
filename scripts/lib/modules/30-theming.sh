@@ -84,11 +84,24 @@ for user_home in /home/*; do
         hook_name=$(basename "$hook_file")
         cp "$hook_file" "$_hook_dir/$hook_name"
         chmod +x "$_hook_dir/$hook_name"
-        user_as "$_user" bash "$_hook_dir/$hook_name" 2>/dev/null || warn "theming.hook_failed" "$hook_name" "$_user"
+        user_as "$_user" bash "$_hook_dir/$hook_name" || warn "theming.hook_failed" "$hook_name" "$_user"
     done
     cp "$PROJECT_DIR/scripts/lib/i18n.sh" "$PROJECT_DIR/scripts/lib/i18n-boot.sh" "$_i18n_dir/"
     cp "$PROJECT_DIR"/scripts/lib/messages/*.msg "$_i18n_dir/messages/"
     cp "$PROJECT_DIR/scripts/lib/theme-preview.sh" "$_lib_dir/"
+    cp "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "$_lib_dir/"
+    cp "$PROJECT_DIR/conf/xdg-desktop-portal/data/portals.conf" "$_lib_dir/"
     chmod 644 "$_i18n_dir/i18n.sh" "$_i18n_dir"/messages/*.msg "$_lib_dir/theme-preview.sh"
     chown -R "$_user":"$_user" "$_hook_dir" "$_i18n_dir" "$_lib_dir"
+done
+
+if [[ "${OMACONF_REBUILD_PREVIEWS:-0}" == 1 ]]; then
+    mapfile -t _preview_themes < <(find "$PROJECT_DIR/theme-previews" -mindepth 2 -maxdepth 2 -name preview.png -printf '%h\n' | sed 's|.*/||' | sort)
+    user_as "$PRIMARY_USER" env "OMARCHY_PATH=${OMARCHY_PATH:-/usr/share/omarchy}" OMACONF_APPLY_PIPELINE=1 bash "$PROJECT_DIR/theme-previews/rebuild-previews.sh" "${_preview_themes[@]}"
+fi
+mapfile -t _preview_themes < <(find "$PROJECT_DIR/theme-previews" -mindepth 2 -maxdepth 2 -name preview.png -printf '%h\n' | sed 's|.*/||' | sort)
+for user_home in /home/*; do
+    [[ -d "$user_home" ]] || continue
+    _user=$(basename "$user_home")
+    user_as "$_user" bash "$PROJECT_DIR/theme-previews/apply.sh" "${_preview_themes[@]}"
 done

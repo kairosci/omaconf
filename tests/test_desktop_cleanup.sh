@@ -75,7 +75,11 @@ desktop_cleanup_sweep
 assert_true "foot orphan removed from the system entries" "[[ ! -f '$DC_SYS/foot.desktop' ]]"
 assert_true "docker orphan removed without lazydocker" "[[ ! -f '$DC_SYS/Docker.desktop' ]]"
 assert_true "disk usage entry kept through the repoint" "[[ -f '$DC_SYS/Disk Usage.desktop' ]]"
-assert_true "disk usage entry repointed to gdu" "grep -q 'gdu /' '$DC_SYS/Disk Usage.desktop'"
+if command -v baobab >/dev/null; then
+    assert_file_contains "disk usage uses the installed graphical analyzer" "$DC_SYS/Disk Usage.desktop" '^Exec=baobab$'
+else
+    assert_true "disk usage falls back to the available gdu" "grep -q 'gdu /' '$DC_SYS/Disk Usage.desktop'"
+fi
 assert_true "disk usage entry no longer references dua" "! grep -q 'dua' '$DC_SYS/Disk Usage.desktop'"
 assert_true "valid entry kept" "[[ -f '$DC_SYS/keep.desktop' ]]"
 assert_true "user orphan removed" "[[ ! -f '$DC_HOMES/tester/.local/share/applications/gone.desktop' ]]"
@@ -110,6 +114,14 @@ export PATH="$DC_BIN:/usr/bin:/bin"
 
 OMACONF_OMARCHY_APPS_DIR="$DC_SYS" OMACONF_HOMES_ROOT="$DC_HOMES" OMACONF_SYSTEM_APPS_DIRS="$DC_SANDBOX/sysapps" OMACONF_DESKTOP_SKIP_REFRESH=1 bash "$LIB"
 assert_true "standalone helper removes tryexec orphans" "[[ ! -f '$DC_HOMES/tester/.local/share/applications/alsogone.desktop' ]]"
+
+printf '#!/bin/bash\nexit 0\n' > "$DC_BIN/baobab"
+chmod +x "$DC_BIN/baobab"
+printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Exec=xdg-terminal-exec gdu /' 'Terminal=true' 'Icon=utilities-terminal' > "$DC_SYS/graphical-disk.desktop"
+assert_true "disk launcher migrates to the graphical analyzer" "_desktop_cleanup_patch_disk_usage '$DC_SYS/graphical-disk.desktop'"
+assert_file_contains "graphical disk launcher runs Baobab" "$DC_SYS/graphical-disk.desktop" '^Exec=baobab$'
+assert_file_contains "graphical disk launcher does not open a terminal" "$DC_SYS/graphical-disk.desktop" '^Terminal=false$'
+assert_file_contains "graphical disk launcher uses its application icon" "$DC_SYS/graphical-disk.desktop" '^Icon=org.gnome.baobab$'
 
 rm -rf "$DC_SANDBOX"
 

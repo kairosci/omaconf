@@ -1,5 +1,5 @@
 # Theme previews
 
-`rebuild-previews.sh` captures Micro and btop for explicitly named Omarchy themes, normalizes the images and applies them to the theme overlays. It restores the original theme and workspace after capture.
+The setup pipeline regenerates previews with `make setup REBUILD_PREVIEWS=1`. It captures real Geany and Thunar windows in isolated application instances on a temporary workspace for each explicitly selected theme, with sample files rather than personal documents. The original workspace is restored on exit; the active theme stays unchanged.
 
-Run `bash rebuild-previews.sh <theme> [theme...]` from this directory in an active Omarchy session. Inspect light and dark results before applying them.
+Previews are normalized to 1800 × 1012, RGBA, depth 8 and density 72. Setup installs user overlays, and existing stock backups remain available for restoration. Preview capture requires an active, unlocked Omarchy session.

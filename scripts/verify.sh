@@ -80,9 +80,12 @@ tcheck() {
 }
 
 section verify.sec_packages
-tcheck "check.pkg_installed" "pacman -Q qutebrowser &>/dev/null" qutebrowser
-tcheck "check.pkg_installed" "pacman -Q python-adblock &>/dev/null" python-adblock
+tcheck "check.pkg_removed" "! pacman -Q qutebrowser &>/dev/null" qutebrowser
+tcheck "check.pkg_removed" "! pacman -Q python-adblock &>/dev/null" python-adblock
 tcheck "check.pkg_installed" "pacman -Q brave-bin &>/dev/null" brave-bin
+for pkg in geany thunar gvfs tumbler papers loupe celluloid baobab resources; do
+    tcheck "check.pkg_installed" "pacman -Q $pkg &>/dev/null" "$pkg"
+done
 tcheck "check.pkg_installed" "pacman -Q slack-desktop &>/dev/null" slack-desktop
 tcheck "check.pkg_installed" "pacman -Q discord &>/dev/null" discord
 tcheck "check.pkg_removed" "! pacman -Q chromium &>/dev/null" chromium
@@ -132,9 +135,8 @@ tcheck "check.tool_present" "pacman -Q gum &>/dev/null" gum
 
 section verify.sec_browser
 tcheck "check.default_browser" "[[ \"\$(xdg-settings get default-web-browser 2>/dev/null)\" == brave-browser.desktop ]]"
-tcheck "check.default_editor"  "[[ \"\$(cat \$HOME/.local/state/omarchy/defaults/editor 2>/dev/null)\" == micro ]]"
+tcheck "check.default_editor"  "[[ \"\$(cat \$HOME/.local/state/omarchy/defaults/editor 2>/dev/null)\" == geany ]]"
 tcheck "check.terminal_code" "[[ -x \${XDG_BIN_HOME:-\$HOME/.local/bin}/tode ]]"
-tcheck "check.quteconf" "[[ -f \$HOME/.config/qutebrowser/config.py ]]"
 tcheck "check.yazi_config" "[[ -f \$HOME/.config/yazi/yazi.toml ]]"
 tcheck "check.yazi_syntax_current" "grep -q '%s' \$HOME/.config/yazi/yazi.toml"
 tcheck "check.yazi_syntax_legacy" "! grep -qF '"\$@"' \$HOME/.config/yazi/yazi.toml"
@@ -292,14 +294,13 @@ section verify.sec_userconfigs
 tcheck "check.starship_config"  "[[ -f \$HOME/.config/starship.toml ]]"
 tcheck "check.git_config"       "[[ -f \$HOME/.config/git/config ]]"
 tcheck "check.lazygit_config"   "[[ -f \$HOME/.config/lazygit/config.yml ]]"
-tcheck "check.portals_conf"     "[[ -f \$HOME/.config/xdg-desktop-portal/portals.conf ]] && grep -q 'FileChooser=termfilechooser' \$HOME/.config/xdg-desktop-portal/portals.conf"
-tcheck "check.termfilechooser_conf" "[[ -f \$HOME/.config/xdg-desktop-portal-termfilechooser/config ]]"
+tcheck "check.portals_conf"     "[[ -f \$HOME/.config/xdg-desktop-portal/portals.conf ]] && grep -q 'FileChooser=gtk' \$HOME/.config/xdg-desktop-portal/portals.conf"
 tcheck "check.keyring_disabled" "! grep -rq 'pam_gnome_keyring' /etc/pam.d/sddm /etc/pam.d/sddm-autologin 2>/dev/null"
 tcheck "check.keyring_backend" "grep -Eq '^(keepassxc|gnome-keyring)$' /etc/omaconf/keyring-backend"
 if [[ -f /etc/omaconf/keyring-backend ]] && grep -qx keepassxc /etc/omaconf/keyring-backend; then
     tcheck "check.keyring_provider" "pacman -Q keepassxc &>/dev/null"
 fi
-tcheck "check.no_gtk_defaults" "pacman -Q qutebrowser &>/dev/null && ! pacman -Q zathura &>/dev/null && ! pacman -Q zathura-pdf-mupdf &>/dev/null && ! systemctl is-enabled --quiet xdg-desktop-portal-gtk.service 2>/dev/null"
+tcheck "check.desktop_graphical" "pacman -Q thunar gvfs tumbler xdg-desktop-portal-gtk &>/dev/null && [[ \"\$(xdg-mime query default inode/directory)\" == thunar.desktop ]]"
 tcheck "check.cli_secrets"      "command -v secret-tool &>/dev/null && command -v pass &>/dev/null"
 tcheck "check.disk_config"      "[[ -f \$HOME/.config/gdu/gdu.yaml ]]"
 

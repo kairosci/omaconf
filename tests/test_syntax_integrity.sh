@@ -9,7 +9,7 @@ source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Script Syntax & Code Integrity"
 
-for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/scripts/lib/*.sh "$PROJECT_DIR"/scripts/lib/modules/*.sh "$PROJECT_DIR"/hooks/theme-set.d/* "$PROJECT_DIR"/hooks/pre-refresh-pacman.d/* "$PROJECT_DIR"/hooks/post-update.d/* "$PROJECT_DIR"/conf/zed/*.sh "$PROJECT_DIR"/conf/micro/*.sh "$PROJECT_DIR"/conf/qutebrowser/*.sh "$PROJECT_DIR"/conf/yazi/*.sh "$PROJECT_DIR"/conf/cli/*.sh "$PROJECT_DIR"/conf/herdr/*.sh "$PROJECT_DIR"/conf/disk/*.sh "$PROJECT_DIR"/conf/terminal-code/*.sh "$PROJECT_DIR"/tests/*.sh; do
+for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/scripts/lib/*.sh "$PROJECT_DIR"/scripts/lib/modules/*.sh "$PROJECT_DIR"/hooks/theme-set.d/* "$PROJECT_DIR"/hooks/pre-refresh-pacman.d/* "$PROJECT_DIR"/hooks/post-update.d/* "$PROJECT_DIR"/conf/zed/*.sh "$PROJECT_DIR"/conf/micro/*.sh "$PROJECT_DIR"/conf/yazi/*.sh "$PROJECT_DIR"/conf/cli/*.sh "$PROJECT_DIR"/conf/herdr/*.sh "$PROJECT_DIR"/conf/disk/*.sh "$PROJECT_DIR"/conf/terminal-code/*.sh "$PROJECT_DIR"/tests/*.sh; do
     [[ -f "$sh_file" ]] || continue
     fname=$(basename "$sh_file")
     assert_true "syntax check: $fname" "bash -n '$sh_file'"
@@ -43,7 +43,6 @@ assert_file_executable "hooks/pre-refresh-pacman.d/99-omaconf-persist is executa
 assert_file_executable "hooks/post-update.d/99-omaconf-persist is executable" "$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist"
 assert_file_executable "conf/zed/install.sh is executable" "$PROJECT_DIR/conf/zed/install.sh"
 assert_file_executable "conf/micro/install.sh is executable" "$PROJECT_DIR/conf/micro/install.sh"
-assert_file_executable "conf/qutebrowser/install.sh is executable" "$PROJECT_DIR/conf/qutebrowser/install.sh"
 assert_file_executable "conf/terminal-code/install.sh is executable" "$PROJECT_DIR/conf/terminal-code/install.sh"
 assert_file_executable "conf/yazi/install.sh is executable" "$PROJECT_DIR/conf/yazi/install.sh"
 assert_file_executable "conf/herdr/install.sh is executable" "$PROJECT_DIR/conf/herdr/install.sh"

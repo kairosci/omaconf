@@ -67,10 +67,8 @@ fi
 
 assert_true "Micro settings JSON valid" "jq empty '$PROJECT_DIR/conf/micro/data/settings.json'"
 assert_true "Micro bindings JSON valid" "jq empty '$PROJECT_DIR/conf/micro/data/bindings.json'"
-assert_true "qutebrowser config Python syntax valid" "python3 -c \"compile(open('$PROJECT_DIR/conf/qutebrowser/data/config.py').read(), 'config.py', 'exec')\""
 assert_file_contains_literal "Micro shares common editor bindings" "$PROJECT_DIR/conf/micro/data/bindings.json" '"Ctrl-s": "Save"'
 assert_file_contains_literal "Micro shares search and history bindings" "$PROJECT_DIR/conf/micro/data/bindings.json" '"Ctrl-z": "Undo"'
-assert_file_contains_literal "qutebrowser saves, searches and quits on common chords" "$PROJECT_DIR/conf/qutebrowser/data/config.py" 'config.bind("<Ctrl+Q>", "quit")'
 
 assert_true "cliconf helpers bash syntax valid" "bash -n '$CLICONF_DATA/helpers.sh'"
 assert_true "cliconf installer bash syntax valid" "bash -n '$PROJECT_DIR/conf/cli/install.sh'"

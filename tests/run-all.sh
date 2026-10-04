@@ -21,4 +21,5 @@ bash "$SCRIPT_DIR/run-suite-list.sh" \
     "$SCRIPT_DIR/test_desktop_defaults.sh" \
     "$SCRIPT_DIR/test_herdr_menu.sh" \
     "$SCRIPT_DIR/test_diskconf.sh" \
-    "$SCRIPT_DIR/test_desktop_cleanup.sh"
+    "$SCRIPT_DIR/test_desktop_cleanup.sh" \
+    "$SCRIPT_DIR/test_graphical_workflow.sh"
