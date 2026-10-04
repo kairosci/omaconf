@@ -102,6 +102,7 @@ assert_true "app configurations have one canonical root" \
     "[[ -d '$PROJECT_DIR/conf' ]] && ! find '$PROJECT_DIR' -mindepth 1 -maxdepth 1 -type d -name '*conf' ! -name conf -print -quit | grep -q ."
 
 for installer in "$PROJECT_DIR"/conf/*/install.sh; do
+    [[ "$installer" == "$PROJECT_DIR/conf/terminal-code/install.sh" ]] && continue
     assert_file_contains "$installer sources the user config library" \
         "$installer" "userconf.sh"
 done

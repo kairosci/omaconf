@@ -29,7 +29,6 @@ DEBLOAT=(
     sushi
     gtksourceview4
     gst-plugin-gtk
-    brave-origin-bin
     zathura
     zathura-pdf-mupdf
     dua-cli
@@ -68,6 +67,7 @@ EXISTING_PINS=""
 if grep -q '^IgnorePkg' /etc/pacman.conf 2>/dev/null; then
     EXISTING_PINS=$(grep '^IgnorePkg' /etc/pacman.conf | head -1 | sed 's/^IgnorePkg[[:space:]]*=[[:space:]]*//')
 fi
+EXISTING_PINS=$(sed -E 's/(^|[[:space:]])brave-origin-bin([[:space:]]|$)/ /g' <<< "$EXISTING_PINS")
 MERGED_PINS="$EXISTING_PINS"
 for pkg in "${DEBLOAT[@]}"; do
     grep -qw "$pkg" <<< " $MERGED_PINS " 2>/dev/null || MERGED_PINS="$MERGED_PINS $pkg"

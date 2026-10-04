@@ -82,13 +82,19 @@ tcheck() {
 section verify.sec_packages
 tcheck "check.pkg_installed" "pacman -Q qutebrowser &>/dev/null" qutebrowser
 tcheck "check.pkg_installed" "pacman -Q python-adblock &>/dev/null" python-adblock
-tcheck "check.pkg_removed" "! pacman -Q brave-origin-bin &>/dev/null" brave-origin-bin
+tcheck "check.pkg_installed" "pacman -Q brave-bin &>/dev/null" brave-bin
+tcheck "check.pkg_installed" "pacman -Q slack-desktop &>/dev/null" slack-desktop
+tcheck "check.pkg_installed" "pacman -Q discord &>/dev/null" discord
 tcheck "check.pkg_removed" "! pacman -Q chromium &>/dev/null" chromium
 tcheck "check.pkg_removed" "! pacman -Q neovim &>/dev/null" neovim
 tcheck "check.pkg_removed" "! pacman -Q omarchy-nvim &>/dev/null" omarchy-nvim
 tcheck "check.pkg_installed" "pacman -Q micro &>/dev/null" micro
 tcheck "check.pkg_installed" "pacman -Q fzf &>/dev/null" fzf
 tcheck "check.pkg_installed" "pacman -Q universal-ctags &>/dev/null" universal-ctags
+tcheck "check.pkg_installed" "pacman -Q shellcheck &>/dev/null" shellcheck
+tcheck "check.pkg_installed" "pacman -Q shfmt &>/dev/null" shfmt
+tcheck "check.pkg_installed" "pacman -Q ruff &>/dev/null" ruff
+tcheck "check.pkg_installed" "pacman -Q yamllint &>/dev/null" yamllint
 tcheck "check.pkg_installed" "pacman -Q mpv &>/dev/null" mpv
 tcheck "check.pkg_installed" "pacman -Q yazi &>/dev/null" yazi
 tcheck "check.pkg_installed" "pacman -Q 7zip &>/dev/null" 7zip
@@ -125,8 +131,9 @@ tcheck "check.tool_present" "pacman -Q herdr &>/dev/null" herdr
 tcheck "check.tool_present" "pacman -Q gum &>/dev/null" gum
 
 section verify.sec_browser
-tcheck "check.default_browser" "[[ \"\$(xdg-settings get default-web-browser 2>/dev/null)\" == org.qutebrowser.qutebrowser.desktop ]]"
+tcheck "check.default_browser" "[[ \"\$(xdg-settings get default-web-browser 2>/dev/null)\" == brave-browser.desktop ]]"
 tcheck "check.default_editor"  "[[ \"\$(cat \$HOME/.local/state/omarchy/defaults/editor 2>/dev/null)\" == micro ]]"
+tcheck "check.terminal_code" "[[ -x \${XDG_BIN_HOME:-\$HOME/.local/bin}/tode ]]"
 tcheck "check.quteconf" "[[ -f \$HOME/.config/qutebrowser/config.py ]]"
 tcheck "check.yazi_config" "[[ -f \$HOME/.config/yazi/yazi.toml ]]"
 tcheck "check.yazi_syntax_current" "grep -q '%s' \$HOME/.config/yazi/yazi.toml"
@@ -292,7 +299,7 @@ tcheck "check.keyring_backend" "grep -Eq '^(keepassxc|gnome-keyring)$' /etc/omac
 if [[ -f /etc/omaconf/keyring-backend ]] && grep -qx keepassxc /etc/omaconf/keyring-backend; then
     tcheck "check.keyring_provider" "pacman -Q keepassxc &>/dev/null"
 fi
-tcheck "check.no_gtk_defaults" "! pacman -Q brave-origin-bin &>/dev/null && ! pacman -Q zathura &>/dev/null && ! pacman -Q zathura-pdf-mupdf &>/dev/null"
+tcheck "check.no_gtk_defaults" "pacman -Q qutebrowser &>/dev/null && ! pacman -Q zathura &>/dev/null && ! pacman -Q zathura-pdf-mupdf &>/dev/null && ! systemctl is-enabled --quiet xdg-desktop-portal-gtk.service 2>/dev/null"
 tcheck "check.cli_secrets"      "command -v secret-tool &>/dev/null && command -v pass &>/dev/null"
 tcheck "check.disk_config"      "[[ -f \$HOME/.config/gdu/gdu.yaml ]]"
 

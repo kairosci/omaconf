@@ -28,7 +28,7 @@ fi
 install_user_file "$SCRIPT_DIR/data/bindings.json" "$CONFIG_DIR/bindings.json"
 
 if command -v micro &>/dev/null; then
-    for plugin in detectindent jump snippets; do
+    for plugin in detectindent jump snippets run editorconfig; do
         if ! micro -plugin list 2>/dev/null | grep -q "^$plugin "; then
             if ! plugin_output="$(micro -plugin install "$plugin" 2>&1)" || grep -Eq 'Unknown plugin|Failed to query plugin channel' <<< "$plugin_output"; then
                 warn "install.micro_plugin_skipped" "$plugin"

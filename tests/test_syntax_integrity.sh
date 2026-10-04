@@ -9,7 +9,7 @@ source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Script Syntax & Code Integrity"
 
-for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/scripts/lib/*.sh "$PROJECT_DIR"/scripts/modules/*.sh "$PROJECT_DIR"/hooks/theme-set.d/* "$PROJECT_DIR"/hooks/pre-refresh-pacman.d/* "$PROJECT_DIR"/hooks/post-update.d/* "$PROJECT_DIR"/conf/zed/*.sh "$PROJECT_DIR"/conf/micro/*.sh "$PROJECT_DIR"/conf/qutebrowser/*.sh "$PROJECT_DIR"/conf/yazi/*.sh "$PROJECT_DIR"/conf/cli/*.sh "$PROJECT_DIR"/conf/herdr/*.sh "$PROJECT_DIR"/conf/disk/*.sh "$PROJECT_DIR"/tests/*.sh; do
+for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/scripts/lib/*.sh "$PROJECT_DIR"/scripts/modules/*.sh "$PROJECT_DIR"/hooks/theme-set.d/* "$PROJECT_DIR"/hooks/pre-refresh-pacman.d/* "$PROJECT_DIR"/hooks/post-update.d/* "$PROJECT_DIR"/conf/zed/*.sh "$PROJECT_DIR"/conf/micro/*.sh "$PROJECT_DIR"/conf/qutebrowser/*.sh "$PROJECT_DIR"/conf/yazi/*.sh "$PROJECT_DIR"/conf/cli/*.sh "$PROJECT_DIR"/conf/herdr/*.sh "$PROJECT_DIR"/conf/disk/*.sh "$PROJECT_DIR"/conf/terminal-code/*.sh "$PROJECT_DIR"/tests/*.sh; do
     [[ -f "$sh_file" ]] || continue
     fname=$(basename "$sh_file")
     assert_true "syntax check: $fname" "bash -n '$sh_file'"
@@ -28,6 +28,7 @@ assert_file_executable "hooks/post-update.d/99-omaconf-persist is executable" "$
 assert_file_executable "conf/zed/install.sh is executable" "$PROJECT_DIR/conf/zed/install.sh"
 assert_file_executable "conf/micro/install.sh is executable" "$PROJECT_DIR/conf/micro/install.sh"
 assert_file_executable "conf/qutebrowser/install.sh is executable" "$PROJECT_DIR/conf/qutebrowser/install.sh"
+assert_file_executable "conf/terminal-code/install.sh is executable" "$PROJECT_DIR/conf/terminal-code/install.sh"
 assert_file_executable "conf/yazi/install.sh is executable" "$PROJECT_DIR/conf/yazi/install.sh"
 assert_file_executable "conf/herdr/install.sh is executable" "$PROJECT_DIR/conf/herdr/install.sh"
 assert_file_executable "conf/disk/install.sh is executable" "$PROJECT_DIR/conf/disk/install.sh"
@@ -52,6 +53,7 @@ assert_file_contains "launch.sh uses strict mode" "$PROJECT_DIR/scripts/launch.s
 assert_file_contains "run-setup.sh uses strict mode" "$PROJECT_DIR/scripts/run-setup.sh" "set -euo pipefail"
 assert_file_contains "folder-color uses strict mode" "$PROJECT_DIR/hooks/theme-set.d/folder-color" "set -euo pipefail"
 assert_file_contains "micro-theme uses strict mode" "$PROJECT_DIR/hooks/theme-set.d/micro-theme" "set -euo pipefail"
+assert_file_contains "terminal-code installer uses strict mode" "$PROJECT_DIR/conf/terminal-code/install.sh" "set -euo pipefail"
 assert_file_contains "disk-theme uses strict mode" "$PROJECT_DIR/hooks/theme-set.d/disk-theme" "set -euo pipefail"
 assert_file_contains "pre-refresh persist hook uses strict mode" "$PROJECT_DIR/hooks/pre-refresh-pacman.d/99-omaconf-persist" "set -euo pipefail"
 assert_file_contains "post-update persist hook uses strict mode" "$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist" "set -euo pipefail"
