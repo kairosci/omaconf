@@ -126,8 +126,8 @@ assert_file_contains "Makefile exposes disk target" "$PROJECT_DIR/Makefile" "^di
 assert_file_contains "Makefile help is translated" "$PROJECT_DIR/Makefile" "lib/help.sh"
 assert_file_contains "Makefile hook target installs the i18n runtime" "$PROJECT_DIR/Makefile" "hooks/i18n"
 
-for installer in zedconf microconf quteconf yaziconf cliconf herdrconf diskconf; do
-    assert_file_contains "$installer sources the i18n library" "$PROJECT_DIR/$installer/install.sh" "i18n.sh"
+for installer in "$PROJECT_DIR"/conf/*/install.sh; do
+    assert_file_contains "$installer sources the i18n library" "$installer" "i18n.sh"
 done
 
 for hook in hooks/theme-set.d/folder-color hooks/theme-set.d/micro-theme hooks/theme-set.d/btop-theme \

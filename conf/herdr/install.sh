@@ -9,7 +9,8 @@ MARK_END="-- end omaconf-herdr-keys (managed)"
 MENU_SRC="$SCRIPT_DIR/data/herdr-keybindings-menu"
 MENU_PATH="$SHARE_DIR/herdr-keybindings-menu"
 
-I18N_LIB="$(dirname "$SCRIPT_DIR")/scripts/lib"
+PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+I18N_LIB="$PROJECT_DIR/scripts/lib"
 # shellcheck source=/dev/null
 source "$I18N_LIB/i18n.sh"
 # shellcheck source=/dev/null

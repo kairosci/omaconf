@@ -4,7 +4,8 @@ set -euo pipefail
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/zed"
 
-I18N_LIB="$(dirname "$SCRIPT_DIR")/scripts/lib"
+PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+I18N_LIB="$PROJECT_DIR/scripts/lib"
 # shellcheck source=/dev/null
 source "$I18N_LIB/i18n.sh"
 # shellcheck source=/dev/null

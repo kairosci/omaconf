@@ -5,8 +5,8 @@ set -euo pipefail
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 SHELL_PLUGINS_MODULE="$PROJECT_DIR/scripts/modules/35-shell-plugins.sh"
-YAZI_DATA="$PROJECT_DIR/yaziconf/data"
-CLICONF_DATA="$PROJECT_DIR/cliconf/data"
+YAZI_DATA="$PROJECT_DIR/conf/yazi/data"
+CLICONF_DATA="$PROJECT_DIR/conf/cli/data"
 
 source "$SCRIPT_DIR/test_lib.sh"
 
@@ -65,17 +65,17 @@ else
     assert_true "python3 available for TOML checks" "false"
 fi
 
-assert_true "Micro settings JSON valid" "jq empty '$PROJECT_DIR/microconf/data/settings.json'"
-assert_true "Micro bindings JSON valid" "jq empty '$PROJECT_DIR/microconf/data/bindings.json'"
-assert_true "qutebrowser config Python syntax valid" "python3 -c \"compile(open('$PROJECT_DIR/quteconf/data/config.py').read(), 'config.py', 'exec')\""
-assert_file_contains_literal "Micro shares common editor bindings" "$PROJECT_DIR/microconf/data/bindings.json" '"Ctrl-s": "Save"'
-assert_file_contains_literal "Micro shares search and history bindings" "$PROJECT_DIR/microconf/data/bindings.json" '"Ctrl-z": "Undo"'
-assert_file_contains_literal "qutebrowser saves, searches and quits on common chords" "$PROJECT_DIR/quteconf/data/config.py" 'config.bind("<Ctrl+Q>", "quit")'
+assert_true "Micro settings JSON valid" "jq empty '$PROJECT_DIR/conf/micro/data/settings.json'"
+assert_true "Micro bindings JSON valid" "jq empty '$PROJECT_DIR/conf/micro/data/bindings.json'"
+assert_true "qutebrowser config Python syntax valid" "python3 -c \"compile(open('$PROJECT_DIR/conf/qutebrowser/data/config.py').read(), 'config.py', 'exec')\""
+assert_file_contains_literal "Micro shares common editor bindings" "$PROJECT_DIR/conf/micro/data/bindings.json" '"Ctrl-s": "Save"'
+assert_file_contains_literal "Micro shares search and history bindings" "$PROJECT_DIR/conf/micro/data/bindings.json" '"Ctrl-z": "Undo"'
+assert_file_contains_literal "qutebrowser saves, searches and quits on common chords" "$PROJECT_DIR/conf/qutebrowser/data/config.py" 'config.bind("<Ctrl+Q>", "quit")'
 
 assert_true "cliconf helpers bash syntax valid" "bash -n '$CLICONF_DATA/helpers.sh'"
-assert_true "cliconf installer bash syntax valid" "bash -n '$PROJECT_DIR/cliconf/install.sh'"
-assert_true "herdr menu bash syntax valid" "bash -n '$PROJECT_DIR/herdrconf/data/herdr-keybindings-menu'"
-assert_true "herdr installer bash syntax valid" "bash -n '$PROJECT_DIR/herdrconf/install.sh'"
+assert_true "cliconf installer bash syntax valid" "bash -n '$PROJECT_DIR/conf/cli/install.sh'"
+assert_true "herdr menu bash syntax valid" "bash -n '$PROJECT_DIR/conf/herdr/data/herdr-keybindings-menu'"
+assert_true "herdr installer bash syntax valid" "bash -n '$PROJECT_DIR/conf/herdr/install.sh'"
 
 for tool in mpv mupdf imv fzf rg fd bat eza zoxide git lazygit gum ai gdu; do
     assert_file_contains "cliconf covers $tool" "$CLICONF_DATA/helpers.sh" "$tool)"
@@ -96,14 +96,17 @@ assert_file_contains "user config library manages shell blocks" "$USERCONF_LIB" 
 assert_true "user config library leaves caller shell options untouched" \
     "bash -c 'set +e +u; source \"$USERCONF_LIB\"; [[ \$- != *e* && \$- != *u* ]]'"
 assert_true "no installer keeps the ad hoc timestamped backup" \
-    "! grep -qE 'bak-\\\$\\(date' '$PROJECT_DIR'/*conf/install.sh"
+    "! grep -qE 'bak-\\\$\\(date' '$PROJECT_DIR'/conf/*/install.sh"
 
-for installer in cliconf herdrconf microconf quteconf yaziconf zedconf diskconf; do
+assert_true "app configurations have one canonical root" \
+    "[[ -d '$PROJECT_DIR/conf' ]] && ! find '$PROJECT_DIR' -mindepth 1 -maxdepth 1 -type d -name '*conf' ! -name conf -print -quit | grep -q ."
+
+for installer in "$PROJECT_DIR"/conf/*/install.sh; do
     assert_file_contains "$installer sources the user config library" \
-        "$PROJECT_DIR/$installer/install.sh" "userconf.sh"
+        "$installer" "userconf.sh"
 done
 
-HERDR_MENU="$PROJECT_DIR/herdrconf/data/herdr-keybindings-menu"
+HERDR_MENU="$PROJECT_DIR/conf/herdr/data/herdr-keybindings-menu"
 assert_file_contains "herdr menu lists the upstream herdr bindings" "$HERDR_MENU" "herdr --default-config"
 assert_file_contains "herdr menu supports print mode" "$HERDR_MENU" '[-]-print'
 assert_file_contains "herdr menu keeps the upstream display format" "$HERDR_MENU" "→ %s"
@@ -113,9 +116,9 @@ assert_file_contains "herdr menu focuses the herdr window" "$HERDR_MENU" "focusw
 assert_file_contains "herdr menu replays keys into herdr" "$HERDR_MENU" "wtype"
 assert_file_contains "herdr menu exits cleanly on menu cancel" "$HERDR_MENU" '\|\| exit 0'
 assert_file_not_contains "herdr menu has no raw failure suppression" "$HERDR_MENU" '\|\|[[:space:]]*true'
-assert_file_contains "herdr installer deploys the menu per user" "$PROJECT_DIR/herdrconf/install.sh" "herdr-keybindings-menu"
-assert_file_contains "herdr installer manages the hyprland binding" "$PROJECT_DIR/herdrconf/install.sh" "bindings.lua"
-assert_file_contains "herdr installer keeps super-ctrl-k on herdr" "$PROJECT_DIR/herdrconf/install.sh" 'SUPER [+] CTRL [+] K'
+assert_file_contains "herdr installer deploys the menu per user" "$PROJECT_DIR/conf/herdr/install.sh" "herdr-keybindings-menu"
+assert_file_contains "herdr installer manages the hyprland binding" "$PROJECT_DIR/conf/herdr/install.sh" "bindings.lua"
+assert_file_contains "herdr installer keeps super-ctrl-k on herdr" "$PROJECT_DIR/conf/herdr/install.sh" 'SUPER [+] CTRL [+] K'
 
 if ((UID != 0)); then
     USERCONF_SANDBOX="$(mktemp -d)"

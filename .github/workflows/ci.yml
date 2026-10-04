@@ -26,7 +26,7 @@ jobs:
 
       - name: Validate Shell Syntax
         run: |
-          for sh_file in scripts/*.sh scripts/lib/*.sh scripts/modules/*.sh hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* zedconf/*.sh microconf/*.sh quteconf/*.sh yaziconf/*.sh cliconf/*.sh herdrconf/*.sh tests/*.sh */scripts/*.sh */scripts/lib/*.sh */scripts/modules/*.sh */hooks/theme-set.d/* */hooks/pre-refresh-pacman.d/* */hooks/post-update.d/* */tests/*.sh *conf/install.sh; do
+          for sh_file in scripts/*.sh scripts/lib/*.sh scripts/modules/*.sh hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* conf/*/*.sh tests/*.sh */scripts/*.sh */scripts/lib/*.sh */scripts/modules/*.sh */hooks/theme-set.d/* */hooks/pre-refresh-pacman.d/* */hooks/post-update.d/* */tests/*.sh; do
             [ -f "$sh_file" ] || continue
             bash -n "$sh_file"
           done
@@ -57,7 +57,7 @@ jobs:
           shellcheck --severity=style \
             scripts/*.sh scripts/lib/*.sh scripts/modules/*.sh \
             hooks/theme-set.d/* hooks/pre-refresh-pacman.d/* hooks/post-update.d/* \
-            zedconf/*.sh microconf/*.sh quteconf/*.sh yaziconf/*.sh cliconf/*.sh herdrconf/*.sh \
+            conf/*/*.sh \
             tests/*.sh \
             clean/scripts/*.sh clean/scripts/modules/*.sh \
             obscure/scripts/*.sh obscure/scripts/modules/*.sh \

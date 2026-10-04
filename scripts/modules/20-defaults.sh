@@ -31,11 +31,11 @@ for user_home in /home/*; do
     mkdir -p "$user_home/.local/state/omarchy/defaults"
     printf 'micro\n' > "$user_home/.local/state/omarchy/defaults/editor"
     chown -R "$_user":"$_user" "$user_home/.local/state" 2>/dev/null || warn "defaults.editor_state_failed" "$_user"
-    if [[ -x "$PROJECT_DIR/microconf/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/microconf/install.sh" 2>/dev/null || warn "defaults.microconf_skipped" "$_user"
+    if [[ -x "$PROJECT_DIR/conf/micro/install.sh" ]]; then
+        user_as "$_user" bash "$PROJECT_DIR/conf/micro/install.sh" 2>/dev/null || warn "defaults.microconf_skipped" "$_user"
     fi
-    if [[ -x "$PROJECT_DIR/quteconf/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/quteconf/install.sh" 2>/dev/null || warn "defaults.quteconf_skipped" "$_user"
+    if [[ -x "$PROJECT_DIR/conf/qutebrowser/install.sh" ]]; then
+        user_as "$_user" bash "$PROJECT_DIR/conf/qutebrowser/install.sh" 2>/dev/null || warn "defaults.quteconf_skipped" "$_user"
     fi
 done
 
@@ -63,8 +63,8 @@ log "defaults.yaziconf"
 for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
     _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/yaziconf/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/yaziconf/install.sh" 2>/dev/null || warn "defaults.yaziconf_skipped" "$_user"
+    if [[ -x "$PROJECT_DIR/conf/yazi/install.sh" ]]; then
+        user_as "$_user" bash "$PROJECT_DIR/conf/yazi/install.sh" 2>/dev/null || warn "defaults.yaziconf_skipped" "$_user"
     fi
 done
 
@@ -72,8 +72,8 @@ log "defaults.herdrconf"
 for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
     _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/herdrconf/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/herdrconf/install.sh" 2>/dev/null || warn "defaults.herdrconf_skipped" "$_user"
+    if [[ -x "$PROJECT_DIR/conf/herdr/install.sh" ]]; then
+        user_as "$_user" bash "$PROJECT_DIR/conf/herdr/install.sh" 2>/dev/null || warn "defaults.herdrconf_skipped" "$_user"
     fi
 done
 
@@ -86,8 +86,8 @@ log "defaults.diskconf"
 for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
     _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/diskconf/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/diskconf/install.sh" 2>/dev/null || warn "defaults.diskconf_skipped" "$_user"
+    if [[ -x "$PROJECT_DIR/conf/disk/install.sh" ]]; then
+        user_as "$_user" bash "$PROJECT_DIR/conf/disk/install.sh" 2>/dev/null || warn "defaults.diskconf_skipped" "$_user"
     fi
 done
 

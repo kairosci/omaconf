@@ -6,7 +6,7 @@ description: >-
 
 # Editor Configurations
 
-`zedconf/`, `microconf/`, `quteconf/` and `yaziconf/` own their app data and each expose one user scope installer. Every installer uses `scripts/lib/userconf.sh` for atomic installs, backups and marked shell blocks.
+`conf/<app>/` is the single home for application configurations. Each app folder owns its data and exposes one user-scope installer. Every installer uses `scripts/lib/userconf.sh` for atomic installs, backups and marked shell blocks.
 
 ## Micro
 
@@ -14,7 +14,7 @@ The Micro installer merges settings, deploys bindings and adds the shell helper.
 
 ## qutebrowser
 
-The quteconf installer deploys `data/config.py` to the user config directory. Preserve qutebrowser defaults unless an override is needed. Check setting names, values and commands against the installed qutebrowser version before adding them.
+The `conf/qutebrowser` installer deploys `data/config.py` to the user config directory. Preserve qutebrowser defaults unless an override is needed. Check setting names, values and commands against the installed qutebrowser version before adding them.
 
 ## Zed
 

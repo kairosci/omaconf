@@ -40,7 +40,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 section "Script Syntax & Code Integrity"
-for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/hooks/theme-set.d/* "$PROJECT_DIR"/zedconf/*.sh; do
+for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/hooks/theme-set.d/* "$PROJECT_DIR"/conf/*/*.sh; do
     [[ -f "$sh_file" ]] || continue
     check "syntax check: $(basename "$sh_file")" "bash -n '$sh_file'"
 done

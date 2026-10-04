@@ -13,7 +13,7 @@ Openers stay aligned with the omaconf desktop stack using micro for text and mar
 Run in user scope:
 
 ```bash
-bash yaziconf/install.sh
+bash conf/yazi/install.sh
 ```
 
 Or through the Makefile:
@@ -25,7 +25,7 @@ make yazi
 ## Architecture
 
 ```
-yaziconf/
+conf/yazi/
 ├── data/
 │   ├── yazi.toml
 │   ├── keymap.toml

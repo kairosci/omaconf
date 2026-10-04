@@ -4,8 +4,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-HERDR_MENU="$PROJECT_DIR/herdrconf/data/herdr-keybindings-menu"
-HERDR_INSTALLER="$PROJECT_DIR/herdrconf/install.sh"
+HERDR_MENU="$PROJECT_DIR/conf/herdr/data/herdr-keybindings-menu"
+HERDR_INSTALLER="$PROJECT_DIR/conf/herdr/install.sh"
 MSG_DIR="$PROJECT_DIR/scripts/lib/messages"
 
 source "$SCRIPT_DIR/test_lib.sh"
@@ -351,16 +351,16 @@ test_section "Wiring, Provisioning & Catalogues"
 
 assert_file_contains "make herdr runs the installer" "$PROJECT_DIR/Makefile" 'herdr:'
 assert_true "make herdr body calls herdrconf" \
-    "grep -A1 '^herdr:' '$PROJECT_DIR/Makefile' | grep -q 'herdrconf/install.sh'"
+    "grep -A1 '^herdr:' '$PROJECT_DIR/Makefile' | grep -q 'conf/herdr/install.sh'"
 assert_file_contains "make phony lists herdr" "$PROJECT_DIR/Makefile" 'herdr'
-assert_file_contains "make lint covers herdrconf" "$PROJECT_DIR/Makefile" 'herdrconf/'
+assert_file_contains "make lint covers herdrconf" "$PROJECT_DIR/Makefile" 'conf/herdr/'
 assert_file_contains "make help lists herdr" "$PROJECT_DIR/scripts/lib/help.sh" 'row herdr "make.herdr"'
-assert_file_contains "defaults module provisions herdrconf per user" "$PROJECT_DIR/scripts/modules/20-defaults.sh" "herdrconf/install.sh"
+assert_file_contains "defaults module provisions herdrconf per user" "$PROJECT_DIR/scripts/modules/20-defaults.sh" "conf/herdr/install.sh"
 assert_true "defaults provisioning degrades per user" \
-    "grep -A4 'herdrconf/install.sh' '$PROJECT_DIR/scripts/modules/20-defaults.sh' | grep -q 'defaults.herdrconf_skipped'"
+    "grep -A4 'conf/herdr/install.sh' '$PROJECT_DIR/scripts/modules/20-defaults.sh' | grep -q 'defaults.herdrconf_skipped'"
 assert_true "defaults provisioning logs its stage" \
     "grep -q 'log \"defaults.herdrconf\"' '$PROJECT_DIR/scripts/modules/20-defaults.sh'"
-assert_file_contains "ci syntax job covers herdrconf" "$PROJECT_DIR/.github/workflows/ci.yml" 'herdrconf/'
+assert_file_contains "ci syntax job covers app installers" "$PROJECT_DIR/.github/workflows/ci.yml" 'conf/'
 assert_file_contains "test runner includes the herdr suite" "$PROJECT_DIR/tests/run-all.sh" "test_herdr_menu.sh"
 
 for lang in en it fr de es pt; do
