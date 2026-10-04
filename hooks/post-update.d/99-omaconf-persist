@@ -17,6 +17,19 @@ run_as_user() {
     sudo -u "$_ru" "$@" 2>/dev/null || return 1
   fi
 }
+OMACONF_DESKTOP_WORKFLOW="${OMACONF_DESKTOP_WORKFLOW:-$SCRIPT_DIR/../lib/desktop-workflow.sh}"
+[[ -f "$OMACONF_DESKTOP_WORKFLOW" ]] || OMACONF_DESKTOP_WORKFLOW="$SCRIPT_DIR/../../scripts/lib/desktop-workflow.sh"
+source "$OMACONF_DESKTOP_WORKFLOW"
+DESKTOP_WORKFLOW_PORTALS="$SCRIPT_DIR/../lib/portals.conf"
+[[ -f "$DESKTOP_WORKFLOW_PORTALS" ]] || DESKTOP_WORKFLOW_PORTALS="$SCRIPT_DIR/../../conf/xdg-desktop-portal/data/portals.conf"
+user_as() {
+    local user="$1" uid home
+    shift
+    uid=$(id -u "$user") || return 1
+    home=$(getent passwd "$user" | cut -d: -f6) || return 1
+    run_as_user "$user" env "HOME=$home" "XDG_RUNTIME_DIR=/run/user/$uid" \
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus" "$@"
+}
 OMACONF_THEME_PREVIEW="${OMACONF_THEME_PREVIEW:-$SCRIPT_DIR/../lib/theme-preview.sh}"
 [[ -f "$OMACONF_THEME_PREVIEW" ]] || OMACONF_THEME_PREVIEW="$SCRIPT_DIR/../../scripts/lib/theme-preview.sh"
 if [[ -f "$OMACONF_THEME_PREVIEW" ]]; then
@@ -92,58 +105,19 @@ for user_home in /home/*; do
   _user=$(basename "$user_home")
   _uid=$(id -u "$_user" 2>/dev/null) || continue
   if [[ -e "/run/user/$_uid/bus" ]]; then
-    _tname=""
-    if [[ -f "$user_home/.local/state/omarchy/current/theme.name" ]]; then
-      _tname=$(tr '[:upper:]' '[:lower:]' < "$user_home/.local/state/omarchy/current/theme.name" | tr ' ' '-')
-    fi
-    case "$_tname" in
-      white|flexoki-light|catppuccin-latte|solarized-light) _it="Papirus"; _cs="default" ;;
-      *) _it="Papirus-Dark"; _cs="prefer-dark" ;;
-    esac
-    run_as_user "$_user" env XDG_RUNTIME_DIR="/run/user/$_uid" gsettings set org.gnome.desktop.interface icon-theme "$_it" 2>/dev/null || warn "hooks.icons_reapply_skipped" "$_user"
     run_as_user "$_user" env XDG_RUNTIME_DIR="/run/user/$_uid" gsettings set org.gnome.desktop.interface cursor-theme "capitaine-cursors" 2>/dev/null || warn "hooks.cursor_reapply_skipped" "$_user"
-    run_as_user "$_user" env XDG_RUNTIME_DIR="/run/user/$_uid" gsettings set org.gnome.desktop.interface color-scheme "$_cs" 2>/dev/null || warn "hooks.cscheme_reapply_skipped" "$_user"
   fi
-  run_as_user "$_user" xdg-mime default yazi-terminal.desktop inode/directory 2>/dev/null || warn "hooks.yazi_reapply_skipped" "$_user"
-  run_as_user "$_user" xdg-mime default mupdf.desktop application/pdf 2>/dev/null || warn "hooks.pdf_reapply_skipped" "$_user"
-  run_as_user "$_user" xdg-mime default imv.desktop image/png image/jpeg image/gif image/webp 2>/dev/null || warn "hooks.image_reapply_skipped" "$_user"
-  run_as_user "$_user" xdg-mime default mpv.desktop video/mp4 video/x-matroska video/webm audio/mpeg 2>/dev/null || warn "hooks.media_reapply_skipped" "$_user"
   if [[ -n "$_uid" && -d "/run/user/$_uid" ]]; then
     _user_env=(env "XDG_RUNTIME_DIR=/run/user/$_uid" "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$_uid/bus")
     run_as_user "$_user" "${_user_env[@]}" systemctl --user disable --now omarchy-crash-watch.service 2>/dev/null || warn "hooks.crashwatch_disable_skipped" "$_user"
     run_as_user "$_user" "${_user_env[@]}" systemctl --user mask omarchy-crash-watch.service 2>/dev/null || warn "hooks.crashwatch_mask_skipped" "$_user"
   fi
-  _portal_dir="$user_home/.config/xdg-desktop-portal"
-  _tf_dir="$user_home/.config/xdg-desktop-portal-termfilechooser"
-  mkdir -p "$_portal_dir" "$_tf_dir" 2>/dev/null || warn "hooks.portal_dirs_skipped" "$_user"
-  if [[ ! -f "$_tf_dir/config" ]]; then
-    cat > "$_tf_dir/config" << 'TFEOF' 2>/dev/null || warn "hooks.portal_config_reapply_skipped" "$_user"
-[filechooser]
-cmd=/usr/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
-default_dir=$HOME
-env=TERMCMD=kitty --title "termfilechooser"
-open_mode=suggested
-save_mode=last
-TFEOF
-  fi
-  sed -i 's|env=TERMCMD=.*|env=TERMCMD=kitty --title "termfilechooser"|' "$_tf_dir/config" 2>/dev/null || warn "hooks.portal_config_reapply_skipped" "$_user"
-  omarchy default terminal kitty 2>/dev/null || warn "hooks.terminal_reapply_skipped" "$_user"
-  run_as_user "$_user" xdg-settings set default-web-browser org.qutebrowser.qutebrowser.desktop 2>/dev/null || warn "defaults.browser_skipped_user" "$_user"
-  for _pc in portals.conf hyprland-portals.conf; do
-    _pf="$_portal_dir/$_pc"
-    if grep -q '^org\.freedesktop\.impl\.portal\.FileChooser=' "$_pf" 2>/dev/null; then
-      sed -i 's|^org\.freedesktop\.impl\.portal\.FileChooser=.*|org.freedesktop.impl.portal.FileChooser=termfilechooser|' "$_pf" 2>/dev/null || warn "hooks.portal_conf_reapply_skipped" "$_user"
-    else
-      grep -q '^\[preferred\]' "$_pf" 2>/dev/null || printf '[preferred]\n' >> "$_pf" 2>/dev/null || warn "hooks.portal_header_skipped" "$_user"
-      printf 'org.freedesktop.impl.portal.FileChooser=termfilechooser\n' >> "$_pf" 2>/dev/null || warn "hooks.portal_conf_reapply_skipped" "$_user"
+  desktop_workflow_defaults "$_user" "$user_home" || warn "hooks.desktop_reapply_skipped" "$_user"
+  desktop_workflow_portals "$_user" "$user_home" || warn "hooks.portal_reload_skipped" "$_user"
+  for _hook in folder-color gtk-theme shell-icons; do
+    _hook_path="$user_home/.config/omarchy/hooks/theme-set.d/$_hook"
+    if [[ -f "$_hook_path" ]]; then
+      user_as "$_user" bash "$_hook_path" || warn "hooks.icons_reapply_skipped" "$_user"
     fi
   done
-  chown -R "$_user":"$_user" "$_portal_dir" "$_tf_dir" 2>/dev/null || warn "hooks.portal_chown_failed" "$_user"
-  if [[ -n "$_uid" && -e "/run/user/$_uid/bus" ]]; then
-    _portal_env=(env "XDG_RUNTIME_DIR=/run/user/$_uid" "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$_uid/bus")
-    run_as_user "$_user" "${_portal_env[@]}" systemctl --user mask xdg-desktop-portal-gtk.service 2>/dev/null || warn "portals.gtk_mask_skipped" "$_user"
-    run_as_user "$_user" "${_portal_env[@]}" systemctl --user stop xdg-desktop-portal-gtk.service 2>/dev/null || warn "portals.stop_skipped" "$_user"
-    run_as_user "$_user" "${_portal_env[@]}" systemctl --user stop xdg-desktop-portal-gnome.service 2>/dev/null || warn "hooks.portal_reload_skipped" "$_user"
-    run_as_user "$_user" "${_portal_env[@]}" systemctl --user restart xdg-desktop-portal.service 2>/dev/null || warn "hooks.portal_reload_skipped" "$_user"
-  fi
 done

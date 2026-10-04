@@ -3,15 +3,13 @@
 set -euo pipefail
 
 log "defaults.browser_install"
-if ! pacman -Q qutebrowser &>/dev/null; then
-    pacman -S --noconfirm --needed qutebrowser || err "defaults.browser_failed"
-fi
 if ! pacman -Q brave-bin &>/dev/null; then
     aur_verified_install brave-bin || err "defaults.browser_failed"
 fi
-if ! pacman -Q python-adblock &>/dev/null; then
-    pacman -S --noconfirm --needed python-adblock || warn "defaults.browser_adblock_failed"
-fi
+for _policy_dir in /etc/brave /etc/brave/policies /etc/brave/policies/managed; do
+    [[ ! -L "$_policy_dir" ]] || err "defaults.app_failed" "$_policy_dir"
+    install -d -m 755 -o root -g root "$_policy_dir"
+done
 
 log "defaults.browser"
 for user_home in /home/*; do
@@ -19,6 +17,9 @@ for user_home in /home/*; do
     _user=$(basename "$user_home")
     user_as "$_user" xdg-settings set default-web-browser brave-browser.desktop 2>/dev/null || warn "defaults.browser_skipped_user" "$_user"
 done
+
+log "defaults.graphical_apps"
+pacman -S --noconfirm --needed geany papers loupe celluloid baobab resources materia-gtk-theme || err "defaults.app_failed" "graphical desktop"
 
 log "defaults.micro_install"
 for pkg in micro fzf universal-ctags shellcheck shfmt ruff yamllint; do
@@ -34,34 +35,14 @@ for pkg in slack-desktop discord; do
     fi
 done
 
-log "defaults.terminal_code"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/conf/terminal-code/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/terminal-code/install.sh" || err "defaults.app_failed" "terminal-code"
-    fi
-done
-
 log "defaults.editor"
 for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
     _user=$(basename "$user_home")
     mkdir -p "$user_home/.local/state/omarchy/defaults"
-    printf 'micro\n' > "$user_home/.local/state/omarchy/defaults/editor"
+    printf 'geany\n' > "$user_home/.local/state/omarchy/defaults/editor"
     chown -R "$_user":"$_user" "$user_home/.local/state" 2>/dev/null || warn "defaults.editor_state_failed" "$_user"
-    if [[ -x "$PROJECT_DIR/conf/micro/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/micro/install.sh" 2>/dev/null || warn "defaults.microconf_skipped" "$_user"
-    fi
-    if [[ -x "$PROJECT_DIR/conf/qutebrowser/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/qutebrowser/install.sh" 2>/dev/null || warn "defaults.quteconf_skipped" "$_user"
-    fi
 done
-
-log "defaults.yazi_install"
-if ! pacman -Q yazi &>/dev/null; then
-    pacman -S --noconfirm --needed yazi
-fi
 
 log "defaults.7zip_install"
 if ! pacman -Q 7zip &>/dev/null; then
@@ -78,37 +59,10 @@ for user_home in /home/*; do
     omarchy_as "$_user" default terminal kitty 2>/dev/null || warn "defaults.terminal_skipped" "$_user"
 done
 
-log "defaults.yaziconf"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/conf/yazi/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/yazi/install.sh" 2>/dev/null || warn "defaults.yaziconf_skipped" "$_user"
-    fi
-done
-
-log "defaults.herdrconf"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/conf/herdr/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/herdr/install.sh" 2>/dev/null || warn "defaults.herdrconf_skipped" "$_user"
-    fi
-done
-
 log "defaults.disk_install"
 if ! pacman -Q gdu &>/dev/null; then
     pacman -S --noconfirm --needed gdu || warn "defaults.disk_failed" "gdu"
 fi
-
-log "defaults.diskconf"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    if [[ -x "$PROJECT_DIR/conf/disk/install.sh" ]]; then
-        user_as "$_user" bash "$PROJECT_DIR/conf/disk/install.sh" 2>/dev/null || warn "defaults.diskconf_skipped" "$_user"
-    fi
-done
 
 log "defaults.trash_install"
 if ! pacman -Q trash-cli &>/dev/null; then
@@ -130,36 +84,15 @@ if ! pacman -Q mupdf &>/dev/null; then
     pacman -S --noconfirm --needed mupdf
 fi
 
-log "defaults.pdf"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    user_as "$_user" xdg-mime default mupdf.desktop application/pdf 2>/dev/null || warn "defaults.pdf_skipped" "$_user"
-done
-
 log "defaults.filemanager"
+for pkg in thunar gvfs gvfs-mtp tumbler thunar-archive-plugin file-roller; do
+    pacman -S --noconfirm --needed "$pkg" || err "defaults.app_failed" "$pkg"
+done
+source "$PROJECT_DIR/scripts/lib/desktop-workflow.sh"
 for user_home in /home/*; do
     [[ -d "$user_home" ]] || continue
     _user=$(basename "$user_home")
-    _fm="yazi.desktop"
-    if [[ -f "$user_home/.local/share/applications/yazi-terminal.desktop" ]]; then
-        _fm="yazi-terminal.desktop"
-    fi
-    user_as "$_user" xdg-mime default "$_fm" inode/directory 2>/dev/null || warn "defaults.fm_skipped" "$_user"
-    user_as "$_user" gio mime inode/directory "$_fm" 2>/dev/null || warn "defaults.fm_gio_skipped" "$_user"
-    _mimeapps="$user_home/.config/mimeapps.list"
-    if [[ -f "$_mimeapps" ]]; then
-        if grep -q '^inode/directory=' "$_mimeapps"; then
-            sed -i "s|^inode/directory=.*|inode/directory=$_fm|" "$_mimeapps" 2>/dev/null || warn "defaults.fm_enforce_skipped" "$_user"
-        else
-            sed -i "/^\[Default Applications\]/a inode/directory=$_fm" "$_mimeapps" 2>/dev/null || warn "defaults.fm_insert_skipped" "$_user"
-        fi
-        sed -i "s|=org.gnome.Nautilus.desktop|=$_fm|g; s|=org.kde.gwenview.desktop|=imv.desktop|g; s|=org.gnome.Evince.desktop|=mupdf.desktop|g; s|=org.pwmt.zathura.desktop|=mupdf.desktop|g" "$_mimeapps" 2>/dev/null || warn "defaults.fm_stale_skipped" "$_user"
-        chown "$_user":"$_user" "$_mimeapps" 2>/dev/null || warn "defaults.fm_mimeapps_chown" "$_user"
-    fi
-    mkdir -p "$user_home/.local/state/omarchy/defaults"
-    printf 'yazi\n' > "$user_home/.local/state/omarchy/defaults/file-manager"
-    chown -R "$_user":"$_user" "$user_home/.local/state" 2>/dev/null || warn "defaults.editor_state_failed" "$_user"
+    desktop_workflow_defaults "$_user" "$user_home"
 done
 
 log "defaults.rebind"
@@ -174,16 +107,33 @@ for user_home in /home/*; do
             "$_bindings" || warn "defaults.bindings_migration_skipped" "$_user"
         chown "$_user":"$_user" "$_bindings" 2>/dev/null || warn "defaults.bindings_chown" "$_user"
     fi
-    if [[ -f "$_bindings" ]] && ! grep -q 'omaconf-yazi-fm' "$_bindings" 2>/dev/null; then
+    if [[ -f "$_bindings" ]] && ! grep -q 'omaconf-thunar-fm' "$_bindings" 2>/dev/null; then
         cat >> "$_bindings" << 'LUAEOF'
 
--- omaconf-yazi-fm: route Omarchy file manager keys to yazi instead of nautilus
+-- omaconf-thunar-fm
 hl.unbind("SUPER + SHIFT + F")
-o.bind("SUPER + SHIFT + F", "File manager", "xdg-terminal-exec yazi")
+o.bind("SUPER + SHIFT + F", "File manager", "thunar")
 hl.unbind("SUPER + ALT + SHIFT + F")
-o.bind("SUPER + ALT + SHIFT + F", "File manager (cwd)", "xdg-terminal-exec --dir=\"$(omarchy-cmd-terminal-cwd)\" yazi")
+o.bind("SUPER + ALT + SHIFT + F", "File manager (cwd)", "thunar \"$(omarchy-cmd-terminal-cwd)\"")
 LUAEOF
         chown "$_user":"$_user" "$_bindings" 2>/dev/null || warn "defaults.bindings_chown" "$_user"
+    fi
+    if [[ -f "$_bindings" ]] && ! grep -q 'omaconf-graphical-apps' "$_bindings"; then
+        cat >> "$_bindings" << 'LUAEOF'
+
+-- omaconf-graphical-apps
+hl.unbind("SUPER + SHIFT + N")
+o.bind("SUPER + SHIFT + N", "Editor", "geany")
+hl.unbind("SUPER + CTRL + T")
+o.bind("SUPER + CTRL + T", "Activity", "resources")
+LUAEOF
+        chown "$_user:$_user" "$_bindings"
+    fi
+    if [[ -f "$_bindings" ]] && ! grep -qF 'o.window("^(geany|' "$_bindings"; then
+        cat >> "$_bindings" << 'LUAEOF'
+o.window("^(geany|Geany|thunar|Thunar|org.gnome.Papers|org.gnome.Loupe|io.github.celluloid_player.Celluloid|net.nokyan.Resources|org.gnome.baobab|xdg-desktop-portal-gtk)$", { tag = "-default-opacity", opacity = "1 1" })
+LUAEOF
+        chown "$_user:$_user" "$_bindings"
     fi
     if [[ -f "$_bindings" ]] && ! grep -q 'brave --incognito' "$_bindings" 2>/dev/null; then
         cat >> "$_bindings" << 'LUAEOF'
@@ -193,23 +143,6 @@ o.bind("SUPER + SHIFT + ALT + B", "Private browser", { launch = "brave --incogni
 LUAEOF
         chown "$_user":"$_user" "$_bindings" 2>/dev/null || warn "defaults.bindings_chown" "$_user"
     fi
-done
-
-log "defaults.image"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    user_as "$_user" xdg-mime default imv.desktop image/png image/jpeg image/gif image/webp 2>/dev/null || warn "defaults.image_skipped" "$_user"
-done
-
-log "defaults.media"
-for user_home in /home/*; do
-    [[ -d "$user_home" ]] || continue
-    _user=$(basename "$user_home")
-    user_as "$_user" xdg-mime default mpv.desktop video/mp4 video/x-matroska video/webm audio/mpeg 2>/dev/null || warn "defaults.media_skipped" "$_user"
-    mkdir -p "$user_home/.local/state/omarchy/defaults"
-    printf 'mpv\n' > "$user_home/.local/state/omarchy/defaults/media-player"
-    chown -R "$_user":"$_user" "$user_home/.local/state" 2>/dev/null || warn "defaults.editor_state_failed" "$_user"
 done
 
 log "defaults.podman"

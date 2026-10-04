@@ -9,14 +9,13 @@ source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Script Syntax & Code Integrity"
 
-for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/scripts/lib/*.sh "$PROJECT_DIR"/scripts/lib/modules/*.sh "$PROJECT_DIR"/hooks/theme-set.d/* "$PROJECT_DIR"/hooks/pre-refresh-pacman.d/* "$PROJECT_DIR"/hooks/post-update.d/* "$PROJECT_DIR"/conf/zed/*.sh "$PROJECT_DIR"/conf/micro/*.sh "$PROJECT_DIR"/conf/qutebrowser/*.sh "$PROJECT_DIR"/conf/yazi/*.sh "$PROJECT_DIR"/conf/cli/*.sh "$PROJECT_DIR"/conf/herdr/*.sh "$PROJECT_DIR"/conf/disk/*.sh "$PROJECT_DIR"/conf/terminal-code/*.sh "$PROJECT_DIR"/tests/*.sh; do
+for sh_file in "$PROJECT_DIR"/scripts/*.sh "$PROJECT_DIR"/scripts/lib/*.sh "$PROJECT_DIR"/scripts/lib/modules/*.sh "$PROJECT_DIR"/hooks/theme-set.d/* "$PROJECT_DIR"/hooks/pre-refresh-pacman.d/* "$PROJECT_DIR"/hooks/post-update.d/* "$PROJECT_DIR"/conf/*/*.sh "$PROJECT_DIR"/tests/*.sh; do
     [[ -f "$sh_file" ]] || continue
     fname=$(basename "$sh_file")
     assert_true "syntax check: $fname" "bash -n '$sh_file'"
 done
 
 assert_true "syntax check: herdr-keybindings-menu" "bash -n '$PROJECT_DIR/conf/herdr/data/herdr-keybindings-menu'"
-assert_true "Yazi theme has no emoji or private-use glyphs" "! grep -Pq '[\x{E000}-\x{F8FF}\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}]' '$PROJECT_DIR/conf/yazi/data/theme.toml' '$PROJECT_DIR/hooks/theme-set.d/yazi-theme'"
 assert_file_exists "Bash SAST workflow exists" "$PROJECT_DIR/.github/workflows/sast.yml"
 assert_file_exists "SAST dependency manifest exists" "$PROJECT_DIR/requirements-sast.txt"
 assert_file_exists "Local Bash SAST rules exist" "$PROJECT_DIR/.semgrep.yml"
@@ -43,9 +42,7 @@ assert_file_executable "hooks/pre-refresh-pacman.d/99-omaconf-persist is executa
 assert_file_executable "hooks/post-update.d/99-omaconf-persist is executable" "$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist"
 assert_file_executable "conf/zed/install.sh is executable" "$PROJECT_DIR/conf/zed/install.sh"
 assert_file_executable "conf/micro/install.sh is executable" "$PROJECT_DIR/conf/micro/install.sh"
-assert_file_executable "conf/qutebrowser/install.sh is executable" "$PROJECT_DIR/conf/qutebrowser/install.sh"
 assert_file_executable "conf/terminal-code/install.sh is executable" "$PROJECT_DIR/conf/terminal-code/install.sh"
-assert_file_executable "conf/yazi/install.sh is executable" "$PROJECT_DIR/conf/yazi/install.sh"
 assert_file_executable "conf/herdr/install.sh is executable" "$PROJECT_DIR/conf/herdr/install.sh"
 assert_file_executable "conf/disk/install.sh is executable" "$PROJECT_DIR/conf/disk/install.sh"
 assert_file_executable "disk-theme hook is executable" "$PROJECT_DIR/hooks/theme-set.d/disk-theme"

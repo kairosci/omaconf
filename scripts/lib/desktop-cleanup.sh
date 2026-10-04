@@ -129,6 +129,11 @@ desktop_cleanup_exec_missing() {
 _desktop_cleanup_patch_disk_usage() {
     local file="$1"
     [[ -f "$file" ]] || return 1
+    if _desktop_cleanup_has_cmd baobab && grep -qE '^Exec=.*(dua|gdu)' "$file"; then
+        sed -i -e 's|^Exec=.*|Exec=baobab|' -e 's|^Terminal=.*|Terminal=false|' \
+            -e 's|^Icon=.*|Icon=org.gnome.baobab|' "$file" || return 1
+        return 0
+    fi
     grep -q 'dua' "$file" 2>/dev/null || return 1
     if _desktop_cleanup_has_cmd dua; then
         return 1

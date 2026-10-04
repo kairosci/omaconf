@@ -70,7 +70,7 @@ FALLBACK_LANG=$(OMACONF_LANG=zz bash "$LIB_DIR/i18n.sh" 2>/dev/null | sed -n 's/
 WARNING_IT=$(OMACONF_LANG=it bash -c 'source "$1/i18n.sh"; i18n_init >/dev/null 2>&1; t "__warning"' _ "$LIB_DIR")
 ERROR_DE=$(OMACONF_LANG=de bash -c 'source "$1/i18n.sh"; i18n_init >/dev/null 2>&1; t "__error"' _ "$LIB_DIR")
 UNKNOWN_IT=$(OMACONF_LANG=it bash -c 'source "$1/i18n.sh"; i18n_init >/dev/null 2>&1; t "totally.unknown.key"' _ "$LIB_DIR")
-PKG_IT=$(OMACONF_LANG=it bash -c 'source "$1/i18n.sh"; i18n_init >/dev/null 2>&1; t "check.pkg_installed" "qutebrowser"' _ "$LIB_DIR")
+PKG_IT=$(OMACONF_LANG=it bash -c 'source "$1/i18n.sh"; i18n_init >/dev/null 2>&1; t "check.pkg_installed" "thunar"' _ "$LIB_DIR")
 HELP_IT=$(OMACONF_LANG=it bash "$LIB_DIR/help.sh" 2>/dev/null | sed -n 's/^  setup *//p')
 
 eq() { [[ "$1" == "$2" ]]; }
@@ -93,7 +93,7 @@ assert_true "engine renders french"                   "ne \"\$COMPLETE_FR\" \"\$
 assert_true "engine renders german"                   "ne \"\$COMPLETE_DE\" \"\$COMPLETE_EN\""
 assert_true "engine renders spanish"                  "ne \"\$COMPLETE_ES\" \"\$COMPLETE_EN\""
 assert_true "engine renders portuguese"               "ne \"\$COMPLETE_PT\" \"\$COMPLETE_EN\""
-assert_true "engine substitutes printf arguments"     "eq \"\$PKG_IT\" 'qutebrowser installato'"
+assert_true "engine substitutes printf arguments"     "eq \"\$PKG_IT\" 'thunar installato'"
 assert_true "engine handles multiple printf arguments" "eq \"\$SUMMARY_IT\" 'Superati: 7  Falliti: 2'"
 assert_true "engine substitutes arguments in any key"  "eq \"\$KEYMAP_IT\" 'Tastiera console di destinazione: it'"
 assert_true "engine falls back for unknown key"       "eq \"\$UNKNOWN_IT\" 'totally.unknown.key'"
@@ -119,7 +119,6 @@ assert_file_contains "verify.sh has a locale section" "$PROJECT_DIR/scripts/veri
 assert_file_contains "run-setup.sh sources the i18n library" "$PROJECT_DIR/scripts/run-setup.sh" "lib/i18n.sh"
 assert_file_contains "launch.sh sources the i18n library" "$PROJECT_DIR/scripts/launch.sh" "lib/i18n.sh"
 assert_file_contains "Makefile exposes lang target" "$PROJECT_DIR/Makefile" "^lang:"
-assert_file_contains "Makefile exposes qute target" "$PROJECT_DIR/Makefile" "^qute:"
 assert_file_contains "Makefile exposes cli target" "$PROJECT_DIR/Makefile" "^cli:"
 assert_file_contains "Makefile exposes herdr target" "$PROJECT_DIR/Makefile" "^herdr:"
 assert_file_contains "Makefile exposes disk target" "$PROJECT_DIR/Makefile" "^disk:"
@@ -132,7 +131,7 @@ for installer in "$PROJECT_DIR"/conf/*/install.sh; do
 done
 
 for hook in hooks/theme-set.d/folder-color hooks/theme-set.d/micro-theme hooks/theme-set.d/btop-theme \
-            hooks/theme-set.d/shell-icons hooks/theme-set.d/yazi-theme hooks/theme-set.d/cli-theme hooks/theme-set.d/disk-theme \
+            hooks/theme-set.d/shell-icons hooks/theme-set.d/cli-theme hooks/theme-set.d/disk-theme \
             hooks/pre-refresh-pacman.d/99-omaconf-persist hooks/post-update.d/99-omaconf-persist; do
     assert_file_contains "$(basename "$(dirname "$hook")")/$(basename "$hook") bootstraps i18n" "$PROJECT_DIR/$hook" "i18n-boot.sh"
 done

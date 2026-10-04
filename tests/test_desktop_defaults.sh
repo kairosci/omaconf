@@ -32,29 +32,25 @@ assert_file_not_contains "defaults never sets the browser as root" "$DEFAULTS_MO
 
 assert_file_contains "debloat module merges pins instead of overwriting" "$DEBLOAT_MODULE" "EXISTING_PINS"
 assert_file_contains "debloat module installs persistence hooks" "$DEBLOAT_MODULE" "99-omaconf-persist"
-assert_file_contains "yaziconf installer enforces yazi file manager" "$PROJECT_DIR/conf/yazi/install.sh" 'inode/directory'
-assert_file_contains "yaziconf installer pins the terminal desktop entry" "$PROJECT_DIR/conf/yazi/install.sh" 'FM_DESKTOP="yazi-terminal.desktop"'
-assert_file_contains "yaziconf installer registers the desktop entry" "$PROJECT_DIR/conf/yazi/install.sh" "xdg-mime default"
-assert_file_contains "defaults module records file-manager state" "$DEFAULTS_MODULE" "defaults/file-manager"
-assert_file_contains "defaults module rebinds file manager keys to yazi" "$DEFAULTS_MODULE" "omaconf-yazi-fm"
-assert_file_contains "defaults module provisions herdrconf menu" "$DEFAULTS_MODULE" "conf/herdr/install.sh"
+assert_file_contains "defaults module records file-manager state" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "defaults/file-manager"
+assert_file_contains "defaults module rebinds file manager keys to Thunar" "$DEFAULTS_MODULE" "omaconf-thunar-fm"
+assert_file_contains "defaults module provisions herdrconf menu" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
 assert_file_contains "defaults module installs gdu disk analyzer" "$DEFAULTS_MODULE" "pacman -Q gdu"
 assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
-assert_file_contains "defaults module provisions diskconf" "$DEFAULTS_MODULE" "conf/disk/install.sh"
+assert_file_contains "defaults module provisions diskconf" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
 assert_file_contains "shell plugins module uses canonical omamp source" "$SHELL_PLUGINS_MODULE" "omaconf/omamp.git"
 assert_file_contains "env module defines omarchy_as helper" "$PROJECT_DIR/scripts/lib/modules/00-env.sh" "omarchy_as\(\)"
 assert_file_contains "omarchy_as forwards the user session bus" "$PROJECT_DIR/scripts/lib/modules/00-env.sh" "DBUS_SESSION_BUS_ADDRESS"
 assert_file_contains "defaults module configures Brave through xdg-settings" "$DEFAULTS_MODULE" "xdg-settings set default-web-browser brave-browser.desktop"
 assert_file_contains "defaults module installs Brave" "$DEFAULTS_MODULE" "aur_verified_install brave-bin"
 assert_file_contains "defaults module installs Slack and Discord" "$DEFAULTS_MODULE" "for pkg in slack-desktop discord"
-assert_file_contains "defaults module installs Terminal Code for each user" "$DEFAULTS_MODULE" "conf/terminal-code/install.sh"
+assert_file_contains "defaults module installs Terminal Code for each user" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
 assert_file_contains "Terminal Code installer uses the upstream installer endpoint" "$PROJECT_DIR/conf/terminal-code/install.sh" "https://tode.sh/install"
 assert_file_contains "Terminal Code installer skips repeat installs" "$PROJECT_DIR/conf/terminal-code/install.sh" "TODE_FORCE_INSTALL"
-assert_file_contains "defaults module provides qutebrowser ad blocking" "$DEFAULTS_MODULE" "python-adblock"
 assert_file_contains "setup.sh references shell plugins module" "$PROJECT_DIR/scripts/setup.sh" "35-shell-plugins.sh"
 assert_file_contains "setup.sh references portals module" "$PROJECT_DIR/scripts/setup.sh" "22-portals.sh"
 assert_file_contains "setup.sh references keyring module" "$PROJECT_DIR/scripts/setup.sh" "62-keyring.sh"
-assert_file_contains "portals module configures termfilechooser" "$PROJECT_DIR/scripts/lib/modules/22-portals.sh" "xdg-desktop-portal-termfilechooser"
+assert_file_contains "portals module installs the GTK backend" "$PROJECT_DIR/scripts/lib/modules/22-portals.sh" "xdg-desktop-portal-gtk"
 assert_file_contains "keyring module provisions libsecret and pass" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "libsecret"
 assert_file_contains "keyring module masks gnome-keyring" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "gnome-keyring-daemon"
 assert_file_contains "KeePassXC prevents GNOME keyring autostart" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "Hidden=true"
@@ -62,7 +58,6 @@ assert_file_contains "keyring module exposes a backend switch function" "$PROJEC
 assert_file_contains "keyring module provisions KeePassXC Secret Service" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "FdoSecrets"
 assert_file_contains "keyring switch validates both supported backends" "$PROJECT_DIR/scripts/keyring-switch.sh" "keepassxc|gnome-keyring"
 assert_file_contains "Makefile exposes the keyring selection target" "$PROJECT_DIR/Makefile" "scripts/keyring-switch.sh"
-assert_file_contains "defaults provision quteconf" "$DEFAULTS_MODULE" "conf/qutebrowser/install.sh"
 assert_file_contains "Micro installs the project run plugin" "$PROJECT_DIR/conf/micro/install.sh" "run editorconfig"
 assert_file_contains "Makefile exposes Terminal Code installation" "$PROJECT_DIR/Makefile" "TODE_FORCE_INSTALL=1"
 
@@ -74,10 +69,10 @@ assert_file_contains "pre-refresh hook re-merges IgnorePkg" "$PERSIST_PRE" "Igno
 PERSIST_POST="$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist"
 assert_file_exists "post-update persist hook exists in repo" "$PERSIST_POST"
 assert_file_executable "post-update persist hook executable" "$PERSIST_POST"
-assert_file_contains "post-update hook reapplies yazi default" "$PERSIST_POST" "yazi-terminal.desktop inode/directory"
-assert_file_contains "post-update hook reapplies MuPDF default" "$PERSIST_POST" "mupdf.desktop application/pdf"
-assert_file_contains "post-update hook reapplies image defaults" "$PERSIST_POST" "imv.desktop image/png"
-assert_file_contains "post-update hook reapplies media defaults" "$PERSIST_POST" "mpv.desktop video/mp4"
+assert_file_contains "post-update hook delegates shared desktop defaults" "$PERSIST_POST" "desktop_workflow_defaults"
+assert_file_contains "post-update hook reapplies Papers default" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "org.gnome.Papers.desktop application/pdf"
+assert_file_contains "post-update hook reapplies image defaults" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "org.gnome.Loupe.desktop image/png"
+assert_file_contains "post-update hook reapplies media defaults" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "io.github.celluloid_player.Celluloid.desktop video/mp4"
 assert_file_contains "post-update hook removes crash-watch" "$PERSIST_POST" "omarchy-crash-watch.service"
 
 assert_file_exists "omaqt integration module exists" "$OMAQT_MODULE"
@@ -96,12 +91,10 @@ assert_file_contains "omaqt module applies omaqt under usr/share/omarchy" "$OMAQ
 assert_file_contains "omaqt module degrades gracefully on clone failure" "$OMAQT_MODULE" "|| warn"
 assert_file_not_contains "omaqt module no longer duplicates the yazi default" "$OMAQT_MODULE" "inode/directory"
 
-assert_file_contains "defaults module owns the yazi-terminal directory default" "$DEFAULTS_MODULE" "yazi-terminal.desktop"
-assert_file_contains "defaults module falls back to system yazi.desktop" "$DEFAULTS_MODULE" '_fm="yazi.desktop"'
 
 OMAQT_DIR="/usr/share/omarchy/omaqt"
 if [[ -x "$OMAQT_DIR/install.sh" ]]; then
-    for app in yazi imv mpv papirus-icon-theme; do
+    for app in imv mpv papirus-icon-theme; do
         assert_file_contains "omaqt installer installs $app" "$OMAQT_DIR/install.sh" "$app"
     done
     for app in nautilus totem evince eog yaru-icon-theme dolphin okular gwenview \
@@ -121,7 +114,7 @@ if [[ -x "$OMAQT_DIR/install.sh" ]]; then
 fi
 
 if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pacman.d/omaconf/ignore-pkgs.list ]]; then
-    for app in yazi imv mpv papirus-icon-theme; do
+    for app in thunar geany imv mpv papirus-icon-theme; do
         assert_true "$app installed" "pacman -Q $app &>/dev/null"
     done
     for app in nautilus totem evince eog yaru-icon-theme dolphin okular gwenview \
@@ -131,10 +124,10 @@ if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pac
 fi
 
 if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/mime.types ]]; then
-    assert_true "pdf default is MuPDF" "xdg-mime query default application/pdf 2>/dev/null | grep -q 'mupdf'"
-    assert_true "image default is imv" "xdg-mime query default image/jpeg 2>/dev/null | grep -q 'imv'"
-    assert_true "video default is mpv" "xdg-mime query default video/mp4 2>/dev/null | grep -q 'mpv'"
-    assert_true "directory default is yazi-terminal" "xdg-mime query default inode/directory 2>/dev/null | grep -q 'yazi-terminal'"
+    assert_true "pdf default is Papers" "xdg-mime query default application/pdf 2>/dev/null | grep -q 'org.gnome.Papers'"
+    assert_true "image default is Loupe" "xdg-mime query default image/jpeg 2>/dev/null | grep -q 'org.gnome.Loupe'"
+    assert_true "video default is Celluloid" "xdg-mime query default video/mp4 2>/dev/null | grep -q 'celluloid_player.Celluloid'"
+    assert_true "directory default is Thunar" "xdg-mime query default inode/directory 2>/dev/null | grep -q 'thunar.desktop'"
 fi
 
 if [[ -f /etc/xdg/xdg-desktop-portal/portals.conf ]]; then

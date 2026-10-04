@@ -18,6 +18,12 @@ source "$SCRIPT_DIR/lib/target-user.sh"
 
 i18n_init
 
+if [[ "${1:-}" == --rebuild-previews ]]; then
+    OMACONF_REBUILD_PREVIEWS=1
+    shift
+fi
+(($# == 0)) || err "setup.invalid_args"
+
 [[ $EUID -eq 0 ]] || err "__root_required"
 
 PRIMARY_USER=$(target_user_resolve) || err "__cannot_determine_user"
@@ -28,6 +34,7 @@ MODULE_FILES=(
     "$MODULES_DIR/10-debloat.sh"
     "$MODULES_DIR/20-defaults.sh"
     "$MODULES_DIR/22-portals.sh"
+    "$MODULES_DIR/24-user-configurations.sh"
     "$MODULES_DIR/25-desktop-cleanup.sh"
     "$MODULES_DIR/30-theming.sh"
     "$MODULES_DIR/32-omaqt.sh"

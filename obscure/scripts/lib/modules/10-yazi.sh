@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+command -v yazi >/dev/null || return 0
+
 MARK_BEGIN="# >>> omaconf obscure >>>"
 MARK_END="# <<< omaconf obscure <<<"
 PATTERNS_FILE="$PROJECT_DIR/data/patterns"

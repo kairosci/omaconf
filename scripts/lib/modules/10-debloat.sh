@@ -3,6 +3,10 @@
 set -euo pipefail
 
 DEBLOAT=(
+    yazi
+    qutebrowser
+    python-adblock
+    xdg-desktop-portal-termfilechooser
     kdenlive
     obs-studio
     obsidian
@@ -90,6 +94,23 @@ if ! pacman -Q foot &>/dev/null && ! command -v foot &>/dev/null; then
 fi
 
 log "debloat.webapps"
+# shellcheck source=../userconf.sh
+source "$PROJECT_DIR/scripts/lib/userconf.sh"
+for u_home in /home/*; do
+    [[ -d "$u_home" ]] || continue
+    if [[ -f "$u_home/.bashrc" ]] && grep -qE '^# >>> om(ablot|aconf) yazi >>>$' "$u_home/.bashrc"; then
+        _yazi_rc=$(mktemp)
+        awk '
+            /^# >>> om(ablot|aconf) yazi >>>$/ { skip=1; next }
+            /^# <<< om(ablot|aconf) yazi <<<$/{ skip=0; next }
+            !skip { print }
+            END { if (skip) exit 1 }
+        ' "$u_home/.bashrc" > "$_yazi_rc" || err "defaults.app_failed" "yazi shell migration"
+        install_user_content "$u_home/.bashrc" "$(stat -c %a "$u_home/.bashrc")" < "$_yazi_rc"
+        rm -f "$_yazi_rc"
+        chown "$(basename "$u_home"):$(basename "$u_home")" "$u_home/.bashrc"
+    fi
+done
 for webapp in Basecamp "Google Contacts" "Google Maps" "Google Messages" "Google Photos" Discord HEY WhatsApp X YouTube Zoom; do
     rm -f "/usr/share/omarchy/applications/$webapp.desktop"
 done
