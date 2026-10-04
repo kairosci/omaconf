@@ -16,7 +16,7 @@ jobs:
 
       - name: Validate Shell Syntax
         run: |
-          for sh_file in scripts/*.sh scripts/modules/*.sh tests/*.sh bin/*; do
+          for sh_file in scripts/*.sh scripts/lib/modules/*.sh tests/*.sh bin/*; do
             [ -f "$sh_file" ] || continue
             bash -n "$sh_file"
           done
@@ -36,7 +36,7 @@ jobs:
 
       - name: Run ShellCheck
         run: |
-          shellcheck -e SC1091 -e SC2034 -e SC2016 scripts/*.sh scripts/modules/*.sh tests/*.sh bin/*
+          shellcheck -e SC1091 -e SC2034 -e SC2016 scripts/*.sh scripts/lib/modules/*.sh tests/*.sh bin/*
 
   idempotency-and-safety:
     name: Automation Safety & Idempotency Rules

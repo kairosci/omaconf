@@ -3,7 +3,7 @@
 set -euo pipefail
 
 if [[ -f "$PROJECT_DIR/scripts/lib/theme-preview.sh" ]]; then
-    # shellcheck source=../lib/theme-preview.sh
+    # shellcheck source=../theme-preview.sh
     source "$PROJECT_DIR/scripts/lib/theme-preview.sh"
 fi
 

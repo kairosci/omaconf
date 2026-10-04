@@ -1,11 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Explicitly out of scope (never touched):
-#   - user-managed AI CLIs (mise: opencode, copilot, agy, ...)
-#   - tensaku (screenshot annotator, not AI)
-#   - editor and shell configurations
-
 if [[ "${OMACONF_AI_DEBLOAT:-0}" != "1" ]]; then
     printf '%s\n' "AI debloat is opt-in: run scripts/debloat-ai.sh --yes to proceed"
     return 0

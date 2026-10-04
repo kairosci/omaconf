@@ -1,8 +1,3 @@
-# Managed by omaconf diskconf. gdu reads $HOME/.config/gdu/gdu.yaml
-# (see `gdu --write-config` for every option). The style: section is owned
-# by hooks/theme-set.d/disk-theme and regenerated from the active Omarchy
-# theme. Keybindings are vim-style natively, same as yazi: j/k move,
-# g/G top/bottom, h/l parent/enter, d delete, s sort, ? opens help.
 sorting:
     by: ""
     order: ""

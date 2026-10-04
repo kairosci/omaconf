@@ -22,7 +22,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
 
@@ -41,9 +41,9 @@ jobs:
             --config .semgrep.yml \
             --sarif \
             --output semgrep.sarif \
-            scripts hooks conf tests clean/scripts clean/scripts/modules \
-            obscure/scripts obscure/scripts/modules ai/scripts ai/scripts/modules \
-            performance/scripts performance/scripts/modules
+            scripts hooks conf tests clean/scripts clean/scripts/lib/modules \
+            obscure/scripts obscure/scripts/lib/modules ai/scripts ai/scripts/lib/modules \
+            performance/scripts performance/scripts/lib/modules
 
       - name: Upload SARIF results
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

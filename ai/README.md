@@ -72,7 +72,7 @@ Verification code without comments:
 ```bash
 bash tests/check.sh
 bash -n scripts/debloat-ai.sh
-bash -n scripts/modules/40-ai.sh
+bash -n scripts/lib/modules/40-ai.sh
 ```
 
 ## Shared rules

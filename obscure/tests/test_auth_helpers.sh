@@ -17,7 +17,7 @@ assert_file_contains "view verifies system password via sudo" "$VIEW" "sudo -S -
 assert_file_contains "view drops sudo timestamp" "$VIEW" "sudo -k"
 assert_file_contains "view pages text safely" "$VIEW" "PAGER"
 assert_file_contains "view handles pdf files" "$VIEW" "is_pdf"
-assert_file_contains "yazi module installs single helper" "$PROJECT_DIR/scripts/modules/10-yazi.sh" "/usr/local/bin/obscure-view"
+assert_file_contains "yazi module installs single helper" "$PROJECT_DIR/scripts/lib/modules/10-yazi.sh" "/usr/local/bin/obscure-view"
 assert_file_contains "setup elevates with pkexec" "$PROJECT_DIR/Makefile" "pkexec"
 assert_file_contains "run-setup elevates with pkexec" "$PROJECT_DIR/scripts/run-setup.sh" "pkexec"
 

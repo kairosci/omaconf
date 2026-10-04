@@ -4,8 +4,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-FW_MODULE="$PROJECT_DIR/scripts/modules/40-firewall.sh"
-SSH_MODULE="$PROJECT_DIR/scripts/modules/70-ssh.sh"
+FW_MODULE="$PROJECT_DIR/scripts/lib/modules/40-firewall.sh"
+SSH_MODULE="$PROJECT_DIR/scripts/lib/modules/70-ssh.sh"
 
 source "$SCRIPT_DIR/test_lib.sh"
 

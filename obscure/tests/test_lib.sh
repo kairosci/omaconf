@@ -2,13 +2,6 @@
 
 set -uo pipefail
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-NC='\033[0m'
-
 TESTS_RUN=0
 TESTS_PASSED=0
 TESTS_FAILED=0
@@ -20,10 +13,10 @@ assert_true() {
     TESTS_RUN=$((TESTS_RUN + 1))
     if eval "$cmd" &>/dev/null; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
-        printf '%b\n' "  ${GREEN}pass${NC} $desc"
+        printf '%s\n' "  pass $desc"
     else
         TESTS_FAILED=$((TESTS_FAILED + 1))
-        printf '%b\n' "  ${RED}fail${NC} $desc"
+        printf '%s\n' "  fail $desc"
     fi
 }
 
@@ -33,10 +26,10 @@ assert_false() {
     TESTS_RUN=$((TESTS_RUN + 1))
     if ! eval "$cmd" &>/dev/null; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
-        printf '%b\n' "  ${GREEN}pass${NC} $desc"
+        printf '%s\n' "  pass $desc"
     else
         TESTS_FAILED=$((TESTS_FAILED + 1))
-        printf '%b\n' "  ${RED}fail${NC} $desc"
+        printf '%s\n' "  fail $desc"
     fi
 }
 
@@ -46,10 +39,10 @@ assert_warn() {
     TESTS_RUN=$((TESTS_RUN + 1))
     if eval "$cmd" &>/dev/null; then
         TESTS_PASSED=$((TESTS_PASSED + 1))
-        printf '%b\n' "  ${GREEN}pass${NC} $desc"
+        printf '%s\n' "  pass $desc"
     else
         TESTS_WARNED=$((TESTS_WARNED + 1))
-        printf '%b\n' "  ${YELLOW}warn${NC} $desc"
+        printf '%s\n' "  warn $desc"
     fi
 }
 
@@ -73,12 +66,11 @@ assert_file_contains() {
 }
 
 test_section() {
-    printf '%b\n' "\n${BOLD}${CYAN}[TEST SUITE] $1${NC}"
+    printf '\n%s\n' "[TEST SUITE] $1"
 }
 
 test_summary() {
-    printf '\n'
-    printf '%b\n' "${BOLD}Summary: Total: $TESTS_RUN | Passed: ${GREEN}$TESTS_PASSED${NC}${BOLD} | Failed: ${RED}$TESTS_FAILED${NC}${BOLD} | Warnings: ${YELLOW}$TESTS_WARNED${NC}"
+    printf 'Summary: Tests Executed: %s | Passed: %s | Failed: %s | Warnings: %s\n' "$TESTS_RUN" "$TESTS_PASSED" "$TESTS_FAILED" "$TESTS_WARNED"
     if [[ $TESTS_FAILED -gt 0 ]]; then
         return 1
     fi

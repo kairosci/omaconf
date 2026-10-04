@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-SHELL_PLUGINS_MODULE="$PROJECT_DIR/scripts/modules/35-shell-plugins.sh"
+SHELL_PLUGINS_MODULE="$PROJECT_DIR/scripts/lib/modules/35-shell-plugins.sh"
 YAZI_DATA="$PROJECT_DIR/conf/yazi/data"
 CLICONF_DATA="$PROJECT_DIR/conf/cli/data"
 
