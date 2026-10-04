@@ -6,7 +6,7 @@ marker_copied = { fg = "#a3be8c", bg = "#a3be8c" }
 marker_cut = { fg = "#bf616a", bg = "#bf616a" }
 marker_marked = { fg = "#81a1c1", bg = "#81a1c1" }
 marker_selected = { fg = "#ebcb8b", bg = "#ebcb8b" }
-border_symbol = "│"
+border_symbol = "|"
 border_style = { fg = "#4c566a" }
 
 [indicator]
@@ -18,8 +18,8 @@ active = { fg = "#2e3440", bg = "#81a1c1", bold = true }
 inactive = { fg = "#4c566a", bg = "#222730" }
 
 [status]
-sep_left = { open = "", close = "" }
-sep_right = { open = "", close = "" }
+sep_left = { open = "[", close = "]" }
+sep_right = { open = "[", close = "]" }
 progress_label = { fg = "#d8dee9", bold = true }
 progress_normal = { fg = "#81a1c1", bg = "#3b4252" }
 progress_error = { fg = "#bf616a", bg = "#3b4252" }
@@ -63,7 +63,7 @@ mask = { bg = "#434c5e" }
 cand = { fg = "#88c0d0" }
 rest = { fg = "#4c566a" }
 desc = { fg = "#b48ead" }
-separator = "  "
+separator = " > "
 separator_style = { fg = "#4c566a" }
 
 [help]
@@ -87,15 +87,15 @@ rules = [
 
 [icon]
 dirs = [
-  { name = "Desktop", text = "󰟀", fg = "#d8dee9" },
-  { name = "Documents", text = "󱔗", fg = "#d8dee9" },
-  { name = "Downloads", text = "󰉍", fg = "#d8dee9" },
-  { name = "Dropbox", text = "󰇣", fg = "#d8dee9" },
-  { name = "Music", text = "󱍙", fg = "#d8dee9" },
-  { name = "Pictures", text = "󰉏", fg = "#d8dee9" },
-  { name = "Public", text = "󰉐", fg = "#d8dee9" },
-  { name = "Videos", text = "󰉑", fg = "#d8dee9" },
+  { name = "Desktop", text = "D", fg = "#d8dee9" },
+  { name = "Documents", text = "D", fg = "#d8dee9" },
+  { name = "Downloads", text = "D", fg = "#d8dee9" },
+  { name = "Dropbox", text = "D", fg = "#d8dee9" },
+  { name = "Music", text = "D", fg = "#d8dee9" },
+  { name = "Pictures", text = "D", fg = "#d8dee9" },
+  { name = "Public", text = "D", fg = "#d8dee9" },
+  { name = "Videos", text = "D", fg = "#d8dee9" },
 ]
 conds = [
-  { if = "dir", text = "", fg = "#d8dee9" },
+  { if = "dir", text = "D", fg = "#d8dee9" },
 ]

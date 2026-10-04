@@ -1,3 +1,4 @@
+---
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -10,6 +11,14 @@ updates:
 
   - package-ecosystem: npm
     directory: /plugins/omamp
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: pip
+    directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 5

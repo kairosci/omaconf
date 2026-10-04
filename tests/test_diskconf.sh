@@ -78,6 +78,7 @@ assert_file_contains "debloat module removes the replaced analyzer" "$DEBLOAT_MO
 assert_file_contains "Makefile exposes disk target" "$PROJECT_DIR/Makefile" '^disk:'
 assert_file_contains "Makefile lints diskconf" "$PROJECT_DIR/Makefile" 'conf/disk/'
 assert_file_contains "help lists disk target" "$PROJECT_DIR/scripts/lib/help.sh" 'row disk "make.disk"'
+assert_file_contains "Arch CI installs YAML test dependencies" "$PROJECT_DIR/.github/workflows/ci.yml" 'base-devel git sudo jq python python-yaml'
 assert_file_contains "verify checks gdu package" "$PROJECT_DIR/scripts/verify.sh" 'pacman -Q gdu'
 assert_file_contains "verify checks gdu config" "$PROJECT_DIR/scripts/verify.sh" 'gdu/gdu.yaml'
 assert_file_contains "verify drops the dua package" "$PROJECT_DIR/scripts/verify.sh" 'pacman -Q dua-cli'
