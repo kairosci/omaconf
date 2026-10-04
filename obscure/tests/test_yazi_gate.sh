@@ -22,7 +22,7 @@ if command -v luac &>/dev/null; then
     assert_true "plugin passes luac syntax check" "luac -p '$PLUGIN'"
 fi
 assert_file_contains "plugin renders lock screen" "$PLUGIN" "Locked by obscure"
-assert_file_contains "plugin shows lock icon" "$PLUGIN" "🔒"
+assert_file_contains "plugin shows the lock message without decoration" "$PLUGIN" "Locked by obscure"
 assert_file_contains "plugin implements peek" "$PLUGIN" "function M:peek"
 assert_file_contains "plugin implements seek" "$PLUGIN" "function M:seek"
 assert_false "plugin never leaks content via code preview" "grep -q 'preview_code' '$PLUGIN'"

@@ -5,7 +5,7 @@ local M = {}
 local function lock_text(name)
 	return ui.Text({
 		ui.Line(""),
-		ui.Line("   🔒  Locked by obscure"),
+		ui.Line("   Locked by obscure"),
 		ui.Line(""),
 		ui.Line("   " .. name),
 		ui.Line(""),
