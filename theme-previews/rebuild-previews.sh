@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+source "$PROJECT_DIR/scripts/lib/theme-preview.sh"
 [[ "${OMACONF_APPLY_PIPELINE:-0}" == 1 ]] || { printf 'Run preview regeneration through the setup pipeline.\n' >&2; exit 1; }
 (($#)) || { printf 'Usage: %s <theme> [theme...]\n' "${0##*/}" >&2; exit 2; }
 themes=("$@")
@@ -25,8 +26,6 @@ ORIGINAL_BACKGROUND="$(readlink -f "$HOME/.local/state/omarchy/current/backgroun
 CAPTURE_MONITOR="$(hyprctl -j monitors | jq -er '.[] | select(.focused) | .name')"
 THEME_CHANGED=0
 ARTIFACTS_DIR="$(mktemp -d "${TMPDIR:-/tmp}/omaconf-preview.XXXXXX")"
-CANVAS_WIDTH=1800
-CANVAS_HEIGHT=1012
 
 stop_capture_process() {
     local pid="$1" status
@@ -91,7 +90,7 @@ fn main() {
 RUST
 
 capture_app() {
-    local app="$1" client="" address monitor width height origin_x origin_y x y group pids
+    local app="$1" client="" address monitor width height x y group pids side geometry
     if [[ "$app" == zed ]]; then group="$ZED_PID"; else group="$NAUTILUS_PID"; fi
     for _ in {1..100}; do
         if pids=$(pgrep -g "$group"); then
@@ -109,14 +108,11 @@ capture_app() {
     address=$(jq -er '.address' <<< "$client")
     hyprctl dispatch "hl.dsp.window.move({ window = \"address:$address\", workspace = \"$CAPTURE_WORKSPACE\", follow = true })" >/dev/null
     monitor=$(hyprctl -j monitors | jq -c --arg name "$CAPTURE_MONITOR" '.[] | select(.name == $name)')
-    width=$(jq -er '(.width / .scale) | floor' <<< "$monitor")
-    height=$(jq -er '(.height / .scale) | floor' <<< "$monitor")
-    origin_x=$(jq -er '.x' <<< "$monitor")
-    origin_y=$(jq -er '.y' <<< "$monitor")
-    if [[ "$app" == zed ]]; then x=$((origin_x + width * 3 / 100)); y=$((origin_y + height * 17 / 100));
-    else x=$((origin_x + width * 52 / 100)); y=$((origin_y + height * 25 / 100)); fi
+    if [[ "$app" == zed ]]; then side=left; else side=right; fi
+    geometry=$(theme_preview_window_geometry "$monitor" "$side")
+    IFS=$'\t' read -r x y width height <<< "$geometry"
     hyprctl dispatch "hl.dsp.window.float({ window = \"address:$address\", action = \"enable\" })" >/dev/null
-    hyprctl dispatch "hl.dsp.window.resize({ window = \"address:$address\", x = $((width * 45 / 100)), y = $((height * 62 / 100)) })" >/dev/null
+    hyprctl dispatch "hl.dsp.window.resize({ window = \"address:$address\", x = $width, y = $height })" >/dev/null
     hyprctl dispatch "hl.dsp.window.move({ window = \"address:$address\", x = $x, y = $y })" >/dev/null
 }
 
@@ -133,7 +129,7 @@ for theme in "${themes[@]}"; do
     XDG_CONFIG_HOME="$config" XDG_DATA_HOME="$config/data" XDG_STATE_HOME="$config/state" XDG_BIN_HOME="$config/bin" \
         OMACONF_THEME_NAME="$theme" GSETTINGS_BACKEND=keyfile bash "$PROJECT_DIR/conf/zed/install.sh"
     XDG_CONFIG_HOME="$config" GSETTINGS_BACKEND=keyfile bash "$PROJECT_DIR/conf/nautilus/install.sh"
-    jq '.session.trust_all_worktrees = true | .languages.Rust.enable_language_server = false | .auto_install_extensions.html = false | .buffer_font_size = 12 | .project_panel.default_width = 180' "$config/zed/settings.json" > "$config/zed/capture-settings.json"
+    jq '.session.trust_all_worktrees = true | .languages.Rust.enable_language_server = false | .auto_install_extensions.html = false' "$config/zed/settings.json" > "$config/zed/capture-settings.json"
     mv "$config/zed/capture-settings.json" "$config/zed/settings.json"
     mkdir -p "$config/zed-data"
     ln -s "$config/zed" "$config/zed-data/config"
@@ -169,9 +165,7 @@ for theme in "${themes[@]}"; do
     NAUTILUS_PID=""
     output_dir="$SCRIPT_DIR/$theme"
     mkdir -p "$output_dir"
-    magick "$ARTIFACTS_DIR/desktop.png" -resize "${CANVAS_WIDTH}x${CANVAS_HEIGHT}" \
-        -depth 8 -density 72 "PNG32:$output_dir/preview.png"
+    magick "$ARTIFACTS_DIR/desktop.png" -depth "$THEME_PREVIEW_DEPTH" -density "$THEME_PREVIEW_DENSITY" "PNG32:$output_dir/preview.png"
 done
-source "$PROJECT_DIR/scripts/lib/theme-preview.sh"
 for theme in "${themes[@]}"; do theme_preview_normalize_file "$SCRIPT_DIR/$theme/preview.png"; done
 printf 'Rebuilt %s preview(s).\n' "${#themes[@]}"
