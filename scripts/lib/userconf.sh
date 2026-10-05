@@ -31,6 +31,83 @@ install_user_content() {
     mv "$tmp" "$dest"
 }
 
+merge_user_ini() {
+    local src="$1" dest="$2" staged current=/dev/null
+    [[ -r "$src" ]] || return 1
+    [[ ! -f "$dest" ]] || current="$dest"
+    staged=$(mktemp) || return 1
+    if ! awk '
+        FNR == NR {
+            if ($0 ~ /^\[/) {
+                section=$0
+                if (!(section in sections)) order[++count]=section
+                sections[section]=1
+            } else if ($0 ~ /^[^#;=]+=/) {
+                key=$0; sub(/=.*/, "", key)
+                keys[section, ++lengths[section]]=key
+                values[section, key]=$0
+            }
+            next
+        }
+        function emit(section, i) {
+            if (section in emitted) return
+            for (i=1; i<=lengths[section]; i++) print values[section, keys[section, i]]
+            emitted[section]=1
+        }
+        /^\[/ { section=$0; print; emit(section); next }
+        /^[^#;=]+=/ {
+            key=$0; sub(/=.*/, "", key)
+            if ((section, key) in values) next
+        }
+        { print }
+        END {
+            for (i=1; i<=count; i++) {
+                section=order[i]
+                if (!(section in emitted)) { print section; emit(section) }
+            }
+        }
+    ' "$src" "$current" > "$staged"; then
+        rm -f "$staged"
+        return 1
+    fi
+    if install_user_content "$dest" < "$staged"; then
+        rm -f "$staged"
+    else
+        rm -f "$staged"
+        return 1
+    fi
+}
+
+apply_user_gsettings() {
+    local src="$1" schema key value
+    while IFS=$'\t' read -r schema key value; do
+        [[ -n "$schema" ]] || continue
+        gsettings set "$schema" "$key" "$value" || return 1
+    done < "$src"
+}
+
+install_user_electron_launcher() {
+    local src="$1" dest="$2" staged
+    [[ -r "$src" ]] || return 1
+    staged=$(mktemp) || return 1
+    if ! awk '
+        /^Exec=/ {
+            sub(/^Exec=[^[:space:]]+/, "& --ozone-platform=auto")
+            sub(/^Exec=/, "Exec=env GTK_USE_PORTAL=1 ")
+        }
+        { print }
+    ' "$src" > "$staged"; then
+        rm -f "$staged"
+        return 1
+    fi
+    if install_user_content "$dest" < "$staged"; then
+        rm -f "$staged"
+    else
+        rm -f "$staged"
+        return 1
+    fi
+}
+
 install_shell_block() {
     local rc="$1" begin="$2" end="$3" block
     [[ -f "$rc" ]] || return 0

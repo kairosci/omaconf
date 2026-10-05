@@ -293,7 +293,7 @@ desktop_cleanup_sweep() {
             [[ -f "$file" ]] || continue
             outcome=""
             rc=0
-            outcome="$(desktop_cleanup_file "$file")" || rc=$?
+            outcome="$(PATH="$u_home/.local/bin:$PATH" desktop_cleanup_file "$file")" || rc=$?
             if [[ $rc -eq 0 ]]; then
                 removed_list="$removed_list ${outcome}"
                 log "desktop.removed" "$file" 2>/dev/null || printf 'Removed orphan entry: %s\n' "$file"

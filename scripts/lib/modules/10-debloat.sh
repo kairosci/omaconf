@@ -3,6 +3,11 @@
 set -euo pipefail
 
 DEBLOAT=(
+    geany
+    geany-plugins
+    keepassxc
+    brave-bin
+    papirus-icon-theme
     yazi
     qutebrowser
     python-adblock
@@ -13,7 +18,9 @@ DEBLOAT=(
     libreoffice-fresh
     chromium
     system-config-printer
-    nautilus
+    thunar
+    thunar-archive-plugin
+    tumbler
     totem
     evince
     eog
@@ -71,7 +78,7 @@ EXISTING_PINS=""
 if grep -q '^IgnorePkg' /etc/pacman.conf 2>/dev/null; then
     EXISTING_PINS=$(grep '^IgnorePkg' /etc/pacman.conf | head -1 | sed 's/^IgnorePkg[[:space:]]*=[[:space:]]*//')
 fi
-EXISTING_PINS=$(sed -E 's/(^|[[:space:]])brave-origin-bin([[:space:]]|$)/ /g' <<< "$EXISTING_PINS")
+EXISTING_PINS=$(sed -E 's/(^|[[:space:]])(brave-origin-bin|nautilus)([[:space:]]|$)/ /g' <<< "$EXISTING_PINS")
 MERGED_PINS="$EXISTING_PINS"
 for pkg in "${DEBLOAT[@]}"; do
     grep -qw "$pkg" <<< " $MERGED_PINS " 2>/dev/null || MERGED_PINS="$MERGED_PINS $pkg"
@@ -98,6 +105,20 @@ log "debloat.webapps"
 source "$PROJECT_DIR/scripts/lib/userconf.sh"
 for u_home in /home/*; do
     [[ -d "$u_home" ]] || continue
+    rm -f "$u_home/.local/bin/geany-project" "$u_home/.local/bin/tode" \
+        "$u_home/.local/share/applications/geany-project.desktop" \
+        "$u_home/.local/share/applications/geany.desktop" \
+        "$u_home/.config/geany/colorschemes/omaconf.conf"
+    for _retired_config in "$u_home/.config/geany" "$u_home/.config/tode" "$u_home/.local/share/tode"; do
+        [[ -d "$_retired_config" ]] || continue
+        _retired_user=$(basename "$u_home")
+        _retired_root="$u_home/.local/state/omaconf/retired"
+        install -d -m 700 -o "$_retired_user" -g "$_retired_user" "$_retired_root"
+        _retired_backup=$(mktemp -d "$_retired_root/$(basename "$_retired_config").XXXXXX")
+        mv "$_retired_config" "$_retired_backup/config"
+        chown -R "$_retired_user:$_retired_user" "$_retired_backup"
+    done
+    rm -rf "$u_home/.local/lib/tode"
     if [[ -f "$u_home/.bashrc" ]] && grep -qE '^# >>> om(ablot|aconf) yazi >>>$' "$u_home/.bashrc"; then
         _yazi_rc=$(mktemp)
         awk '

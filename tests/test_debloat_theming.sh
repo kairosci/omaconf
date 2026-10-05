@@ -26,7 +26,8 @@ assert_file_exists "desktop-applications skill exists" "$PROJECT_DIR/.skills/des
 assert_file_contains "desktop-applications skill registered in the agent contract" "$PROJECT_DIR/AGENTS.md" "desktop-applications"
 
 assert_file_exists "defaults module exists" "$DEFAULTS_MODULE"
-assert_true "Brave is not part of the DEBLOAT package list" "! sed -n '/^DEBLOAT=(/,/^)/p' '$DEBLOAT_MODULE' | grep -q brave-bin"
+assert_true "Brave Origin is not part of the DEBLOAT package list" "! sed -n '/^DEBLOAT=(/,/^)/p' '$DEBLOAT_MODULE' | grep -q brave-origin-bin"
+assert_true "standard Brave is removed and pinned" "sed -n '/^DEBLOAT=(/,/^)/p' '$DEBLOAT_MODULE' | grep -qx '    brave-bin'"
 assert_file_contains "defaults module configures micro editor" "$DEFAULTS_MODULE" "micro"
 assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
 assert_file_contains "defaults module configures 7zip archive support" "$DEFAULTS_MODULE" "7zip"
@@ -70,8 +71,8 @@ assert_file_contains "post-update hook resolves the deployed preview library" "$
 assert_file_contains "post-update hook reapplies preview normalization" "$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist" "theme_preview_normalize"
 
 REBUILD_GEOMETRY="$PROJECT_DIR/theme-previews/rebuild-previews.sh"
-assert_file_contains "rebuild script captures Geany" "$REBUILD_GEOMETRY" 'capture_app geany'
-assert_file_contains "rebuild script captures Thunar" "$REBUILD_GEOMETRY" 'capture_app thunar'
+assert_file_contains "rebuild script captures Zed" "$REBUILD_GEOMETRY" 'capture_app zed'
+assert_file_contains "rebuild script captures Nautilus" "$REBUILD_GEOMETRY" 'capture_app org.gnome.Nautilus'
 assert_file_contains "rebuild script builds a paired preview canvas" "$REBUILD_GEOMETRY" 'CANVAS_WIDTH=1800'
 assert_file_contains "rebuild script writes the composite as rgba" "$REBUILD_GEOMETRY" 'PNG32:\$output_dir/preview.png'
 
@@ -124,7 +125,7 @@ fi
 if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pacman.d/omaconf/ignore-pkgs.list ]]; then
     assert_true "herdr installed" "pacman -Q herdr &>/dev/null"
     assert_true "gum installed" "pacman -Q gum &>/dev/null"
-    assert_true "Thunar installed" "pacman -Q thunar &>/dev/null"
+    assert_true "Nautilus installed" "pacman -Q nautilus &>/dev/null"
     assert_true "micro installed" "pacman -Q micro &>/dev/null"
     assert_true "7zip installed" "pacman -Q 7zip &>/dev/null"
     assert_true "imv installed" "pacman -Q imv &>/dev/null"
@@ -132,11 +133,11 @@ if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pac
     assert_true "mupdf installed" "pacman -Q mupdf &>/dev/null"
     assert_true "btop installed" "pacman -Q btop &>/dev/null"
     assert_true "capitaine-cursors installed" "pacman -Q capitaine-cursors &>/dev/null"
-    assert_true "papirus-icon-theme installed" "pacman -Q papirus-icon-theme &>/dev/null"
+    assert_true "qogir-icon-theme installed" "pacman -Q qogir-icon-theme &>/dev/null"
 
     assert_true "kitty terminal installed" "pacman -Q kitty &>/dev/null"
     assert_false "foot terminal removed" "pacman -Q foot &>/dev/null"
-    for debloated in chromium zathura zathura-pdf-mupdf nautilus yaru-icon-theme system-config-printer totem evince eog dolphin okular gwenview xdg-desktop-portal-kde breeze breeze-gtk haruna kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra sushi gtksourceview4 gst-plugin-gtk foot neovim omarchy-nvim; do
+    for debloated in chromium zathura zathura-pdf-mupdf thunar thunar-archive-plugin tumbler yaru-icon-theme system-config-printer totem evince eog dolphin okular gwenview xdg-desktop-portal-kde breeze breeze-gtk haruna kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra sushi gtksourceview4 gst-plugin-gtk foot neovim omarchy-nvim; do
         assert_false "debloat verified: $debloated removed" "pacman -Q '$debloated' &>/dev/null"
     done
     assert_false "docker daemon absent" "command -v dockerd &>/dev/null"
@@ -180,7 +181,7 @@ assert_file_exists "microconf bindings exists" "$PROJECT_DIR/conf/micro/data/bin
 assert_file_contains "defaults module enforces gio file manager default" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "gio mime inode/directory"
 assert_file_contains "defaults module delegates shared desktop defaults" "$DEFAULTS_MODULE" "desktop_workflow_defaults"
 assert_file_contains "defaults module records file-manager state" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "defaults/file-manager"
-assert_file_contains "defaults module rebinding hypr file manager keys" "$DEFAULTS_MODULE" "omaconf-thunar-fm"
+assert_file_contains "defaults module rebinding hypr file manager keys" "$DEFAULTS_MODULE" "omaconf-nautilus-fm"
 PORTALS_MODULE="$PROJECT_DIR/scripts/lib/modules/22-portals.sh"
 assert_file_contains "portals module installs the GTK backend" "$PORTALS_MODULE" "xdg-desktop-portal-gtk"
 assert_file_contains "portals module routes FileChooser to GTK" "$PROJECT_DIR/conf/xdg-desktop-portal/data/portals.conf" "FileChooser=gtk"

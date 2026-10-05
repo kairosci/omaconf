@@ -23,7 +23,7 @@ aur_verified_install() {
         "cd '$tmp' && git clone --quiet --depth 1 https://aur.archlinux.org/$pkg.git src && cd src && \
          { grep -q '^validpgpkeys=' PKGBUILD || \
            { grep -qE '^(sha256sums|sha512sums|b2sums|sha256sums_x86_64)=' PKGBUILD && ! grep -q 'SKIP' PKGBUILD && \
-             grep -qE '^# Maintainer: [^< ]+ <[^ ]+@[^ ]+>' PKGBUILD; }; }" || \
+             grep -qE '^# Maintainer: [^<]+ <([^ ]+@[^ ]+|contact: https://[^ >]+)>' PKGBUILD; }; }" || \
         err "env.aur_no_integrity" "$pkg"
     sudo -u "$PRIMARY_USER" bash -c \
         "cd '$tmp/src' && makepkg --noconfirm" || {

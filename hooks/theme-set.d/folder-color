@@ -10,19 +10,28 @@ COLORS="${OMACONF_THEME_COLORS:-$HOME/.local/state/omarchy/current/theme/colors.
 ACCENT=$(awk -F '"' '/^accent[[:space:]]*=/ { print $2; exit }' "$COLORS")
 [[ "$ACCENT" =~ ^#[0-9a-fA-F]{6}$ ]] || { warn "hooks.gtk_palette_failed" "$COLORS"; exit 1; }
 MODE=$(awk -F '"' '/^mode[[:space:]]*=/ { print $2; exit }' "$COLORS")
-if [[ "$MODE" == light ]]; then BASE=Papirus; else BASE=Papirus-Dark; fi
-ICON_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons/Omaconf-Papirus"
+if [[ "$MODE" == light ]]; then BASE=Qogir; else BASE=Qogir-Dark; fi
+BASE_DIR="${OMACONF_ICON_ROOT:-/usr/share/icons}/$BASE"
+[[ -r "$BASE_DIR/index.theme" ]] || { warn "defaults.icons_failed"; exit 1; }
+ICON_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons/Omaconf-Qogir"
 mkdir -p "$ICON_DIR"
-printf '[Icon Theme]\nName=Omaconf Papirus\nInherits=%s,hicolor\nDirectories=16x16/places,22x22/places,24x24/places,32x32/places,48x48/places,64x64/places\n' "$BASE" > "$ICON_DIR/index.theme"
-for size in 16 22 24 32 48 64; do
-    directory="$ICON_DIR/${size}x${size}/places"
+printf '[Icon Theme]\nName=Omaconf Qogir\nInherits=%s,hicolor\nDirectories=16/places,22/places,24/places,32/places,48/places,96/places,128/places,scalable/places\n' "$BASE" > "$ICON_DIR/index.theme"
+for size in 16 22 24 32 48 96 128 scalable; do
+    directory="$ICON_DIR/$size/places"
     mkdir -p "$directory"
-    printf '\n[%sx%s/places]\nSize=%s\nContext=Places\nType=Fixed\n' "$size" "$size" "$size" >> "$ICON_DIR/index.theme"
-    for source in /usr/share/icons/Papirus/"${size}x${size}"/places/folder-blue*.svg; do
+    if [[ "$size" == scalable ]]; then
+        printf '\n[scalable/places]\nSize=64\nMinSize=8\nMaxSize=512\nContext=Places\nType=Scalable\n' >> "$ICON_DIR/index.theme"
+    else
+        printf '\n[%s/places]\nSize=%s\nContext=Places\nType=Fixed\n' "$size" "$size" >> "$ICON_DIR/index.theme"
+    fi
+    for source in "$BASE_DIR/$size/places/"*.svg; do
         [[ -f "$source" ]] || continue
         name="${source##*/}"
-        name="${name/folder-blue/folder}"
-        sed -e "s/#5294e2/$ACCENT/gi" -e "s/#4877b1/$ACCENT/gi" "$source" > "$directory/$name"
+        case "$name" in
+            folder*.svg|default-folder*.svg|user-*.svg|default-user*.svg|inode-directory.svg) ;;
+            *) rm -f "$directory/$name"; continue ;;
+        esac
+        sed -e "s/#5294e2/$ACCENT/gi" -e "s/#6ba4e7/$ACCENT/gi" -e "s/#003579/$ACCENT/gi" "$source" > "$directory/$name"
     done
     if [[ -f "$directory/folder.svg" ]]; then ln -sfn folder.svg "$directory/inode-directory.svg"; fi
 done

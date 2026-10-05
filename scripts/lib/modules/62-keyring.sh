@@ -1,107 +1,65 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
+KEYRING_BACKEND=gnome-keyring
+if [[ -n "${OMACONF_KEYRING_BACKEND:-}" && "$OMACONF_KEYRING_BACKEND" != "$KEYRING_BACKEND" ]]; then
+    err "keyring.backend_invalid" "$OMACONF_KEYRING_BACKEND"
+fi
 log "keyring.install"
-for pkg in libsecret pass; do
-    if ! pacman -Q "$pkg" &>/dev/null; then
-        pacman -S --noconfirm --needed "$pkg" || warn "keyring.pkg_failed" "$pkg"
+pacman -S --noconfirm --needed gnome-keyring seahorse libsecret pass
+systemctl --global unmask gnome-keyring-daemon.service gnome-keyring-daemon.socket
+
+for user_home in /home/*; do
+    [[ -d "$user_home" ]] || continue
+    user=$(basename "$user_home")
+    uid=$(id -u "$user")
+    dbus_service="$user_home/.local/share/dbus-1/services/org.freedesktop.secrets.service"
+    if [[ -f "$dbus_service" ]] && grep -q '^Exec=/usr/bin/keepassxc' "$dbus_service"; then
+        rm -f "$dbus_service"
     fi
-done
-
-keyring_switch() {
-    local backend="$1" user_home user dbus_dir keyring_dir cfg keyring
-    case "$backend" in
-        keepassxc)
-            if ! pacman -Q keepassxc &>/dev/null; then
-                pacman -S --noconfirm --needed keepassxc
-            fi
-            systemctl --global mask gnome-keyring-daemon.service gnome-keyring-daemon.socket 2>/dev/null || warn "keyring.global_mask_skipped"
-            ;;
-        gnome-keyring)
-            systemctl --global unmask gnome-keyring-daemon.service gnome-keyring-daemon.socket 2>/dev/null || warn "keyring.global_mask_skipped"
-            ;;
-        *)
-            err "keyring.backend_invalid" "$backend"
-            ;;
-    esac
-
-    for user_home in /home/*; do
-        [[ -d "$user_home" ]] || continue
-        user=$(basename "$user_home")
-        dbus_dir="$user_home/.local/share/dbus-1/services"
-        install -d -m 700 -o "$user" -g "$user" "$user_home/.local/share/dbus-1" "$dbus_dir"
-        keyring_dir="$user_home/.config/python_keyring"
-        mkdir -p "$keyring_dir"
-        printf '[backend]\ndefault-keyring=keyring.backends.SecretService.Keyring\n' > "$keyring_dir/keyringrc.cfg"
-        chmod 644 "$keyring_dir/keyringrc.cfg"
-
-        if [[ $backend == keepassxc ]]; then
-            mkdir -p "$dbus_dir" "$user_home/.config/keepassxc"
-            mkdir -p "$user_home/.config/autostart"
-            for keyring in gnome-keyring-pkcs11.desktop gnome-keyring-secrets.desktop gnome-keyring-ssh.desktop; do
-                cat > "$user_home/.config/autostart/$keyring" << 'AUTOEOF'
-[Desktop Entry]
-Hidden=true
-AUTOEOF
-                chown "$user":"$user" "$user_home/.config/autostart/$keyring"
-            done
-            cat > "$dbus_dir/org.freedesktop.secrets.service" << 'DBUSEOF'
-[D-BUS Service]
-Name=org.freedesktop.secrets
-Exec=/usr/bin/keepassxc
-DBUSEOF
-            cfg="$user_home/.config/keepassxc/keepassxc.ini"
-            if [[ ! -f "$cfg" ]]; then
-                printf '[FdoSecrets]\nEnabled=true\n' > "$cfg"
-            elif grep -q '^\[FdoSecrets\]$' "$cfg"; then
-                sed -i '/^\[FdoSecrets\]/,/^\[/ { /^Enabled=/d; }' "$cfg"
-                sed -i '/^\[FdoSecrets\]/a Enabled=true' "$cfg"
-            else
-                printf '\n[FdoSecrets]\nEnabled=true\n' >> "$cfg"
-            fi
-            chown -R "$user":"$user" "$dbus_dir" "$user_home/.config/keepassxc"
-            user_as "$user" systemctl --user mask gnome-keyring-daemon.service gnome-keyring-daemon.socket 2>/dev/null || warn "keyring.user_mask_skipped" "$user"
-            user_as "$user" systemctl --user stop gnome-keyring-daemon.service gnome-keyring-daemon.socket 2>/dev/null || warn "keyring.stop_skipped" "$user"
-        else
-            rm -f "$dbus_dir/org.freedesktop.secrets.service"
-            for unit in gnome-keyring-daemon.service gnome-keyring-daemon.socket; do
-                unit_mask="$user_home/.config/systemd/user/$unit"
-                if [[ -L "$unit_mask" ]] && [[ $(readlink "$unit_mask") == /dev/null ]]; then
-                    rm -f "$unit_mask"
-                fi
-            done
-            user_as "$user" systemctl --user unmask gnome-keyring-daemon.service gnome-keyring-daemon.socket 2>/dev/null || warn "keyring.user_mask_skipped" "$user"
-            for keyring in gnome-keyring-pkcs11.desktop gnome-keyring-secrets.desktop gnome-keyring-ssh.desktop; do
-                rm -f "$user_home/.config/autostart/$keyring"
-            done
+    for unit in gnome-keyring-daemon.service gnome-keyring-daemon.socket; do
+        unit_mask="$user_home/.config/systemd/user/$unit"
+        if [[ -L "$unit_mask" && $(readlink "$unit_mask") == /dev/null ]]; then
+            rm -f "$unit_mask"
         fi
-
-        chown -R "$user":"$user" "$keyring_dir"
     done
-}
-
-KEYRING_CONFIG=/etc/omaconf/keyring-backend
-if [[ -n "${OMACONF_KEYRING_BACKEND:-}" ]]; then
-    KEYRING_BACKEND=$OMACONF_KEYRING_BACKEND
-elif [[ -f "$KEYRING_CONFIG" ]]; then
-    IFS= read -r KEYRING_BACKEND < "$KEYRING_CONFIG"
-else
-    KEYRING_BACKEND=keepassxc
-fi
-log "keyring.switch"
-keyring_switch "$KEYRING_BACKEND"
-mkdir -p "$(dirname "$KEYRING_CONFIG")"
-printf '%s\n' "$KEYRING_BACKEND" > "$KEYRING_CONFIG"
-chmod 644 "$KEYRING_CONFIG"
-
-log "keyring.pam_cleanup"
-for pam_file in /etc/pam.d/sddm /etc/pam.d/sddm-autologin /etc/pam.d/login /etc/pam.d/passwd; do
-    if [[ -f "$pam_file" ]] && grep -q 'pam_gnome_keyring' "$pam_file"; then
-        sed -i '/pam_gnome_keyring/d' "$pam_file" 2>/dev/null || warn "keyring.pam_sed_skipped" "$pam_file"
+    for launcher in gnome-keyring-pkcs11.desktop gnome-keyring-secrets.desktop gnome-keyring-ssh.desktop; do
+        autostart="$user_home/.config/autostart/$launcher"
+        if [[ -f "$autostart" ]] && grep -qx 'Hidden=true' "$autostart"; then
+            rm -f "$autostart"
+        fi
+    done
+    if pgrep -u "$uid" -x keepassxc >/dev/null; then
+        pkill -TERM -u "$uid" -x keepassxc
+        for attempt in {1..50}; do
+            pgrep -u "$uid" -x keepassxc >/dev/null || break
+            sleep 0.1
+        done
+        if pgrep -u "$uid" -x keepassxc >/dev/null; then
+            err "keyring.stop_failed" "$user"
+        fi
     fi
+    if [[ -S "/run/user/$uid/bus" ]]; then
+        user_as "$user" systemctl --user daemon-reload
+        user_as "$user" systemctl --user unmask gnome-keyring-daemon.service gnome-keyring-daemon.socket
+        user_as "$user" systemctl --user enable --now gnome-keyring-daemon.socket gnome-keyring-daemon.service
+    fi
+    keyring_dir="$user_home/.config/python_keyring"
+    install -d -m 700 -o "$user" -g "$user" "$keyring_dir"
+    printf '[backend]\ndefault-keyring=keyring.backends.SecretService.Keyring\n' > "$keyring_dir/keyringrc.cfg"
+    chown "$user:$user" "$keyring_dir/keyringrc.cfg"
+    chmod 600 "$keyring_dir/keyringrc.cfg"
 done
 
-if [[ $KEYRING_BACKEND == keepassxc ]]; then
-    pkill -x gnome-keyring-daemon 2>/dev/null || warn "keyring.stop_skipped" "daemon"
+log "keyring.pam_integrate"
+for pam_file in /etc/pam.d/login /etc/pam.d/sddm /etc/pam.d/gdm-password /etc/pam.d/greetd /etc/pam.d/lightdm; do
+    [[ -f "$pam_file" ]] || continue
+    grep -Eq '^auth[[:space:]]+optional[[:space:]]+pam_gnome_keyring.so' "$pam_file" || printf '\nauth optional pam_gnome_keyring.so\n' >> "$pam_file"
+    grep -Eq '^session[[:space:]]+optional[[:space:]]+pam_gnome_keyring.so.*auto_start' "$pam_file" || printf 'session optional pam_gnome_keyring.so auto_start\n' >> "$pam_file"
+done
+if [[ -f /etc/pam.d/passwd ]]; then
+    grep -Eq '^password[[:space:]]+optional[[:space:]]+pam_gnome_keyring.so' /etc/pam.d/passwd || printf '\npassword optional pam_gnome_keyring.so use_authtok\n' >> /etc/pam.d/passwd
 fi
+install -d -m 755 /etc/omaconf
+printf '%s\n' "$KEYRING_BACKEND" > /etc/omaconf/keyring-backend
+chmod 644 /etc/omaconf/keyring-backend

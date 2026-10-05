@@ -6,11 +6,11 @@ description: >-
 
 # Desktop Applications
 
-Thunar is the graphical file manager. Provision GVFS for trash and mounts, gvfs-mtp for phones, Tumbler for thumbnails, and thunar-archive-plugin with File Roller for archives. Nautilus remains excluded. Remove Yazi and its provisioned integrations while preserving personal data.
+Nautilus is the graphical file manager. Provision GVFS for trash and mounts, gvfs-mtp for phones, native thumbnails and archive support, with File Roller for advanced archive operations. Thunar is retired; preserve its personal configuration. Remove Yazi and its provisioned integrations while preserving personal data.
 
-Geany edits text, Papers opens PDFs, Loupe opens images, Celluloid plays media, Baobab analyzes storage and Resources monitors the system. Register their MIME defaults and Omarchy launch shortcuts through the shared desktop workflow. Retain existing terminal tools as optional alternatives.
+Zed edits text and projects, Papers opens PDFs, Loupe opens images, Celluloid plays media, Baobab analyzes storage and Resources monitors the system. Register their MIME defaults and Omarchy launch shortcuts through the shared desktop workflow. Retain existing terminal tools as optional alternatives.
 
-Brave is the sole provisioned browser. Remove qutebrowser, its adblock dependency and the terminal file chooser backend through the debloat stage and persistent pins. Preserve user data when removing applications.
+Brave Origin is the sole provisioned browser. Remove qutebrowser, its adblock dependency and the terminal file chooser backend through the debloat stage and persistent pins. Preserve user data when removing applications.
 
 Route FileChooser and AppChooser to GTK, and ScreenCast and Screenshot to Hyprland. Unmask GTK when migrating an existing installation. Keep the routing in one canonical config and share its application between setup and post-update. Never route an interface to a backend that does not implement it.
 

@@ -1,0 +1,85 @@
+{
+  "name": "Omaconf matte-black",
+  "author": "omaconf",
+  "themes": [
+    {
+      "name": "Omaconf matte-black",
+      "appearance": "dark",
+      "style": {
+        "background": "#121212",
+        "surface.background": "#121212",
+        "elevated_surface.background": "#1e1e1e",
+        "panel.background": "#0d0d0d",
+        "toolbar.background": "#121212",
+        "title_bar.background": "#121212",
+        "title_bar.inactive_background": "#121212",
+        "status_bar.background": "#121212",
+        "tab_bar.background": "#121212",
+        "tab.active_background": "#121212",
+        "tab.inactive_background": "#0d0d0d",
+        "text": "#bebebe",
+        "text.muted": "#333333",
+        "text.accent": "#e68e0d",
+        "icon": "#bebebe",
+        "icon.muted": "#333333",
+        "icon.accent": "#e68e0d",
+        "border": "#333333",
+        "border.focused": "#e68e0d",
+        "border.selected": "#e68e0d",
+        "element.background": "#121212",
+        "element.hover": "#2a2a2a",
+        "element.selected": "#2a2a2a",
+        "element.active": "#2a2a2a",
+        "editor.background": "#121212",
+        "editor.foreground": "#bebebe",
+        "editor.gutter.background": "#121212",
+        "editor.line_number": "#333333",
+        "editor.active_line_number": "#e68e0d",
+        "editor.active_line.background": "#1e1e1e",
+        "editor.selection.background": "#2a2a2a",
+        "editor.wrap_guide": "#333333",
+        "players": [
+          {
+            "cursor": "#e68e0d",
+            "background": "#e68e0d",
+            "selection": "#2a2a2a"
+          }
+        ],
+        "syntax": {
+          "comment": {
+            "color": "#333333"
+          },
+          "keyword": {
+            "color": "#D35F5F"
+          },
+          "string": {
+            "color": "#FFC107"
+          },
+          "number": {
+            "color": "#c63d3d"
+          },
+          "function": {
+            "color": "#e68e0d"
+          },
+          "type": {
+            "color": "#b91c1c"
+          },
+          "variable": {
+            "color": "#bebebe"
+          },
+          "constant": {
+            "color": "#bebebe"
+          },
+          "operator": {
+            "color": "#e68e0d"
+          }
+        },
+        "error": "#D35F5F",
+        "warning": "#b91c1c",
+        "success": "#FFC107",
+        "terminal.background": "#121212",
+        "terminal.foreground": "#bebebe"
+      }
+    }
+  ]
+}

@@ -2,22 +2,20 @@ SHELL := /bin/bash
 PROJECT_ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 .DEFAULT_GOAL := help
-BACKEND ?= keepassxc
+BACKEND ?= gnome-keyring
 REBUILD_PREVIEWS ?= 0
 
 ifeq ($(filter $(REBUILD_PREVIEWS),0 1),)
 $(error REBUILD_PREVIEWS must be 0 or 1)
 endif
 
-ifeq ($(BACKEND),keepassxc)
-KEYRING_BACKEND := keepassxc
-else ifeq ($(BACKEND),gnome-keyring)
+ifeq ($(BACKEND),gnome-keyring)
 KEYRING_BACKEND := gnome-keyring
 else
-$(error BACKEND must be keepassxc or gnome-keyring)
+$(error BACKEND must be gnome-keyring)
 endif
 
-.PHONY: help setup keyring verify test hook icons theme zed micro cli herdr disk editors tode clean lang i18n-status lint
+.PHONY: help setup keyring verify test hook icons theme zed micro cli herdr disk editors clean lang i18n-status lint
 
 lint:
 	@if ! command -v shellcheck &> /dev/null; then \
@@ -75,9 +73,6 @@ disk:
 	bash conf/disk/install.sh
 
 editors: zed micro cli
-
-tode:
-	TODE_FORCE_INSTALL=1 bash conf/terminal-code/install.sh
 
 lang:
 	@bash scripts/lib/i18n.sh --list

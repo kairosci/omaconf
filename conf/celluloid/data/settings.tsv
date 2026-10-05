@@ -1,0 +1,4 @@
+io.github.celluloid-player.Celluloid	mpris-enable	true
+io.github.celluloid-player.Celluloid	csd-enable	true
+io.github.celluloid-player.Celluloid	present-window-on-file-open	true
+io.github.celluloid-player.Celluloid	show-durations-in-playlist	true

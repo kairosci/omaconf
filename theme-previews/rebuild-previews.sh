@@ -6,7 +6,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 [[ "${OMACONF_APPLY_PIPELINE:-0}" == 1 ]] || { printf 'Run preview regeneration through the setup pipeline.\n' >&2; exit 1; }
 (($#)) || { printf 'Usage: %s <theme> [theme...]\n' "${0##*/}" >&2; exit 2; }
 themes=("$@")
-for dependency in awk hyprctl identify jq magick grim setsid dbus-run-session geany thunar gsettings pgrep omarchy; do
+for dependency in awk hyprctl identify jq magick grim setsid dbus-run-session zed nautilus gsettings pgrep omarchy; do
     command -v "$dependency" >/dev/null || { printf 'Required command is missing: %s\n' "$dependency" >&2; exit 1; }
 done
 for theme in "${themes[@]}"; do
@@ -16,8 +16,8 @@ for theme in "${themes[@]}"; do
     }
 done
 
-GEANY_PID=""
-THUNAR_PID=""
+ZED_PID=""
+NAUTILUS_PID=""
 CAPTURE_WORKSPACE=""
 ORIGINAL_WORKSPACE="$(hyprctl -j activeworkspace | jq -er '.id')"
 ORIGINAL_THEME="$(cat "$HOME/.local/state/omarchy/current/theme.name")"
@@ -40,8 +40,8 @@ focus_workspace() {
 cleanup() {
     local status=$?
     trap - EXIT INT TERM
-    if [[ -n "$GEANY_PID" ]]; then stop_capture_process "$GEANY_PID" || status=1; fi
-    if [[ -n "$THUNAR_PID" ]]; then stop_capture_process "$THUNAR_PID" || status=1; fi
+    if [[ -n "$ZED_PID" ]]; then stop_capture_process "$ZED_PID" || status=1; fi
+    if [[ -n "$NAUTILUS_PID" ]]; then stop_capture_process "$NAUTILUS_PID" || status=1; fi
     if ((THEME_CHANGED)); then
         omarchy theme set "$ORIGINAL_THEME" || status=1
         if [[ -f "$ORIGINAL_BACKGROUND" ]]; then omarchy theme bg set "$ORIGINAL_BACKGROUND" || status=1; fi
@@ -62,7 +62,6 @@ for candidate in {90..999}; do
 done
 [[ -n "$CAPTURE_WORKSPACE" ]] || { printf 'No free capture workspace is available.\n' >&2; exit 1; }
 mkdir -p "$ARTIFACTS_DIR/dbus-services"
-cp /usr/share/dbus-1/services/org.xfce.Xfconf.service "$ARTIFACTS_DIR/dbus-services/"
 cat > "$ARTIFACTS_DIR/session.conf" <<EOF_BUS
 <busconfig>
   <type>session</type>
@@ -77,33 +76,28 @@ cat > "$ARTIFACTS_DIR/session.conf" <<EOF_BUS
 </busconfig>
 EOF_BUS
 mkdir -p "$ARTIFACTS_DIR/Files/Documents" "$ARTIFACTS_DIR/Files/Pictures" "$ARTIFACTS_DIR/Files/Projects"
-cat > "$ARTIFACTS_DIR/Files/Projects/sample.lua" <<'LUA'
-local M = {}
+cat > "$ARTIFACTS_DIR/Files/Projects/sample.rs" <<'RUST'
+fn sorted_unique(mut items: Vec<i32>) -> Vec<i32> {
+    items.sort_unstable();
+    items.dedup();
+    items
+}
 
-function M.sorted_unique(items)
-    local seen = {}
-    local result = {}
-    for _, item in ipairs(items) do
-        if not seen[item] then
-            seen[item] = true
-            result[#result + 1] = item
-        end
-    end
-    table.sort(result)
-    return result
-end
-
-return M
-LUA
+fn main() {
+    let values = vec![8, 3, 5, 3, 1];
+    let result = sorted_unique(values);
+    println!("Sorted values: {result:?}");
+}
+RUST
 
 capture_app() {
     local app="$1" client="" address monitor width height origin_x origin_y x y group pids
-    if [[ "$app" == geany ]]; then group="$GEANY_PID"; else group="$THUNAR_PID"; fi
+    if [[ "$app" == zed ]]; then group="$ZED_PID"; else group="$NAUTILUS_PID"; fi
     for _ in {1..100}; do
         if pids=$(pgrep -g "$group"); then
             pids=$(jq -cs '.' <<< "$pids")
             client="$(hyprctl -j clients | jq -c --arg app "$app" --argjson pids "$pids" \
-                '.[] | select((.class | ascii_downcase) == $app) | .pid as $pid | select($pids | index($pid))')"
+                '.[] | select((.class | ascii_downcase) == (if $app == "zed" then "dev.zed.zed" else ($app | ascii_downcase) end)) | .pid as $pid | select($pids | index($pid))')"
         else
             printf '%s capture process terminated before its window appeared\n' "$app" >&2
             return 1
@@ -119,7 +113,7 @@ capture_app() {
     height=$(jq -er '(.height / .scale) | floor' <<< "$monitor")
     origin_x=$(jq -er '.x' <<< "$monitor")
     origin_y=$(jq -er '.y' <<< "$monitor")
-    if [[ "$app" == geany ]]; then x=$((origin_x + width * 3 / 100)); y=$((origin_y + height * 17 / 100));
+    if [[ "$app" == zed ]]; then x=$((origin_x + width * 3 / 100)); y=$((origin_y + height * 17 / 100));
     else x=$((origin_x + width * 52 / 100)); y=$((origin_y + height * 25 / 100)); fi
     hyprctl dispatch "hl.dsp.window.float({ window = \"address:$address\", action = \"enable\" })" >/dev/null
     hyprctl dispatch "hl.dsp.window.resize({ window = \"address:$address\", x = $((width * 45 / 100)), y = $((height * 62 / 100)) })" >/dev/null
@@ -136,10 +130,17 @@ for theme in "${themes[@]}"; do
     mkdir -p "$config/data"
     ln -s "${XDG_DATA_HOME:-$HOME/.local/share}/icons" "$config/data/icons"
     ln -s "${XDG_DATA_HOME:-$HOME/.local/share}/themes" "$config/data/themes"
+    XDG_CONFIG_HOME="$config" XDG_DATA_HOME="$config/data" XDG_STATE_HOME="$config/state" XDG_BIN_HOME="$config/bin" \
+        OMACONF_THEME_NAME="$theme" GSETTINGS_BACKEND=keyfile bash "$PROJECT_DIR/conf/zed/install.sh"
+    XDG_CONFIG_HOME="$config" GSETTINGS_BACKEND=keyfile bash "$PROJECT_DIR/conf/nautilus/install.sh"
+    jq '.session.trust_all_worktrees = true | .languages.Rust.enable_language_server = false | .auto_install_extensions.html = false | .buffer_font_size = 12 | .project_panel.default_width = 180' "$config/zed/settings.json" > "$config/zed/capture-settings.json"
+    mv "$config/zed/capture-settings.json" "$config/zed/settings.json"
+    mkdir -p "$config/zed-data"
+    ln -s "$config/zed" "$config/zed-data/config"
     XDG_CONFIG_HOME="$config" OMACONF_THEME_COLORS="$palette" bash "$PROJECT_DIR/hooks/theme-set.d/gtk-theme"
     mode=$(awk -F '"' '/^mode[[:space:]]*=/ { print $2; exit }' "$palette")
     gtk_theme=$(awk -F '=' '/^gtk-theme-name=/ { print $2; exit }' "$config/gtk-3.0/settings.ini")
-    icons=Omaconf-Papirus
+    icons=Omaconf-Qogir
     printf '[Settings]\ngtk-theme-name=%s\ngtk-icon-theme-name=%s\ngtk-cursor-theme-name=capitaine-cursors\n' "$gtk_theme" "$icons" > "$config/gtk-3.0/settings.ini"
     for setting in "icon-theme:$icons" "gtk-theme:$gtk_theme" "color-scheme:prefer-${mode:-dark}"; do
         XDG_CONFIG_HOME="$config" GSETTINGS_BACKEND=keyfile gsettings set org.gnome.desktop.interface "${setting%%:*}" "${setting#*:}"
@@ -148,23 +149,24 @@ for theme in "${themes[@]}"; do
     setsid env XDG_CONFIG_HOME="$config" XDG_DATA_HOME="$config/data" XDG_CACHE_HOME="$config/cache" \
         XDG_DATA_DIRS="${XDG_DATA_HOME:-$HOME/.local/share}:/usr/local/share:/usr/share" \
         GIO_USE_VFS=local GSETTINGS_BACKEND=keyfile NO_AT_BRIDGE=1 GTK_USE_PORTAL=0 GTK_THEME="$gtk_theme" \
-        dbus-run-session --config-file "$ARTIFACTS_DIR/session.conf" -- geany --new-instance --no-session --no-msgwin --no-terminal "$ARTIFACTS_DIR/Files/Projects/sample.lua" &
-    GEANY_PID=$!
+        XDG_STATE_HOME="$config/state" OMACONF_I18N_BOOT="$PROJECT_DIR/scripts/lib/i18n-boot.sh" \
+        dbus-run-session --config-file "$ARTIFACTS_DIR/session.conf" -- zed --foreground --new --user-data-dir "$config/zed-data" "$ARTIFACTS_DIR/Files/Projects" "$ARTIFACTS_DIR/Files/Projects/sample.rs" &
+    ZED_PID=$!
     sleep 0.5
     setsid env XDG_CONFIG_HOME="$config" XDG_DATA_HOME="$config/data" XDG_CACHE_HOME="$config/cache" \
         XDG_DATA_DIRS="${XDG_DATA_HOME:-$HOME/.local/share}:/usr/local/share:/usr/share" \
         GIO_USE_VFS=local GSETTINGS_BACKEND=keyfile NO_AT_BRIDGE=1 GTK_USE_PORTAL=0 GTK_THEME="$gtk_theme" \
-        dbus-run-session --config-file "$ARTIFACTS_DIR/session.conf" -- thunar --window "$ARTIFACTS_DIR/Files" &
-    THUNAR_PID=$!
+        dbus-run-session --config-file "$ARTIFACTS_DIR/session.conf" -- nautilus --new-window "$ARTIFACTS_DIR/Files" &
+    NAUTILUS_PID=$!
     sleep 2
-    capture_app geany
-    capture_app thunar
+    capture_app zed
+    capture_app org.gnome.Nautilus
     sleep 1
     grim -o "$CAPTURE_MONITOR" "$ARTIFACTS_DIR/desktop.png"
-    stop_capture_process "$GEANY_PID"
-    GEANY_PID=""
-    stop_capture_process "$THUNAR_PID"
-    THUNAR_PID=""
+    stop_capture_process "$ZED_PID"
+    ZED_PID=""
+    stop_capture_process "$NAUTILUS_PID"
+    NAUTILUS_PID=""
     output_dir="$SCRIPT_DIR/$theme"
     mkdir -p "$output_dir"
     magick "$ARTIFACTS_DIR/desktop.png" -resize "${CANVAS_WIDTH}x${CANVAS_HEIGHT}" \
