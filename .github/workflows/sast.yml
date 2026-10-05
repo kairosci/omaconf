@@ -6,8 +6,6 @@ name: Shell SAST
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 permissions:
   contents: read
