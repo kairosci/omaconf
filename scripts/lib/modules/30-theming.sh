@@ -89,8 +89,7 @@ for user_home in /home/*; do
     for hook_file in "$PROJECT_DIR"/hooks/theme-set.d/*; do
         [[ -f "$hook_file" ]] || continue
         hook_name=$(basename "$hook_file")
-        cp "$hook_file" "$_hook_dir/$hook_name"
-        chmod +x "$_hook_dir/$hook_name"
+        install -m 755 -o "$_user" -g "$_user" "$hook_file" "$_hook_dir/$hook_name"
         user_as "$_user" bash "$_hook_dir/$hook_name" || warn "theming.hook_failed" "$hook_name" "$_user"
     done
     cp "$PROJECT_DIR/scripts/lib/i18n.sh" "$PROJECT_DIR/scripts/lib/i18n-boot.sh" "$_i18n_dir/"
@@ -103,8 +102,9 @@ for user_home in /home/*; do
 done
 
 if [[ "${OMACONF_REBUILD_PREVIEWS:-0}" == 1 ]]; then
-    mapfile -t _preview_themes < <(find "$PROJECT_DIR/theme-previews" -mindepth 2 -maxdepth 2 -name preview.png -printf '%h\n' | sed 's|.*/||' | sort)
-    user_as "$PRIMARY_USER" env "OMARCHY_PATH=${OMARCHY_PATH:-/usr/share/omarchy}" OMACONF_APPLY_PIPELINE=1 bash "$PROJECT_DIR/theme-previews/rebuild-previews.sh" "${_preview_themes[@]}"
+    mapfile -t _preview_themes < <(find /usr/share/omarchy/themes -mindepth 2 -maxdepth 2 -name colors.toml -printf '%h\n' | sed 's|.*/||' | sort)
+    bash -n "$PROJECT_DIR/theme-previews/rebuild-previews.sh"
+    user_as "$PRIMARY_USER" env "OMARCHY_PATH=${OMARCHY_PATH:-/usr/share/omarchy}" OMACONF_APPLY_PIPELINE=1 bash -c "$(cat "$PROJECT_DIR/theme-previews/rebuild-previews.sh")" "$PROJECT_DIR/theme-previews/rebuild-previews.sh" "${_preview_themes[@]}"
 fi
 mapfile -t _preview_themes < <(find "$PROJECT_DIR/theme-previews" -mindepth 2 -maxdepth 2 -name preview.png -printf '%h\n' | sed 's|.*/||' | sort)
 for user_home in /home/*; do
@@ -119,7 +119,7 @@ if [[ -f "$_browser_palette" && -x /usr/bin/omarchy-theme-set-browser-policy ]];
     [[ "$_browser_color" =~ ^[0-9a-f]{6}$ ]] || err "hooks.gtk_palette_failed" "$_browser_palette"
     bash /usr/bin/omarchy-theme-set-browser-policy "$_browser_color"
     _browser_uid=$(id -u "$PRIMARY_USER")
-    if pgrep -u "$_browser_uid" -x brave >/dev/null; then
-        user_as "$PRIMARY_USER" brave --refresh-platform-policy --no-startup-window
+    if pgrep -u "$_browser_uid" -x brave-origin >/dev/null; then
+        user_as "$PRIMARY_USER" brave-origin --refresh-platform-policy --no-startup-window
     fi
 fi

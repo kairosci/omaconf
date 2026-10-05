@@ -60,19 +60,19 @@ test_icon_mapping() {
     local theme="$1" expected="$2"
     local mapped
     case "$theme" in
-        white|flexoki-light|catppuccin-latte|solarized-light) mapped="Papirus" ;;
-        *) mapped="Papirus-Dark" ;;
+        white|flexoki-light|catppuccin-latte|solarized-light) mapped="Qogir" ;;
+        *) mapped="Qogir-Dark" ;;
     esac
     [[ "$mapped" == "$expected" ]]
 }
 
-check "icon map: everforest -> Papirus-Dark" "test_icon_mapping 'everforest' 'Papirus-Dark'"
-check "icon map: vantablack -> Papirus-Dark" "test_icon_mapping 'vantablack' 'Papirus-Dark'"
-check "icon map: white -> Papirus" "test_icon_mapping 'white' 'Papirus'"
-check "icon map: flexoki-light -> Papirus" "test_icon_mapping 'flexoki-light' 'Papirus'"
-check "icon map: catppuccin-latte -> Papirus" "test_icon_mapping 'catppuccin-latte' 'Papirus'"
-check "icon map: solarized-light -> Papirus" "test_icon_mapping 'solarized-light' 'Papirus'"
-check "icon map: default -> Papirus-Dark" "test_icon_mapping 'default' 'Papirus-Dark'"
+check "icon map: everforest -> Qogir-Dark" "test_icon_mapping 'everforest' 'Qogir-Dark'"
+check "icon map: vantablack -> Qogir-Dark" "test_icon_mapping 'vantablack' 'Qogir-Dark'"
+check "icon map: white -> Qogir" "test_icon_mapping 'white' 'Qogir'"
+check "icon map: flexoki-light -> Qogir" "test_icon_mapping 'flexoki-light' 'Qogir'"
+check "icon map: catppuccin-latte -> Qogir" "test_icon_mapping 'catppuccin-latte' 'Qogir'"
+check "icon map: solarized-light -> Qogir" "test_icon_mapping 'solarized-light' 'Qogir'"
+check "icon map: default -> Qogir-Dark" "test_icon_mapping 'default' 'Qogir-Dark'"
 
 section "Desktop Environment & User Session"
 warn_check "D-Bus session accessible" "[[ -n \"${DBUS_SESSION_BUS_ADDRESS:-}\" ]] || busctl --user status &>/dev/null"
@@ -95,10 +95,10 @@ warn_check "DNS resolver functional" "getent hosts archlinux.org &>/dev/null || 
 
 section "Omarchy Application & Package Parity"
 check "yaru-icon-theme removed" "! pacman -Q yaru-icon-theme &>/dev/null"
-check "nautilus removed" "! pacman -Q nautilus &>/dev/null"
+check "Thunar removed" "! pacman -Q thunar &>/dev/null"
 check "herdr installed" "pacman -Q herdr &>/dev/null"
 check "gum installed" "pacman -Q gum &>/dev/null"
-check "Thunar installed" "pacman -Q thunar &>/dev/null"
+check "Nautilus installed" "pacman -Q nautilus &>/dev/null"
 check "micro installed" "pacman -Q micro &>/dev/null"
 check "Micro symbol navigation dependencies installed" "pacman -Q fzf universal-ctags &>/dev/null"
 check "7zip installed" "pacman -Q 7zip &>/dev/null"
@@ -107,7 +107,7 @@ check "trash-cli installed" "pacman -Q trash-cli &>/dev/null"
 check "mpv installed" "pacman -Q mpv &>/dev/null"
 check "mupdf installed" "pacman -Q mupdf &>/dev/null"
 
-for debloated in chromium nautilus yaru-icon-theme kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra; do
+for debloated in chromium thunar yaru-icon-theme kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra; do
     check "debloat verified: $debloated removed" "! pacman -Q '$debloated' &>/dev/null"
 done
 check "docker daemon absent" "! command -v dockerd &>/dev/null"

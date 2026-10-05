@@ -17,7 +17,7 @@ else
 fi
 [[ -n "$CURRENT_THEME" ]] || exit 0
 
-ICON_THEME="Omaconf-Papirus"
+ICON_THEME="Omaconf-Qogir"
 
 USER_THEME="$HOME/.config/omarchy/themes/$CURRENT_THEME"
 mkdir -p "$USER_THEME"

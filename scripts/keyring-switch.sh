@@ -6,9 +6,9 @@ script_dir=$(dirname "$(readlink -f "$0")")
 source "$script_dir/lib/i18n.sh"
 i18n_init
 
-backend=${1:-}
+backend=${1:-gnome-keyring}
 case "$backend" in
-    keepassxc|gnome-keyring) ;;
+    gnome-keyring) ;;
     *) err "keyring.backend_invalid" "${backend:-unset}" ;;
 esac
 

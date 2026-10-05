@@ -82,8 +82,11 @@ tcheck() {
 section verify.sec_packages
 tcheck "check.pkg_removed" "! pacman -Q qutebrowser &>/dev/null" qutebrowser
 tcheck "check.pkg_removed" "! pacman -Q python-adblock &>/dev/null" python-adblock
-tcheck "check.pkg_installed" "pacman -Q brave-bin &>/dev/null" brave-bin
-for pkg in geany thunar gvfs tumbler papers loupe celluloid baobab resources; do
+for pkg in geany geany-plugins; do
+    tcheck "check.pkg_removed" "! pacman -Q $pkg &>/dev/null" "$pkg"
+done
+tcheck "check.pkg_installed" "pacman -Q brave-origin-bin &>/dev/null" brave-origin-bin
+for pkg in zed nautilus gvfs papers loupe celluloid baobab resources; do
     tcheck "check.pkg_installed" "pacman -Q $pkg &>/dev/null" "$pkg"
 done
 tcheck "check.pkg_installed" "pacman -Q slack-desktop &>/dev/null" slack-desktop
@@ -105,7 +108,7 @@ tcheck "check.pkg_installed" "pacman -Q trash-cli &>/dev/null" trash-cli
 tcheck "check.pkg_installed" "pacman -Q mupdf &>/dev/null" mupdf
 tcheck "check.pkg_removed" "! pacman -Q zathura &>/dev/null" zathura
 tcheck "check.pkg_removed" "! pacman -Q zathura-pdf-mupdf &>/dev/null" zathura-pdf-mupdf
-tcheck "check.pkg_removed" "! pacman -Q nautilus &>/dev/null" nautilus
+tcheck "check.pkg_removed" "! pacman -Q thunar &>/dev/null" thunar
 tcheck "check.pkg_removed" "! pacman -Q yaru-icon-theme &>/dev/null" yaru-icon-theme
 tcheck "check.pkg_removed" "! pacman -Q system-config-printer &>/dev/null" system-config-printer
 tcheck "check.pkg_removed" "! pacman -Q totem &>/dev/null" totem
@@ -123,7 +126,7 @@ tcheck "check.pkg_removed" "! pacman -Q obsidian &>/dev/null" obsidian
 tcheck "check.pkg_installed" "pacman -Q btop &>/dev/null" btop
 tcheck "check.pkg_installed" "pacman -Q gdu &>/dev/null" gdu
 tcheck "check.pkg_installed" "pacman -Q capitaine-cursors &>/dev/null" capitaine-cursors
-tcheck "check.pkg_installed" "pacman -Q papirus-icon-theme &>/dev/null" papirus-icon-theme
+tcheck "check.pkg_installed" "pacman -Q qogir-icon-theme &>/dev/null" qogir-icon-theme
 tcheck "check.pkg_removed" "! pacman -Q gnome-disk-utility &>/dev/null" gnome-disk-utility
 tcheck "check.pkg_removed" "! pacman -Q dua-cli &>/dev/null" dua-cli
 tcheck "check.pkg_removed" "! pacman -Q gnome-themes-extra &>/dev/null" gnome-themes-extra
@@ -133,9 +136,9 @@ tcheck "check.tool_present" "pacman -Q herdr &>/dev/null" herdr
 tcheck "check.tool_present" "pacman -Q gum &>/dev/null" gum
 
 section verify.sec_browser
-tcheck "check.default_browser" "[[ \"\$(xdg-settings get default-web-browser 2>/dev/null)\" == brave-browser.desktop ]]"
-tcheck "check.default_editor"  "[[ \"\$(cat \$HOME/.local/state/omarchy/defaults/editor 2>/dev/null)\" == geany ]]"
-tcheck "check.terminal_code" "[[ -x \${XDG_BIN_HOME:-\$HOME/.local/bin}/tode ]]"
+tcheck "check.default_browser" "[[ \"\$(xdg-settings get default-web-browser 2>/dev/null)\" == brave-origin.desktop ]]"
+tcheck "check.default_editor"  "[[ \"\$(cat \$HOME/.local/state/omarchy/defaults/editor 2>/dev/null)\" == zed ]]"
+tcheck "check.default_editor" "[[ \"\$(xdg-mime query default text/plain)\" == dev.zed.Zed.desktop ]]"
 section verify.sec_firewall
 if UFW_STATUS=$(priv ufw status 2>/dev/null); then
     tcheck "check.ufw_active"          "echo '$UFW_STATUS' | grep -q 'Status: active'"
@@ -291,18 +294,16 @@ tcheck "check.starship_config"  "[[ -f \$HOME/.config/starship.toml ]]"
 tcheck "check.git_config"       "[[ -f \$HOME/.config/git/config ]]"
 tcheck "check.lazygit_config"   "[[ -f \$HOME/.config/lazygit/config.yml ]]"
 tcheck "check.portals_conf"     "[[ -f \$HOME/.config/xdg-desktop-portal/portals.conf ]] && grep -q 'FileChooser=gtk' \$HOME/.config/xdg-desktop-portal/portals.conf"
-tcheck "check.keyring_disabled" "! grep -rq 'pam_gnome_keyring' /etc/pam.d/sddm /etc/pam.d/sddm-autologin 2>/dev/null"
-tcheck "check.keyring_backend" "grep -Eq '^(keepassxc|gnome-keyring)$' /etc/omaconf/keyring-backend"
-if [[ -f /etc/omaconf/keyring-backend ]] && grep -qx keepassxc /etc/omaconf/keyring-backend; then
-    tcheck "check.keyring_provider" "pacman -Q keepassxc &>/dev/null"
-fi
-tcheck "check.desktop_graphical" "pacman -Q thunar gvfs tumbler xdg-desktop-portal-gtk &>/dev/null && [[ \"\$(xdg-mime query default inode/directory)\" == thunar.desktop ]]"
+tcheck "check.keyring_pam" "grep -Eq '^session[[:space:]]+optional[[:space:]]+pam_gnome_keyring.so.*auto_start' /etc/pam.d/login"
+tcheck "check.keyring_backend" "grep -qx gnome-keyring /etc/omaconf/keyring-backend"
+tcheck "check.keyring_provider" "pacman -Q gnome-keyring seahorse &>/dev/null && ! pacman -Q keepassxc &>/dev/null"
+tcheck "check.desktop_graphical" "pacman -Q nautilus gvfs xdg-desktop-portal-gtk &>/dev/null && [[ \"\$(xdg-mime query default inode/directory)\" == org.gnome.Nautilus.desktop ]]"
 tcheck "check.cli_secrets"      "command -v secret-tool &>/dev/null && command -v pass &>/dev/null"
 tcheck "check.disk_config"      "[[ -f \$HOME/.config/gdu/gdu.yaml ]]"
 
 section verify.sec_debloat
 tcheck "check.ignorepkg" "grep -q '^IgnorePkg' /etc/pacman.conf"
-tcheck "check.icon_theme"      "gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | grep -q 'Papirus'"
+tcheck "check.icon_theme"      "gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | grep -q 'Qogir'"
 tcheck "check.cursor_theme"  "gsettings get org.gnome.desktop.interface cursor-theme 2>/dev/null | grep -q 'capitaine-cursors'"
 tcheck "check.no_tela"         "! grep -rq 'Tela' $HOME/.config/omarchy/themes/ 2>/dev/null"
 tcheck "check.folder_color_hook"        "[[ -x $HOME/.config/omarchy/hooks/theme-set.d/folder-color ]]"

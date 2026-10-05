@@ -70,7 +70,13 @@ assert_true "plain binary resolves directly" "[[ \"\$(desktop_cleanup_resolve_ta
 assert_true "foot entry is reported missing without its binary" "desktop_cleanup_exec_missing '$DC_SYS/foot.desktop'"
 assert_true "valid entry is not reported missing" "! desktop_cleanup_exec_missing '$DC_SYS/keep.desktop'"
 
+mkdir -p "$DC_HOMES/tester/.local/bin"
+printf "#!/bin/bash\nexit 0\n" > "$DC_HOMES/tester/.local/bin/sample-editor"
+chmod 755 "$DC_HOMES/tester/.local/bin/sample-editor"
+printf "%s\n" "[Desktop Entry]" "Type=Application" "Name=Projects" "TryExec=sample-editor" "Exec=sample-editor %f" > "$DC_HOMES/tester/.local/share/applications/sample-editor.desktop"
 desktop_cleanup_sweep
+assert_file_exists "user launchers retain executables in their own local bin" "$DC_HOMES/tester/.local/share/applications/sample-editor.desktop"
+assert_false "user executable paths do not leak into root lookup" "command -v sample-editor"
 
 assert_true "foot orphan removed from the system entries" "[[ ! -f '$DC_SYS/foot.desktop' ]]"
 assert_true "docker orphan removed without lazydocker" "[[ ! -f '$DC_SYS/Docker.desktop' ]]"

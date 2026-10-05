@@ -12,7 +12,7 @@ The repository is organized into functional components under dedicated paths, an
 
 ## Execution Workflows
 
-System operations run through the standard Makefile targets. Running `make setup` executes the full hardening and provisioning pipeline as root. Running `make verify` checks the security posture against the expected kernel, service and package assertions. Running `make test` executes the modular test suite. Running `make hook` installs the desktop theme hooks and the i18n runtime for the current user, while `make icons` forces an immediate color update for the active theme and `make theme` synchronizes folder icons together with editor themes. Running `make zed`, `make micro`, `make tode`, `make cli` installs an individual configuration module, and `make editors` installs all of them. Running `make lang` lists the supported languages and marks the active one, while `make i18n-status` reports the resolved catalog and message count and `make clean` purges local execution logs.
+System operations run through the standard Makefile targets. Running `make setup` executes the full hardening and provisioning pipeline as root. Running `make verify` checks the security posture against the expected kernel, service and package assertions. Running `make test` executes the modular test suite. Running `make hook` installs the desktop theme hooks and the i18n runtime for the current user, while `make icons` forces an immediate color update for the active theme and `make theme` synchronizes folder icons together with editor themes. Running `make zed`, `make micro`, `make cli` installs an individual configuration module, and `make editors` installs all of them. Running `make lang` lists the supported languages and marks the active one, while `make i18n-status` reports the resolved catalog and message count and `make clean` purges local execution logs.
 
 ## Provisioning Modules
 
@@ -24,13 +24,13 @@ The `scripts/lib/` directory holds code that more than one component needs. The 
 
 ## Configuration Modules
 
-Each app configuration under `conf/` owns its files and user-scope installer. Configuration installers use the shared user config library; Terminal Code's installer fetches and verifies its upstream application archive. The CLI module installs shared shell helpers and quick cards. Micro merges its settings, installs editor bindings and adds its shell helper. Zed merges its base settings with the Linux overlay, installs the keymap and optional snippets. Micro provides native completion and linting plus project run and build actions, symbol navigation, indentation detection, snippets and EditorConfig support. Terminal Code is the full project IDE.
+Each app configuration under `conf/` owns its files and user-scope installer. Configuration installers use the shared user config library. The CLI module installs shared shell helpers and quick cards. Micro merges its settings, installs editor bindings and adds its shell helper. Zed merges its base settings with the Linux overlay, installs the keymap and optional snippets. Micro provides native completion and linting plus project run and build actions, symbol navigation, indentation detection, snippets and EditorConfig support. Zed is the editor for files and projects.
 
 Because every installer routes through the user config library, replacing a managed file keeps a single slot backup instead of an unbounded series of timestamped ones, and a managed shell block is removed and rewritten in place on every run. The result is that repeated installs converge on the same content rather than accumulating state.
 
 ## Application Keybindings
 
-Omarchy's Super shortcuts remain owned by Hyprland. In the apps, Ctrl+S saves, Ctrl+F searches the current document, Ctrl+C/X/V copy, cut and paste in each app's context, and Ctrl+Q closes the editor or browser. Zed and Terminal Code use the VS Code keymap; Micro receives matching bindings. The private browser shortcut remains on Omarchy's Super+Shift+Alt+B chord and starts Brave in incognito mode.
+Omarchy's Super shortcuts remain owned by Hyprland. In the apps, Ctrl+S saves, Ctrl+F searches the current document, Ctrl+C/X/V copy, cut and paste in each app's context, and Ctrl+Q closes the editor or browser. Zed uses the VS Code keymap; Micro receives matching bindings. The private browser shortcut remains on Omarchy's Super+Shift+Alt+B chord and starts Brave Origin in incognito mode.
 
 ## Theme Previews
 
@@ -50,7 +50,7 @@ Authentication locks accounts after a configured number of consecutive failed at
 
 ## Desktop Parity and Debloat Strategy
 
-Theming keeps the system monitor, folder colors, the icon theme and the cursor in sync with the active palette, and generates Micro colorschemes dynamically from the current theme. Thunar is the default graphical file manager; GTK provides desktop open and save dialogs. The pipeline removes unneeded stock packages and uses Brave as the default browser, Geany as the graphical editor, Terminal Code as the project IDE, Thunar as the graphical file manager, a lightweight image viewer, a media player, a document viewer and a console system monitor. Removed packages stay pinned under `IgnorePkg` in `/etc/pacman.conf` so a later update cannot silently restore them, and obsolete web application shortcuts are cleaned from the application directories. MIME defaults are registered per user for the retained document, image and video types, and the shell bar gains the media plugin in the right section.
+Theming keeps the system monitor, folder colors, the icon theme and the cursor in sync with the active palette, and generates Micro colorschemes dynamically from the current theme. Nautilus is the default graphical file manager; GTK provides desktop open and save dialogs. The pipeline removes unneeded stock packages and uses Brave Origin as the default browser, Zed as the editor for files and projects, Nautilus as the graphical file manager, a lightweight image viewer, a media player, a document viewer and a console system monitor. Removed packages stay pinned under `IgnorePkg` in `/etc/pacman.conf` so a later update cannot silently restore them, and obsolete web application shortcuts are cleaned from the application directories. MIME defaults are registered per user for the retained document, image and video types, and the shell bar gains the media plugin in the right section.
 
 ## Regression Prevention
 
@@ -70,6 +70,9 @@ Follow the project conventions. Commit messages use the Conventional Commits for
 
 Report security issues through the [private vulnerability reporting policy](SECURITY.md).
 
-The setup pipeline discovers all `conf/*/install.sh` automatically, including Brave, and applies them in the correct user environment. New app configs need their native installer; browser profiles and personal data remain in their native directories. GTK uses Materia and exact Omarchy palette overrides, including libadwaita CSS variables. Folder icons use a generated Papirus accent overlay. First setup defaults to dark mode; subsequent user theme selections are preserved. Yazi and its managed integration are retired.
+The setup pipeline discovers all `conf/*/install.sh` automatically, including Brave Origin, and applies them in the correct user environment. New app configs need their native installer; browser profiles and personal data remain in their native directories. GTK uses Materia and exact Omarchy palette overrides, including libadwaita CSS variables. Folder icons use a generated Qogir accent overlay. First setup defaults to dark mode; subsequent user theme selections are preserved. Yazi and its managed integration are retired.
 
 `make setup REBUILD_PREVIEWS=1` applies every theme to the actual desktop and captures the entire monitor, including wallpaper, bar and sample application windows, before restoring the original theme, background and workspace.
+
+Zed opens project directories directly with `zed --new /path/to/project` or the terminal. Micro remains the terminal alternative. GUI application modules configure native dialogs, media integration and Wayland launchers. GNOME Keyring and Seahorse replace KeePassXC; existing `.kdbx` databases remain untouched.
+Main accepts changes only through squash pull requests with signed commits and current CI, SAST and Main PR provenance checks. No bypass actors or direct pushes are permitted. Enable the local guard with `git config core.hooksPath .githooks`; the server ruleset remains authoritative even when local hooks are disabled.

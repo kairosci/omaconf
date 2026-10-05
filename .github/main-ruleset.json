@@ -34,6 +34,7 @@
         "dismiss_stale_reviews_on_push": true,
         "require_code_owner_review": false,
         "require_last_push_approval": false,
+        "require_extra_approval_for_unattributed_changes": false,
         "required_review_thread_resolution": true,
         "allowed_merge_methods": [
           "squash"
@@ -52,6 +53,10 @@
           },
           {
             "context": "Bash security analysis",
+            "integration_id": 15368
+          },
+          {
+            "context": "Main PR provenance",
             "integration_id": 15368
           }
         ]

@@ -33,7 +33,7 @@ assert_file_not_contains "defaults never sets the browser as root" "$DEFAULTS_MO
 assert_file_contains "debloat module merges pins instead of overwriting" "$DEBLOAT_MODULE" "EXISTING_PINS"
 assert_file_contains "debloat module installs persistence hooks" "$DEBLOAT_MODULE" "99-omaconf-persist"
 assert_file_contains "defaults module records file-manager state" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "defaults/file-manager"
-assert_file_contains "defaults module rebinds file manager keys to Thunar" "$DEFAULTS_MODULE" "omaconf-thunar-fm"
+assert_file_contains "defaults module rebinds file manager keys to Nautilus" "$DEFAULTS_MODULE" "omaconf-nautilus-fm"
 assert_file_contains "defaults module provisions herdrconf menu" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
 assert_file_contains "defaults module installs gdu disk analyzer" "$DEFAULTS_MODULE" "pacman -Q gdu"
 assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
@@ -41,25 +41,22 @@ assert_file_contains "defaults module provisions diskconf" "$PROJECT_DIR/scripts
 assert_file_contains "shell plugins module uses canonical omamp source" "$SHELL_PLUGINS_MODULE" "omaconf/omamp.git"
 assert_file_contains "env module defines omarchy_as helper" "$PROJECT_DIR/scripts/lib/modules/00-env.sh" "omarchy_as\(\)"
 assert_file_contains "omarchy_as forwards the user session bus" "$PROJECT_DIR/scripts/lib/modules/00-env.sh" "DBUS_SESSION_BUS_ADDRESS"
-assert_file_contains "defaults module configures Brave through xdg-settings" "$DEFAULTS_MODULE" "xdg-settings set default-web-browser brave-browser.desktop"
-assert_file_contains "defaults module installs Brave" "$DEFAULTS_MODULE" "aur_verified_install brave-bin"
+assert_file_contains "defaults module configures Brave through xdg-settings" "$DEFAULTS_MODULE" "xdg-settings set default-web-browser brave-origin.desktop"
+assert_file_contains "defaults module installs Brave" "$DEFAULTS_MODULE" "aur_verified_install brave-origin-bin"
 assert_file_contains "defaults module installs Slack and Discord" "$DEFAULTS_MODULE" "for pkg in slack-desktop discord"
-assert_file_contains "defaults module installs Terminal Code for each user" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
-assert_file_contains "Terminal Code installer uses the upstream installer endpoint" "$PROJECT_DIR/conf/terminal-code/install.sh" "https://tode.sh/install"
-assert_file_contains "Terminal Code installer skips repeat installs" "$PROJECT_DIR/conf/terminal-code/install.sh" "TODE_FORCE_INSTALL"
+assert_file_contains "defaults module installs app configurations for each user" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
 assert_file_contains "setup.sh references shell plugins module" "$PROJECT_DIR/scripts/setup.sh" "35-shell-plugins.sh"
 assert_file_contains "setup.sh references portals module" "$PROJECT_DIR/scripts/setup.sh" "22-portals.sh"
 assert_file_contains "setup.sh references keyring module" "$PROJECT_DIR/scripts/setup.sh" "62-keyring.sh"
 assert_file_contains "portals module installs the GTK backend" "$PROJECT_DIR/scripts/lib/modules/22-portals.sh" "xdg-desktop-portal-gtk"
 assert_file_contains "keyring module provisions libsecret and pass" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "libsecret"
 assert_file_contains "keyring module masks gnome-keyring" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "gnome-keyring-daemon"
-assert_file_contains "KeePassXC prevents GNOME keyring autostart" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "Hidden=true"
-assert_file_contains "keyring module exposes a backend switch function" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "keyring_switch()"
-assert_file_contains "keyring module provisions KeePassXC Secret Service" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "FdoSecrets"
-assert_file_contains "keyring switch validates both supported backends" "$PROJECT_DIR/scripts/keyring-switch.sh" "keepassxc|gnome-keyring"
+assert_file_contains "keyring module restores GNOME service" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "enable --now"
+assert_file_contains "keyring module selects GNOME backend" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "KEYRING_BACKEND=gnome-keyring"
+assert_file_contains "keyring module provisions Seahorse" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "seahorse"
+assert_file_contains "keyring switch accepts GNOME backend" "$PROJECT_DIR/scripts/keyring-switch.sh" "gnome-keyring)"
 assert_file_contains "Makefile exposes the keyring selection target" "$PROJECT_DIR/Makefile" "scripts/keyring-switch.sh"
 assert_file_contains "Micro installs the project run plugin" "$PROJECT_DIR/conf/micro/install.sh" "run editorconfig"
-assert_file_contains "Makefile exposes Terminal Code installation" "$PROJECT_DIR/Makefile" "TODE_FORCE_INSTALL=1"
 
 PERSIST_PRE="$PROJECT_DIR/hooks/pre-refresh-pacman.d/99-omaconf-persist"
 assert_file_exists "pre-refresh persist hook exists in repo" "$PERSIST_PRE"
@@ -94,7 +91,7 @@ assert_file_not_contains "omaqt module no longer duplicates the yazi default" "$
 
 OMAQT_DIR="/usr/share/omarchy/omaqt"
 if [[ -x "$OMAQT_DIR/install.sh" ]]; then
-    for app in imv mpv papirus-icon-theme; do
+    for app in imv mpv qogir-icon-theme; do
         assert_file_contains "omaqt installer installs $app" "$OMAQT_DIR/install.sh" "$app"
     done
     for app in nautilus totem evince eog yaru-icon-theme dolphin okular gwenview \
@@ -114,10 +111,10 @@ if [[ -x "$OMAQT_DIR/install.sh" ]]; then
 fi
 
 if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pacman.d/omaconf/ignore-pkgs.list ]]; then
-    for app in thunar geany imv mpv papirus-icon-theme; do
+    for app in nautilus zed imv mpv qogir-icon-theme; do
         assert_true "$app installed" "pacman -Q $app &>/dev/null"
     done
-    for app in nautilus totem evince eog yaru-icon-theme dolphin okular gwenview \
+    for app in thunar totem evince eog yaru-icon-theme dolphin okular gwenview \
         xdg-desktop-portal-kde plasma-integration breeze breeze-gtk haruna; do
         assert_false "$app not installed" "pacman -Q $app &>/dev/null"
     done
@@ -127,7 +124,7 @@ if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/mim
     assert_true "pdf default is Papers" "xdg-mime query default application/pdf 2>/dev/null | grep -q 'org.gnome.Papers'"
     assert_true "image default is Loupe" "xdg-mime query default image/jpeg 2>/dev/null | grep -q 'org.gnome.Loupe'"
     assert_true "video default is Celluloid" "xdg-mime query default video/mp4 2>/dev/null | grep -q 'celluloid_player.Celluloid'"
-    assert_true "directory default is Thunar" "xdg-mime query default inode/directory 2>/dev/null | grep -q 'thunar.desktop'"
+    assert_true "directory default is Nautilus" "xdg-mime query default inode/directory 2>/dev/null | grep -q 'org.gnome.Nautilus.desktop'"
 fi
 
 if [[ -f /etc/xdg/xdg-desktop-portal/portals.conf ]]; then
