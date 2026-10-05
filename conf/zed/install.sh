@@ -22,10 +22,6 @@ fi
 install_user_file "$SCRIPT_DIR/data/keybindings.json" "$CONFIG_DIR/keymap.json"
 install_user_file "$SCRIPT_DIR/theme.sh" "${XDG_CONFIG_HOME:-$HOME/.config}/omaconf/zed-theme.sh" 755
 install_user_file "$PROJECT_DIR/scripts/lib/userconf.sh" "${XDG_CONFIG_HOME:-$HOME/.config}/omaconf/userconf.sh"
-for theme_file in "$SCRIPT_DIR"/data/themes/*.json; do
-    [[ -f "$theme_file" ]] || continue
-    install_user_file "$theme_file" "$CONFIG_DIR/themes/${theme_file##*/}"
-done
 bash "$SCRIPT_DIR/theme.sh"
 
 if [[ -d "$SCRIPT_DIR/data/snippets" ]] && [[ -n "$(ls -A "$SCRIPT_DIR/data/snippets" 2>/dev/null)" ]]; then

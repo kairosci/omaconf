@@ -51,10 +51,16 @@ jq -n --arg name "$NAME" --argjson p "$PALETTE" '
         "error": $p.red, "warning": $p.yellow, "success": $p.green,
         "terminal.background": $p.background, "terminal.foreground": $p.foreground
     }}]}
-' | install_user_content "$CONFIG/themes/omaconf-$SLUG.json"
+' | install_user_content "$CONFIG/themes/omaconf.json"
 if [[ -f "$CONFIG/settings.json" ]]; then
     SETTINGS=$(jq --arg name "$NAME" '.theme = $name' "$CONFIG/settings.json")
 else
     SETTINGS=$(jq -n --arg name "$NAME" '{theme: $name}')
 fi
 install_user_content "$CONFIG/settings.json" <<< "$SETTINGS"
+for retired_theme in "$CONFIG"/themes/omaconf-*.json; do
+    [[ -f "$retired_theme" ]] || continue
+    if jq -e '.author == "omaconf" and (.themes | length == 1) and (.themes[0].name | startswith("Omaconf "))' "$retired_theme" >/dev/null; then
+        rm -f -- "$retired_theme"
+    fi
+done
