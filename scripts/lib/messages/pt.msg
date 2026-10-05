@@ -455,3 +455,5 @@ gui.install_done=Integração instalada: %s
 keyring.stop_failed=Não foi possível fechar KeePassXC para %s
 zed.project_action=Abrir projeto com Zed
 git.main_push_forbidden=Pushes diretos para main são proibidos; use uma branch e um pull request
+identity.arch=Restaurar a identidade nativa Arch Linux do sistema
+identity.failed=Não foi possível restaurar a identidade nativa Arch Linux do sistema

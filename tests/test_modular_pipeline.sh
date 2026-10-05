@@ -13,6 +13,7 @@ test_section "Modular Pipeline Architecture & Integrity"
 EXPECTED_MODULES=(
     "00-env.sh"
     "05-locale.sh"
+    "06-os-identity.sh"
     "10-debloat.sh"
     "20-defaults.sh"
     "22-portals.sh"
