@@ -42,7 +42,7 @@ SURFACE=$(mix_color 6)
 HOVER=$(mix_color 10)
 BORDER=$(mix_color 18)
 MUTED=$(mix_color 55)
-THEME_HASH=$(printf '%s\n' "$BACKGROUND" "$FOREGROUND" "$ACCENT" "$SELECTION" "$MODE" "ui-v2" | sha256sum)
+THEME_HASH=$(printf '%s\n' "$BACKGROUND" "$FOREGROUND" "$ACCENT" "$SELECTION" "$MODE" "ui-flat-v3" | sha256sum)
 GTK_THEME_NAME="Omaconf-${THEME_HASH:0:16}"
 GTK_THEME_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/themes/$GTK_THEME_NAME"
 mkdir -p "$GTK_THEME_DIR/gtk-3.0" "$GTK_THEME_DIR/gtk-4.0"
@@ -84,7 +84,16 @@ window, dialog, .background, menubar, menu, menuitem, notebook, notebook header,
 headerbar, toolbar, .sidebar { background-color: $SURFACE; color: $FOREGROUND; }
 view, treeview, iconview, textview, entry, button, list, row { background-color: $BACKGROUND; color: $FOREGROUND; }
 view:selected, treeview:selected, iconview:selected, .view:selected, row:selected { background-color: $SELECTION; color: $FOREGROUND; }
-button { border-radius: 6px; border-color: $BORDER; background-image: none; box-shadow: none; padding: 4px 8px; }
+window, dialog, .background, .navigation-sidebar, .card, .boxed-list, .boxed-list row, popover > contents, menu, tooltip, headerbar, entry, button, notebook tab { border-radius: 0; box-shadow: none; background-image: none; }
+decoration { border-radius: 0; box-shadow: none; margin: 0; }
+headerbar, toolbar { min-height: 30px; padding: 3px 6px; box-shadow: none; border-bottom: 1px solid $BORDER; }
+headerbar .titlebutton { min-width: 20px; min-height: 20px; padding: 2px; }
+button { border-radius: 0; border-color: $BORDER; background-image: none; box-shadow: none; padding: 4px 8px; }
+entry { border-radius: 0; min-height: 24px; padding: 3px 6px; }
+.navigation-sidebar row, .sidebar row { border-radius: 0; padding: 4px 8px; }
+.navigation-sidebar { background-color: $SURFACE; color: $FOREGROUND; }
+popover > contents, tooltip { border: 1px solid $BORDER; }
+button:focus-visible, entry:focus-visible, row:focus-visible { outline: 2px solid $ACCENT; outline-offset: -2px; }
 button:hover { background-color: $HOVER; border-color: $ACCENT; }
 entry:focus { border-color: $ACCENT; }
 toolbar button { min-height: 20px; min-width: 20px; padding: 3px 5px; }

@@ -27,8 +27,17 @@ assert_true "Zed native configuration installs" "bash '$PROJECT_DIR/conf/zed/ins
 assert_true "Zed uses native project preferences" "jq -e '.restore_on_startup == \"last_workspace\" and .project_panel.git_status == true and .terminal.shell == \"system\"' '$XDG_CONFIG_HOME/zed/settings.json'"
 assert_true "Zed settings installation is idempotent" "before=\$(sha256sum '$XDG_CONFIG_HOME/zed/settings.json'); bash '$PROJECT_DIR/conf/zed/install.sh'; [[ \"\$before\" == \"\$(sha256sum '$XDG_CONFIG_HOME/zed/settings.json')\" ]]"
 assert_true "Nautilus native settings install" "bash '$PROJECT_DIR/conf/nautilus/install.sh'"
+mkdir -p "$XDG_CONFIG_HOME/hypr" "$XDG_CONFIG_HOME/gtk-4.0"
+printf 'custom_setting = true\n' > "$XDG_CONFIG_HOME/hypr/hyprland.lua"
+printf '.personal { color: red; }\n' > "$XDG_CONFIG_HOME/gtk-4.0/gtk.css"
+assert_true "GTK integration installs through the user installer" "bash '$PROJECT_DIR/conf/gtk/install.sh'"
+assert_file_contains_literal "GTK installer preserves personal Hyprland settings" "$XDG_CONFIG_HOME/hypr/hyprland.lua" 'custom_setting = true'
+assert_true "GTK integration is idempotent" "before=\$(sha256sum '$XDG_CONFIG_HOME/hypr/hyprland.lua' '$XDG_CONFIG_HOME/hypr/omaconf-gtk.lua'); bash '$PROJECT_DIR/conf/gtk/install.sh'; [[ \"\$before\" == \"\$(sha256sum '$XDG_CONFIG_HOME/hypr/hyprland.lua' '$XDG_CONFIG_HOME/hypr/omaconf-gtk.lua')\" ]]"
 printf 'mode = "dark"\nbackground = "#101010"\nforeground = "#eeeeee"\naccent = "#abcdef"\nselection = "#303030"\nmuted = "#777777"\nred = "#ff0000"\ngreen = "#00ff00"\nblue = "#0000ff"\nyellow = "#ffff00"\ncyan = "#00ffff"\nmagenta = "#ff00ff"\n' > "$SANDBOX/palette.toml"
 export OMACONF_THEME_NAME=test OMACONF_THEME_COLORS="$SANDBOX/palette.toml"
+assert_true "GTK flat palette generation succeeds" "bash '$PROJECT_DIR/hooks/theme-set.d/gtk-theme'"
+assert_file_contains_literal "GTK preserves personal CSS" "$XDG_CONFIG_HOME/gtk-4.0/gtk.css" '.personal { color: red; }'
+assert_true "GTK flat palette generation is idempotent" "before=\$(sha256sum '$XDG_CONFIG_HOME/gtk-4.0/gtk.css' '$XDG_CONFIG_HOME/gtk-4.0/omaconf.css'); bash '$PROJECT_DIR/hooks/theme-set.d/gtk-theme'; [[ \"\$before\" == \"\$(sha256sum '$XDG_CONFIG_HOME/gtk-4.0/gtk.css' '$XDG_CONFIG_HOME/gtk-4.0/omaconf.css')\" ]]"
 assert_true "Zed palette generates and selects a native theme" "bash '$PROJECT_DIR/conf/zed/theme.sh'"
 assert_true "Zed theme uses the palette and preserves editor preferences" "jq -e '.themes[0].appearance == \"dark\" and .themes[0].style[\"editor.background\"] == \"#101010\" and .themes[0].style.syntax.keyword.color == \"#ff00ff\"' '$XDG_CONFIG_HOME/zed/themes/omaconf-test.json' && jq -e '.disable_ai == true and (.theme | startswith(\"Omaconf \"))' '$XDG_CONFIG_HOME/zed/settings.json'"
 assert_true "Zed theme synchronization is idempotent" "before=\$(sha256sum '$XDG_CONFIG_HOME/zed/themes/omaconf-test.json' '$XDG_CONFIG_HOME/zed/settings.json'); bash '$PROJECT_DIR/conf/zed/theme.sh'; [[ \"\$before\" == \"\$(sha256sum '$XDG_CONFIG_HOME/zed/themes/omaconf-test.json' '$XDG_CONFIG_HOME/zed/settings.json')\" ]]"
