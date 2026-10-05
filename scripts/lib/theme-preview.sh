@@ -6,6 +6,22 @@ THEME_PREVIEW_OVERLAY_STORE="${THEME_PREVIEW_OVERLAY_STORE:-/var/lib/omaconf/the
 THEME_PREVIEW_DENSITY="${THEME_PREVIEW_DENSITY:-72}"
 THEME_PREVIEW_DEPTH="${THEME_PREVIEW_DEPTH:-8}"
 
+theme_preview_window_geometry() {
+    local monitor="$1" side="$2"
+    [[ "$side" == left || "$side" == right ]] || return 1
+    jq -er --arg side "$side" '
+        select(.scale > 0) |
+        (.reserved // [0, 0, 0, 0]) as $r |
+        ((.width / .scale | floor) - $r[0] - $r[2]) as $w |
+        ((.height / .scale | floor) - $r[1] - $r[3]) as $h |
+        ($w / 2 | floor) as $half |
+        select($half > 0 and $h > 0) |
+        [(.x + $r[0] + (if $side == "left" then 0 else $half end)),
+         (.y + $r[1]), (if $side == "left" then $half else $w - $half end), $h] |
+        @tsv
+    ' <<< "$monitor"
+}
+
 theme_preview_uniform() {
     local preview="$1" type
     [[ "$(identify -format '%wx%h' "$preview" 2>/dev/null)" == "$THEME_PREVIEW_CANVAS" ]] || return 1
