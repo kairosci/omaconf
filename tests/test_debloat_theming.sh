@@ -73,7 +73,7 @@ assert_file_contains "post-update hook reapplies preview normalization" "$PROJEC
 REBUILD_GEOMETRY="$PROJECT_DIR/theme-previews/rebuild-previews.sh"
 assert_file_contains "rebuild script captures Zed" "$REBUILD_GEOMETRY" 'capture_app zed'
 assert_file_contains "rebuild script captures Nautilus" "$REBUILD_GEOMETRY" 'capture_app org.gnome.Nautilus'
-assert_file_contains "rebuild script builds a paired preview canvas" "$REBUILD_GEOMETRY" 'CANVAS_WIDTH=1800'
+assert_file_contains "rebuild script fills both halves of the work area" "$REBUILD_GEOMETRY" 'theme_preview_window_geometry'
 assert_file_contains "rebuild script writes the composite as rgba" "$REBUILD_GEOMETRY" 'PNG32:\$output_dir/preview.png'
 
 PREVIEW_APPLY="$PROJECT_DIR/theme-previews/apply.sh"
