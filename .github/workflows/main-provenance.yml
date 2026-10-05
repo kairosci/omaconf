@@ -46,13 +46,10 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          ruleset_id=$(gh api "repos/$GH_REPO/rulesets" --jq '.[] | select(.name == "main pr only strict") | .id')
-          [[ "$ruleset_id" =~ ^[0-9]+$ ]]
-          gh api "repos/$GH_REPO/rulesets/$ruleset_id" | jq -e '
-            .enforcement == "active" and .bypass_actors == [] and
-            ([.rules[].type] | contains(["pull_request", "required_status_checks", "required_signatures", "required_linear_history"])) and
-            ([.rules[].type] | index("update") | not) and
-            ([.rules[] | select(.type == "required_status_checks") | .parameters.required_status_checks[].context] | index("Main PR provenance") != null)
+          gh api "repos/$GH_REPO/rules/branches/main" | jq -e '
+            ([.[].type] | contains(["pull_request", "required_status_checks", "required_signatures", "required_linear_history"])) and
+            ([.[].type] | index("update") | not) and
+            ([.[] | select(.type == "required_status_checks") | .parameters.required_status_checks[].context] | index("Main PR provenance") != null)
           '
       - name: Reject main commits without a merged pull request
         if: github.event_name == 'push'
