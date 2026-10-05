@@ -75,3 +75,4 @@ The setup pipeline discovers all `conf/*/install.sh` automatically, including Br
 `make setup REBUILD_PREVIEWS=1` applies every theme to the actual desktop and captures the entire monitor, including wallpaper, bar and sample application windows, before restoring the original theme, background and workspace.
 
 Zed opens project directories directly with `zed --new /path/to/project` or the terminal. Micro remains the terminal alternative. GUI application modules configure native dialogs, media integration and Wayland launchers. GNOME Keyring and Seahorse replace KeePassXC; existing `.kdbx` databases remain untouched.
+Main accepts changes only through squash pull requests with signed commits and current CI, SAST and Main PR provenance checks. No bypass actors or direct pushes are permitted. Enable the local guard with `git config core.hooksPath .githooks`; the server ruleset remains authoritative even when local hooks are disabled.
