@@ -12,3 +12,5 @@ org.gnome.nautilus.list-view	default-visible-columns	['name', 'size', 'date_modi
 org.gnome.nautilus.list-view	use-tree-view	false
 org.gtk.gtk4.Settings.FileChooser	sort-directories-first	true
 org.gtk.gtk4.Settings.FileChooser	show-hidden	false
+org.gnome.nautilus.window-state	maximized	false
+org.gtk.Settings.FileChooser	sort-directories-first	true
