@@ -1,0 +1,70 @@
+name: Main provenance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  provenance:
+    name: Main PR provenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Validate main protection policy
+        run: |
+          set -euo pipefail
+          jq -e '
+            .enforcement == "active" and .bypass_actors == [] and
+            .conditions.ref_name.include == ["refs/heads/main"] and
+            ([.rules[].type] | contains(["creation", "deletion", "non_fast_forward", "required_signatures", "required_linear_history", "pull_request", "required_status_checks"])) and
+            ([.rules[].type] | index("update") | not) and
+            ([.rules[] | select(.type == "pull_request") | .parameters.allowed_merge_methods] == [["squash"]])
+          ' .github/main-ruleset.json
+          bash -n .githooks/pre-push
+          if printf 'refs/heads/topic %040d refs/heads/main %040d\n' 1 2 | bash .githooks/pre-push; then
+            exit 1
+          fi
+          printf 'refs/heads/topic %040d refs/heads/topic %040d\n' 1 2 | bash .githooks/pre-push
+          if printf 'refs/heads/topic %040d refs/heads/topic %040d\nrefs/heads/topic %040d refs/heads/main %040d\n' 1 2 1 2 | bash .githooks/pre-push; then
+            exit 1
+          fi
+          if printf '(delete) %040d refs/heads/main %040d\n' 0 2 | bash .githooks/pre-push; then
+            exit 1
+          fi
+      - name: Verify active server protection
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          ruleset_id=$(gh api "repos/$GH_REPO/rulesets" --jq '.[] | select(.name == "main pr only strict") | .id')
+          [[ "$ruleset_id" =~ ^[0-9]+$ ]]
+          gh api "repos/$GH_REPO/rulesets/$ruleset_id" | jq -e '
+            .enforcement == "active" and .bypass_actors == [] and
+            ([.rules[].type] | contains(["pull_request", "required_status_checks", "required_signatures", "required_linear_history"])) and
+            ([.rules[].type] | index("update") | not) and
+            ([.rules[] | select(.type == "required_status_checks") | .parameters.required_status_checks[].context] | index("Main PR provenance") != null)
+          '
+      - name: Reject main commits without a merged pull request
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for commit in $(git rev-list --first-parent "$BEFORE..$AFTER"); do
+            gh api "repos/$GH_REPO/commits/$commit/pulls" --paginate --slurp | jq -e --arg commit "$commit" '
+              flatten | any(.merged_at != null and .base.ref == "main" and .merge_commit_sha == $commit)
+            '
+          done

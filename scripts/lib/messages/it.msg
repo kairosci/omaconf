@@ -459,3 +459,4 @@ portals.configure_failed=Configurazione portali desktop fallita per %s
 portals.install_failed=Installazione portali desktop fallita
 setup.invalid_args=Argomenti setup non supportati
 defaults.graphical_apps=Installazione applicazioni desktop grafiche
+git.main_push_forbidden=I push diretti su main sono vietati; usa una feature branch e una pull request

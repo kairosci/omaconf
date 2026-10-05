@@ -459,3 +459,4 @@ portals.configure_failed=Desktop portal configuration failed for %s
 portals.install_failed=Desktop portal installation failed
 setup.invalid_args=Unsupported setup arguments
 defaults.graphical_apps=Installing graphical desktop applications
+git.main_push_forbidden=Direct pushes to main are forbidden; use a feature branch and pull request

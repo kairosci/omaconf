@@ -53,6 +53,10 @@
           {
             "context": "Bash security analysis",
             "integration_id": 15368
+          },
+          {
+            "context": "Main PR provenance",
+            "integration_id": 15368
           }
         ]
       }

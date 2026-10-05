@@ -459,3 +459,4 @@ portals.configure_failed=Falha na configuração dos portais para %s
 portals.install_failed=Falha na instalação dos portais
 setup.invalid_args=Argumentos de configuração não suportados
 defaults.graphical_apps=Instalando aplicativos gráficos
+git.main_push_forbidden=Pushes diretos para main são proibidos; use uma branch e um pull request
