@@ -6,6 +6,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 source "$SCRIPT_DIR/lib/i18n.sh"
 source "$SCRIPT_DIR/lib/target-user.sh"
+source "$SCRIPT_DIR/lib/os-identity.sh"
 
 i18n_init
 
@@ -79,6 +80,7 @@ tcheck() {
     check "$(t "$key" "$@")" "$condition"
 }
 
+tcheck "identity.check" "arch_identity_valid"
 section verify.sec_packages
 tcheck "check.pkg_removed" "! pacman -Q qutebrowser &>/dev/null" qutebrowser
 tcheck "check.pkg_removed" "! pacman -Q python-adblock &>/dev/null" python-adblock

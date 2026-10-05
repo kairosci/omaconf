@@ -457,3 +457,4 @@ zed.project_action=Open project with Zed
 git.main_push_forbidden=Direct pushes to main are forbidden; use a feature branch and pull request
 identity.arch=Restore the native Arch Linux system identity
 identity.failed=Cannot restore the native Arch Linux system identity
+identity.check=Native Arch Linux system identity
