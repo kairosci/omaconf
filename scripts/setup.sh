@@ -31,6 +31,7 @@ PRIMARY_USER=$(target_user_resolve) || err "__cannot_determine_user"
 MODULE_FILES=(
     "$MODULES_DIR/00-env.sh"
     "$MODULES_DIR/05-locale.sh"
+    "$MODULES_DIR/06-os-identity.sh"
     "$MODULES_DIR/10-debloat.sh"
     "$MODULES_DIR/20-defaults.sh"
     "$MODULES_DIR/22-portals.sh"
