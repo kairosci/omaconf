@@ -11,6 +11,19 @@ for pkg_dir in /var/lib/pacman/local/*/; do
     [[ -f "$pkg_dir/desc" ]] || { warn "env.removing_broken" "$pkg_dir"; rm -rf "$pkg_dir"; }
 done
 
+aur_package_artifact() {
+    local directory="$1" package="$2" artifact name
+    for artifact in "$directory/$package-"*.pkg.tar.*; do
+        [[ -f "$artifact" && "$artifact" != *.sig ]] || continue
+        name=$(pacman -Qp --print-format '%n' "$artifact") || return 1
+        if [[ "$name" == "$package" ]]; then
+            printf '%s\n' "$artifact"
+            return 0
+        fi
+    done
+    return 1
+}
+
 aur_verified_install() {
     local pkg="$1" tmp f
     [[ -n "$pkg" ]] || err "env.aur_empty"
@@ -30,8 +43,7 @@ aur_verified_install() {
         rm -rf "$tmp"
         err "env.aur_verify_failed" "$pkg"
     }
-    f=$(find "$tmp/src" -maxdepth 1 -type f -name "$pkg-*.pkg.tar.*" ! -name '*.sig' -print -quit)
-    [[ -n "$f" ]] || { rm -rf "$tmp"; err "env.aur_no_artifact" "$pkg"; }
+    f=$(aur_package_artifact "$tmp/src" "$pkg") || { rm -rf "$tmp"; err "env.aur_no_artifact" "$pkg"; }
     pacman -U --noconfirm "$f"
     rm -rf "$tmp"
 }

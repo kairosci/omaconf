@@ -34,6 +34,30 @@ assert_file_contains "hardware module blacklists firewire" "$POWER_MODULE" "disa
 assert_file_exists "maintenance module exists" "$MAINT_MODULE"
 assert_file_contains "maintenance module schedules weekly audit" "$MAINT_MODULE" "/etc/cron.weekly/security-audit.sh"
 assert_file_contains "weekly audit has a timer when cron is absent" "$MAINT_MODULE" "systemctl enable --now omaconf-security-audit.timer"
+check_audit_scheduler() (
+    local scenario actions
+    actions=$(mktemp)
+    trap 'rm -f "$actions"' EXIT
+    # shellcheck disable=SC2329
+    systemctl() {
+        case "$*" in
+            'is-enabled --quiet cronie.service') [[ "$scenario" == enabled ]] ;;
+            'is-active --quiet cronie.service') [[ "$scenario" == active ]] ;;
+            *) printf '%s\n' "$*" >> "$actions" ;;
+        esac
+    }
+    for scenario in enabled active absent; do
+        : > "$actions"
+        # shellcheck source=/dev/null
+        source <(sed -n '/^if systemctl is-enabled --quiet cronie.service/,/^fi$/p' "$MAINT_MODULE")
+        if [[ "$scenario" == absent ]]; then
+            [[ "$(cat "$actions")" == 'enable --now omaconf-security-audit.timer' ]] || return 1
+        else
+            [[ "$(cat "$actions")" == $'enable --now cronie.service\ndisable --now omaconf-security-audit.timer' ]] || return 1
+        fi
+    done
+)
+assert_true "audit scheduler starts stopped Cronie and avoids duplicate schedulers" "check_audit_scheduler"
 assert_file_contains "auditd reload is guarded by a change check" "$SECURITY_STACK_MODULE" "augenrules --check"
 assert_file_contains "auditd rules are reloaded idempotently with augenrules" "$SECURITY_STACK_MODULE" "augenrules --load"
 assert_file_contains "service disabling is guarded on unit existence" "$SERVICES_MODULE" "unit_installed()"

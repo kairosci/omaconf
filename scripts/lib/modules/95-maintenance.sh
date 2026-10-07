@@ -42,7 +42,8 @@ WantedBy=timers.target
 TIMER
 chmod 644 /etc/systemd/system/omaconf-security-audit.{service,timer}
 systemctl daemon-reload
-if systemctl is-enabled --quiet cronie.service; then
+if systemctl is-enabled --quiet cronie.service || systemctl is-active --quiet cronie.service; then
+    systemctl enable --now cronie.service
     systemctl disable --now omaconf-security-audit.timer
 else
     systemctl enable --now omaconf-security-audit.timer
