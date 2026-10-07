@@ -41,6 +41,8 @@ printf '%s\n' '{"author":"personal","themes":[{"name":"Personal"}]}' > "$XDG_CON
 assert_true "GTK flat palette generation succeeds" "bash '$PROJECT_DIR/hooks/theme-set.d/gtk-theme'"
 assert_file_contains_literal "GTK preserves personal CSS" "$XDG_CONFIG_HOME/gtk-4.0/gtk.css" '.personal { color: red; }'
 assert_true "GTK flat palette generation is idempotent" "before=\$(sha256sum '$XDG_CONFIG_HOME/gtk-4.0/gtk.css' '$XDG_CONFIG_HOME/gtk-4.0/omaconf.css'); bash '$PROJECT_DIR/hooks/theme-set.d/gtk-theme'; [[ \"\$before\" == \"\$(sha256sum '$XDG_CONFIG_HOME/gtk-4.0/gtk.css' '$XDG_CONFIG_HOME/gtk-4.0/omaconf.css')\" ]]"
+assert_file_contains_literal "GTK headerbars use the palette background" "$XDG_CONFIG_HOME/gtk-4.0/omaconf.css" '--headerbar-bg-color: #101010;'
+assert_file_contains_literal "GTK cards use the palette background" "$XDG_CONFIG_HOME/gtk-4.0/omaconf.css" '--card-bg-color: #101010;'
 assert_true "Zed palette generates and selects a native theme" "bash '$PROJECT_DIR/conf/zed/theme.sh'"
 assert_false "Zed removes retired generated themes" "test -e '$XDG_CONFIG_HOME/zed/themes/omaconf-retired.json'"
 assert_true "Zed preserves personal themes" "test -e '$XDG_CONFIG_HOME/zed/themes/omaconf-personal.json'"
@@ -49,6 +51,8 @@ assert_true "Zed theme synchronization is idempotent" "before=\$(sha256sum '$XDG
 sed -i 's/"dark"/"light"/; s/#101010/#f0f0f0/' "$OMACONF_THEME_COLORS"
 assert_true "Zed follows a subsequent light palette" "bash '$PROJECT_DIR/conf/zed/theme.sh' && jq -e '.themes[0].appearance == \"light\" and .themes[0].style[\"editor.background\"] == \"#f0f0f0\"' '$XDG_CONFIG_HOME/zed/themes/omaconf.json'"
 sed -i 's/#f0f0f0/invalid/' "$OMACONF_THEME_COLORS"
+assert_false "invalid GTK palette fails before replacing CSS" "bash '$PROJECT_DIR/hooks/theme-set.d/gtk-theme'"
+assert_file_contains_literal "invalid GTK palette preserves previous CSS" "$XDG_CONFIG_HOME/gtk-4.0/omaconf.css" '--window-bg-color: #101010;'
 assert_false "invalid Zed palette fails before replacing the theme" "bash '$PROJECT_DIR/conf/zed/theme.sh'"
 assert_true "invalid palette preserves the previous Zed theme" "jq -e '.themes[0].style[\"editor.background\"] == \"#f0f0f0\"' '$XDG_CONFIG_HOME/zed/themes/omaconf.json'"
 unset OMACONF_THEME_NAME OMACONF_THEME_COLORS

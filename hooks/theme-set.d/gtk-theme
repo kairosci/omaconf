@@ -38,11 +38,11 @@ mix_color() {
         printf '%02x' "$(( (a * (100 - percentage) + b * percentage) / 100 ))"
     done
 }
-SURFACE=$(mix_color 6)
+SURFACE=$BACKGROUND
 HOVER=$(mix_color 10)
 BORDER=$(mix_color 18)
 MUTED=$(mix_color 55)
-THEME_HASH=$(printf '%s\n' "$BACKGROUND" "$FOREGROUND" "$ACCENT" "$SELECTION" "$MODE" "ui-flat-v4" | sha256sum)
+THEME_HASH=$(printf '%s\n' "$BACKGROUND" "$FOREGROUND" "$ACCENT" "$SELECTION" "$MODE" "ui-flat-v5" | sha256sum)
 GTK_THEME_NAME="Omaconf-${THEME_HASH:0:16}"
 GTK_THEME_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/themes/$GTK_THEME_NAME"
 mkdir -p "$GTK_THEME_DIR/gtk-3.0" "$GTK_THEME_DIR/gtk-4.0"
@@ -81,7 +81,7 @@ for version in 3 4; do
 @define-color accent_color $ACCENT;
 @define-color accent_fg_color $BACKGROUND;
 * { border-radius: 0; box-shadow: none; text-shadow: none; background-image: none; transition: none; }
-window, dialog, .background, menubar, menu, menuitem, notebook, notebook header, notebook tab, viewport, scrolledwindow, stack, .view { background-color: $BACKGROUND; color: $FOREGROUND; }
+window, dialog, .background, menubar, menu, menuitem, notebook, notebook header, notebook tab, viewport, scrolledwindow, stack, .view, .card, .boxed-list, .boxed-list row, popover > contents, tooltip { background-color: $BACKGROUND; color: $FOREGROUND; }
 headerbar, toolbar, .sidebar { background-color: $SURFACE; color: $FOREGROUND; }
 view, treeview, iconview, textview, entry, button, list, row { background-color: $BACKGROUND; color: $FOREGROUND; }
 view:selected, treeview:selected, iconview:selected, .view:selected, row:selected { background-color: $SELECTION; color: $FOREGROUND; }
@@ -114,7 +114,7 @@ EOF_CSS
   --headerbar-fg-color: $FOREGROUND;
   --sidebar-bg-color: $SURFACE;
   --sidebar-fg-color: $FOREGROUND;
-  --card-bg-color: $HOVER;
+  --card-bg-color: $BACKGROUND;
   --card-fg-color: $FOREGROUND;
   --dialog-bg-color: $BACKGROUND;
   --dialog-fg-color: $FOREGROUND;

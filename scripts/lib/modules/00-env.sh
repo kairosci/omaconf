@@ -30,7 +30,7 @@ aur_verified_install() {
         rm -rf "$tmp"
         err "env.aur_verify_failed" "$pkg"
     }
-    f=$(find "$tmp/src" -name '*.pkg.tar.*' -type f 2>/dev/null | head -1)
+    f=$(find "$tmp/src" -maxdepth 1 -type f -name "$pkg-*.pkg.tar.*" ! -name '*.sig' -print -quit)
     [[ -n "$f" ]] || { rm -rf "$tmp"; err "env.aur_no_artifact" "$pkg"; }
     pacman -U --noconfirm "$f"
     rm -rf "$tmp"
@@ -84,5 +84,5 @@ omarchy_as() {
         fi
         OMARCHY_PATH="${OMARCHY_PATH:-/usr/share/omarchy}"
     fi
-    user_as "$user" "OMARCHY_PATH=$OMARCHY_PATH" omarchy "$@"
+    user_as "$user" env "OMARCHY_PATH=$OMARCHY_PATH" omarchy "$@"
 }
