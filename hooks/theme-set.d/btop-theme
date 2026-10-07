@@ -10,6 +10,6 @@ else
     warn() { printf '%s: %s\n' "Warning" "$1" >&2; }
 fi
 
-if command -v omarchy &>/dev/null; then
-    omarchy restart btop 2>/dev/null || warn "hooks.btop_restart_failed"
+if command -v omarchy &>/dev/null && pgrep -u "$(id -u)" -x btop >/dev/null; then
+    omarchy restart btop || warn "hooks.btop_restart_failed"
 fi

@@ -8,7 +8,7 @@ __log_in_progress=Journal en cours : %s
 __press_enter=Appuyez sur ENTREE pour fermer...
 
 env.sync=Synchronisation des bases de données de paquets
-env.sync_skipped=synchronisation de la base pacman ignorée
+env.sync_skipped=mise à jour complète échouée; configuration arrêtée
 env.fixing_broken=Correction des entrées pacman corrompues
 env.removing_broken=Suppression de l'entrée corrompue : %s
 env.aur_empty=Installation AUR demandée avec un nom de paquet vide
@@ -194,7 +194,7 @@ power.firewire=Désactivation de FireWire
 
 maint.sudo=Durcissement de sudo
 maint.sudoers_invalid=sudoers.d/security invalide, restauré
-maint.cache=Nettoyage du cache des paquets
+maint.cache=Nettoyage du cache en conservant deux versions par paquet
 maint.cache_skipped=nettoyage du cache des paquets ignoré
 maint.orphans=Suppression des paquets orphelins
 maint.orphans_skipped=nettoyage des paquets orphelins ignoré

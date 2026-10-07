@@ -19,6 +19,12 @@ assert_file_contains "per-user helper forwards the runtime dir" "$ENV_MODULE" 'X
 assert_file_contains "per-user helper forwards the session bus" "$ENV_MODULE" 'DBUS_SESSION_BUS_ADDRESS=.bus.'
 assert_file_contains "per-user helper forwards the active language" "$ENV_MODULE" 'OMACONF_LANG=.OMACONF_LANG.'
 assert_file_contains "omarchy_as delegates to the per-user helper" "$ENV_MODULE" 'OMARCHY_PATH=.OMARCHY_PATH. omarchy'
+assert_true "omarchy_as passes environment and arguments as separate command tokens" "(
+    source <(sed -n '/^omarchy_as()/,\$p' '$ENV_MODULE')
+    export OMARCHY_PATH='/path with spaces'
+    user_as() { [[ \$# == 6 && \$1 == testuser && \$2 == env && \$3 == 'OMARCHY_PATH=/path with spaces' && \$4 == omarchy && \$5 == theme && \$6 == 'theme with spaces' ]]; }
+    omarchy_as testuser theme 'theme with spaces'
+)"
 
 assert_file_contains "theming runs hooks through the per-user helper" "$THEMING_MODULE" 'user_as .._user. bash .._hook_dir/.hook_name.'
 assert_file_not_contains "omaqt does not route xdg-mime through omarchy" "$OMAQT_MODULE" 'omarchy_as "$_user" xdg-mime'
@@ -56,7 +62,7 @@ assert_file_contains "keyring module selects GNOME backend" "$PROJECT_DIR/script
 assert_file_contains "keyring module provisions Seahorse" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "seahorse"
 assert_file_contains "keyring switch accepts GNOME backend" "$PROJECT_DIR/scripts/keyring-switch.sh" "gnome-keyring)"
 assert_file_contains "Makefile exposes the keyring selection target" "$PROJECT_DIR/Makefile" "scripts/keyring-switch.sh"
-assert_file_contains "Micro installs the project run plugin" "$PROJECT_DIR/conf/micro/install.sh" "run editorconfig"
+assert_file_contains "Micro installs the available runit plugin" "$PROJECT_DIR/conf/micro/install.sh" "runit editorconfig"
 
 PERSIST_PRE="$PROJECT_DIR/hooks/pre-refresh-pacman.d/99-omaconf-persist"
 assert_file_exists "pre-refresh persist hook exists in repo" "$PERSIST_PRE"

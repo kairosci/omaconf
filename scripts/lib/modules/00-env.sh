@@ -3,13 +3,26 @@
 set -euo pipefail
 
 log "env.sync"
-pacman -Syu --noconfirm 2>/dev/null || warn "env.sync_skipped"
+OMARCHY_ALLOW_DIRECT_PACMAN=1 pacman -Syu --noconfirm || err "env.sync_skipped"
 
 log "env.fixing_broken"
 for pkg_dir in /var/lib/pacman/local/*/; do
     [[ -d "$pkg_dir" ]] || continue
     [[ -f "$pkg_dir/desc" ]] || { warn "env.removing_broken" "$pkg_dir"; rm -rf "$pkg_dir"; }
 done
+
+aur_package_artifact() {
+    local directory="$1" package="$2" artifact name
+    for artifact in "$directory/$package-"*.pkg.tar.*; do
+        [[ -f "$artifact" && "$artifact" != *.sig ]] || continue
+        name=$(pacman -Qp --print-format '%n' "$artifact") || return 1
+        if [[ "$name" == "$package" ]]; then
+            printf '%s\n' "$artifact"
+            return 0
+        fi
+    done
+    return 1
+}
 
 aur_verified_install() {
     local pkg="$1" tmp f
@@ -30,8 +43,7 @@ aur_verified_install() {
         rm -rf "$tmp"
         err "env.aur_verify_failed" "$pkg"
     }
-    f=$(find "$tmp/src" -name '*.pkg.tar.*' -type f 2>/dev/null | head -1)
-    [[ -n "$f" ]] || { rm -rf "$tmp"; err "env.aur_no_artifact" "$pkg"; }
+    f=$(aur_package_artifact "$tmp/src" "$pkg") || { rm -rf "$tmp"; err "env.aur_no_artifact" "$pkg"; }
     pacman -U --noconfirm "$f"
     rm -rf "$tmp"
 }
@@ -84,5 +96,5 @@ omarchy_as() {
         fi
         OMARCHY_PATH="${OMARCHY_PATH:-/usr/share/omarchy}"
     fi
-    user_as "$user" "OMARCHY_PATH=$OMARCHY_PATH" omarchy "$@"
+    user_as "$user" env "OMARCHY_PATH=$OMARCHY_PATH" omarchy "$@"
 }

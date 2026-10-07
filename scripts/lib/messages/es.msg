@@ -8,7 +8,7 @@ __log_in_progress=Registro en curso: %s
 __press_enter=Pulse INTRO para cerrar...
 
 env.sync=Sincronización de las bases de datos de paquetes
-env.sync_skipped=sincronización de la base de pacman omitida
+env.sync_skipped=actualización completa fallida; configuración detenida
 env.fixing_broken=Corrección de entradas de pacman corruptas
 env.removing_broken=Eliminando entrada corrupta: %s
 env.aur_empty=Se solicitó la instalación de AUR con un nombre de paquete vacío
@@ -194,7 +194,7 @@ power.firewire=Deshabilitar FireWire
 
 maint.sudo=Endurecer sudo
 maint.sudoers_invalid=sudoers.d/security no válido, revertido
-maint.cache=Limpieza de la caché de paquetes
+maint.cache=Limpieza de la caché conservando dos versiones por paquete
 maint.cache_skipped=limpieza de la caché de paquetes omitida
 maint.orphans=Eliminación de paquetes huérfanos
 maint.orphans_skipped=limpieza de paquetes huérfanos omitida

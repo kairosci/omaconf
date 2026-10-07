@@ -20,7 +20,6 @@ ClientAliveInterval 300
 ClientAliveCountMax 2
 LoginGraceTime 60
 StrictModes yes
-UsePrivilegeSeparation sandbox
 AuthenticationMethods publickey
 ChrootDirectory none
 KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512
@@ -40,10 +39,6 @@ Host *
 SSH_CLIENT
 chmod 644 /etc/ssh/ssh_config.d/hardened.conf
 
-if systemctl is-active sshd 2>/dev/null | grep -q active; then
-    systemctl restart sshd || warn "ssh.restart_failed"
-fi
-
 log "ssh.service"
 mkdir -p /etc/systemd/system/sshd.service.d
 chmod 755 /etc/systemd/system/sshd.service.d 2>/dev/null || warn "ssh.chmod_skipped"
@@ -57,3 +52,8 @@ RestrictSUIDSGID=yes
 ReadWritePaths=/etc/ssh /var/log /var/run/sshd /run/sshd
 SSHD_SVC
 chmod 644 /etc/systemd/system/sshd.service.d/hardened.conf 2>/dev/null || warn "ssh.conf_chmod"
+systemctl daemon-reload
+if systemctl is-active --quiet sshd.service; then
+    sshd -t
+    systemctl restart sshd.service || warn "ssh.restart_failed"
+fi

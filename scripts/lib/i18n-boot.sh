@@ -10,6 +10,7 @@ _omaconf_i18n_stub() {
 _omaconf_i18n_resolve() {
     local candidate
     for candidate in \
+        "$(dirname "${BASH_SOURCE[0]}")/i18n.sh" \
         "${OMACONF_I18N_DIR:-}/i18n.sh" \
         "${SCRIPT_DIR:-.}/../i18n/i18n.sh" \
         "${SCRIPT_DIR:-.}/../../scripts/lib/i18n.sh"; do

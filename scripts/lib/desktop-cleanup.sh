@@ -344,7 +344,15 @@ desktop_cleanup_sweep() {
         done
     fi
     if command -v omarchy >/dev/null 2>&1; then
-        omarchy menu refresh 2>/dev/null || warn "desktop.refresh_skipped"
+        if declare -F omarchy_as >/dev/null; then
+            for user_home in "$homes_root"/*; do
+                [[ -d "$user_home" ]] || continue
+                _u="$(basename "$user_home")"
+                omarchy_as "$_u" menu refresh || warn "desktop.refresh_skipped"
+            done
+        elif [[ $EUID -ne 0 ]]; then
+            omarchy menu refresh || warn "desktop.refresh_skipped"
+        fi
     fi
     return 0
 }

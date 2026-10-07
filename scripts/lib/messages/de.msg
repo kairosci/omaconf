@@ -8,7 +8,7 @@ __log_in_progress=Protokoll läuft: %s
 __press_enter=EINGABE zum Schließen drücken...
 
 env.sync=Synchronisierung der Paketdatenbanken
-env.sync_skipped=Synchronisierung der pacman-Datenbank übersprungen
+env.sync_skipped=Vollständige Systemaktualisierung fehlgeschlagen; Einrichtung angehalten
 env.fixing_broken=Reparatur beschädigter pacman-Einträge
 env.removing_broken=Entfernen eines beschädigten Eintrags: %s
 env.aur_empty=AUR-Installation mit leerem Paketnamen angefordert
@@ -194,7 +194,7 @@ power.firewire=FireWire deaktivieren
 
 maint.sudo=sudo härten
 maint.sudoers_invalid=sudoers.d/security ungültig, zurückgerollt
-maint.cache=Paketcache leeren
+maint.cache=Paketcache bereinigen und zwei Versionen pro Paket behalten
 maint.cache_skipped=Leeren des Paketcaches übersprungen
 maint.orphans=Verwaiste Pakete entfernen
 maint.orphans_skipped=Bereinigung verwaister Pakete übersprungen

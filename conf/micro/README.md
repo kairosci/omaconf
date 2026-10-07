@@ -1,6 +1,6 @@
 # microconf
 
-Micro is the default terminal editor. Its configuration uses native completion and the built-in linter, with ShellCheck, shfmt, Ruff and yamllint available for supported file types. The official plugin channel provides `detectindent`, `jump`, `snippets`, `run` and `editorconfig`; `jump` uses universal-ctags. F4 navigates symbols, F5 runs supported files, F9 starts `make` in the background and F12 runs `make`.
+Micro is the default terminal editor. Its configuration uses native completion and the built-in linter, with ShellCheck, shfmt, Ruff and yamllint available for supported file types. The official plugin channel provides `detectindent`, `jump`, `snippets`, `runit` and `editorconfig`; `jump` uses universal-ctags. Use the installed plugins' help for symbol navigation and run commands.
 
 Micro remains the default editor for shell tools.
 

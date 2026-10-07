@@ -9,6 +9,51 @@ source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Automation Idempotency & Safety Rules"
 
+failed_upgrade_stops_setup() {
+    local output status
+    if output=$(bash -c '
+        set -euo pipefail
+        log() { :; }
+        err() { exit 1; }
+        pacman() {
+            [[ "${OMARCHY_ALLOW_DIRECT_PACMAN:-}" == 1 ]] || exit 2
+            printf "upgrade failure\n" >&2
+            return 42
+        }
+        source "$1"
+        printf "continued\n"
+    ' bash "$PROJECT_DIR/scripts/lib/modules/00-env.sh" 2>&1); then
+        return 1
+    else
+        status=$?
+    fi
+    [[ "$status" == 1 && "$output" == 'upgrade failure' ]]
+}
+assert_true "failed full upgrade halts setup and preserves diagnostics" "failed_upgrade_stops_setup"
+
+check_aur_artifacts() (
+    local fixture selected
+    fixture=$(mktemp -d)
+    trap 'rm -rf "$fixture"' EXIT
+    # shellcheck source=/dev/null
+    source <(awk '/^aur_package_artifact\(\)/ { found=1 } found { print } found && /^}/ { exit }' "$PROJECT_DIR/scripts/lib/modules/00-env.sh")
+    # shellcheck disable=SC2329
+    pacman() { [[ "$1" == -Qp ]] && cat "${@: -1}"; }
+    mkdir -p "$fixture/nested"
+    printf '%s\n' example-debug > "$fixture/example-debug-1.pkg.tar.zst"
+    printf '%s\n' example > "$fixture/example-1.pkg.tar.zst"
+    printf '%s\n' invalid > "$fixture/example-0.pkg.tar.zst.sig"
+    printf '%s\n' example > "$fixture/nested/example-0.pkg.tar.zst"
+    selected=$(aur_package_artifact "$fixture" example)
+    [[ "$selected" == "$fixture/example-1.pkg.tar.zst" ]] || return 1
+    rm "$selected"
+    if aur_package_artifact "$fixture" example; then return 1; fi
+    # shellcheck disable=SC2329
+    pacman() { return 42; }
+    if aur_package_artifact "$fixture" example; then return 1; fi
+)
+assert_true "AUR artifact selection checks metadata and excludes signatures debug and nested packages" "check_aur_artifacts"
+
 assert_false "No unverified aur_install calls in setup.sh" "grep -q 'aur_install ' '$PROJECT_DIR/scripts/setup.sh' '$PROJECT_DIR'/scripts/lib/modules/*.sh"
 assert_false "No yay -S invocations in setup scripts" "grep -q 'yay -S' '$PROJECT_DIR/scripts/setup.sh' '$PROJECT_DIR'/scripts/lib/modules/*.sh"
 

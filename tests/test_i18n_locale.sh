@@ -106,7 +106,10 @@ assert_true "engine lists available languages"       "list_contains \"\$LIST_IT\
 assert_true "engine marks the current language"      "list_marks \"\$LIST_IT\" it '(corrente)'"
 assert_true "make lang target lists languages"       "grep -q 'i18n.sh --list' '$PROJECT_DIR/Makefile'"
 BOOT_IT="$(OMACONF_LANG=it bash -c 'SCRIPT_DIR="$1"; source "$2"; t "__complete"' _ "$LIB_DIR" "$LIB_DIR/i18n-boot.sh" 2>/dev/null)"
-BOOT_STUB="$(SCRIPT_DIR=/nonexistent OMACONF_LANG=it bash -c 'source "$1"; warn stub' _ "$LIB_DIR/i18n-boot.sh" 2>&1)"
+BOOT_SANDBOX=$(mktemp -d)
+cp "$LIB_DIR/i18n-boot.sh" "$BOOT_SANDBOX/i18n-boot.sh"
+BOOT_STUB="$(SCRIPT_DIR=/nonexistent OMACONF_LANG=it bash -c 'source "$1"; warn stub' _ "$BOOT_SANDBOX/i18n-boot.sh" 2>&1)"
+rm -rf "$BOOT_SANDBOX"
 assert_true "boot shim resolves the library catalog"    "eq \"\$BOOT_IT\" 'Hardening completato. Riavvio necessario.'"
 assert_true "boot shim degrades to an english stub"     "eq \"\$BOOT_STUB\" 'Warning: stub'"
 assert_true "boot shim keeps working under strict mode" "bash -c 'set -euo pipefail; SCRIPT_DIR=\"\$1\"; source \"\$1/i18n-boot.sh\"; t ok' _ '$LIB_DIR'"

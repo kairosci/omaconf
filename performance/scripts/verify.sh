@@ -1,8 +1,11 @@
 #!/bin/bash
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+source "$PROJECT_ROOT/scripts/lib/i18n.sh"
+i18n_init
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -15,10 +18,10 @@ FAIL=0
 check() {
     local desc="$1" condition="$2"
     if eval "$condition" &>/dev/null; then
-        ((PASS++))
+        PASS=$((PASS + 1))
         printf '%b\n' "  ${GREEN}pass${NC} $desc"
     else
-        ((FAIL++))
+        FAIL=$((FAIL + 1))
         printf '%b\n' "  ${RED}fail${NC} $desc"
     fi
 }
@@ -31,8 +34,15 @@ check "power.conf defines charge limit" "grep -q 'BATTERY_CHARGE_LIMIT=75' /etc/
 check "battery charge udev rule exists" "[[ -f /etc/udev/rules.d/98-battery-charge-threshold.rules ]]"
 check "battery charge tmpfiles exists" "[[ -f /etc/tmpfiles.d/battery-charge-threshold.conf ]]"
 check "battery service enabled" "systemctl is-enabled battery-charge-threshold.service &>/dev/null || [[ -L /etc/systemd/system/multi-user.target.wants/battery-charge-threshold.service ]]"
-if ls /sys/class/power_supply/BAT*/charge_control_end_threshold &>/dev/null; then
-    check "live battery limit is 75%" "grep -qx '75' /sys/class/power_supply/BAT*/charge_control_end_threshold 2>/dev/null"
+BATTERY_HELPER=/usr/local/libexec/omaconf-set-battery-charge-limit
+if [[ -x "$BATTERY_HELPER" ]]; then
+    check "$(t check.battery_policy_applied)" "[[ \"\$('$BATTERY_HELPER' --query state_limit)\" == \"\$('$BATTERY_HELPER' --query limit)\" ]]"
+    functional_nodes=$("$BATTERY_HELPER" --query functional_nodes) || exit 1
+    if [[ "$functional_nodes" == 0 ]]; then
+        printf '%s\n' "$(t verify.skip_charge_unsupported)"
+    else
+        check "$(t check.battery_limit)" "[[ \"\$('$BATTERY_HELPER' --query drift)\" == no ]]"
+    fi
 fi
 
 section "Low-Battery Session Protection"
