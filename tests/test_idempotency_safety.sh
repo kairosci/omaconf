@@ -9,6 +9,28 @@ source "$SCRIPT_DIR/test_lib.sh"
 
 test_section "Automation Idempotency & Safety Rules"
 
+failed_upgrade_stops_setup() {
+    local output status
+    if output=$(bash -c '
+        set -euo pipefail
+        log() { :; }
+        err() { exit 1; }
+        pacman() {
+            [[ "${OMARCHY_ALLOW_DIRECT_PACMAN:-}" == 1 ]] || exit 2
+            printf "upgrade failure\n" >&2
+            return 42
+        }
+        source "$1"
+        printf "continued\n"
+    ' bash "$PROJECT_DIR/scripts/lib/modules/00-env.sh" 2>&1); then
+        return 1
+    else
+        status=$?
+    fi
+    [[ "$status" == 1 && "$output" == 'upgrade failure' ]]
+}
+assert_true "failed full upgrade halts setup and preserves diagnostics" "failed_upgrade_stops_setup"
+
 assert_false "No unverified aur_install calls in setup.sh" "grep -q 'aur_install ' '$PROJECT_DIR/scripts/setup.sh' '$PROJECT_DIR'/scripts/lib/modules/*.sh"
 assert_false "No yay -S invocations in setup scripts" "grep -q 'yay -S' '$PROJECT_DIR/scripts/setup.sh' '$PROJECT_DIR'/scripts/lib/modules/*.sh"
 

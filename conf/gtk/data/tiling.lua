@@ -1,6 +1,17 @@
-local gtk_apps = "^(org\\.gnome\\.(Nautilus|Papers|Loupe|Baobab|FileRoller)|net\\.nokyan\\.Resources|io\\.github\\.celluloid_player\\.Celluloid)$"
+hl.config({
+  general = { gaps_in = 0, gaps_out = 0, border_size = 1, layout = "dwindle" },
+  decoration = {
+    rounding = 0,
+    active_opacity = 1,
+    inactive_opacity = 1,
+    shadow = { enabled = false },
+    blur = { enabled = false },
+  },
+  animations = { enabled = false },
+  group = { groupbar = { gradients = false, gradient_rounding = 0 } },
+})
 
-o.window({ class = gtk_apps }, {
+o.window(".*", {
   tag = "-default-opacity",
   opacity = "1 1",
   rounding = 0,
@@ -8,4 +19,4 @@ o.window({ class = gtk_apps }, {
   no_blur = true,
   no_anim = true,
 })
-o.window({ class = gtk_apps, modal = false, tag = "negative:floating-window" }, { tile = true })
+o.window({ modal = false, tag = "negative:floating-window" }, { tile = true })

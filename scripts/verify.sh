@@ -283,6 +283,7 @@ if [[ -r /sys/power/mem_sleep ]]; then
 fi
 
 section verify.sec_sched
+tcheck "check.weekly_audit" "{ systemctl is-enabled --quiet omaconf-security-audit.timer && systemctl is-active --quiet omaconf-security-audit.timer; } || { systemctl is-enabled --quiet cronie.service && systemctl is-active --quiet cronie.service; }"
 if [[ -r /etc/cron.weekly/security-audit.sh ]]; then
     tcheck "check.weekly_audit" "[[ -f /etc/cron.weekly/security-audit.sh && -x /etc/cron.weekly/security-audit.sh ]]"
 elif priv test -r /etc/cron.weekly/security-audit.sh 2>/dev/null; then

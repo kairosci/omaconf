@@ -63,7 +63,17 @@ fi
 log "security.usbguard"
 if pacman -Q usbguard &>/dev/null; then
     mkdir -p /etc/usbguard
-    usbguard generate-policy > /etc/usbguard/rules.conf || warn "security.usbguard_policy_failed"
+    if [[ ! -s /etc/usbguard/rules.conf ]]; then
+        _usbguard_policy=$(mktemp /etc/usbguard/.rules.XXXXXX)
+        if usbguard generate-policy > "$_usbguard_policy"; then
+            chmod 600 "$_usbguard_policy"
+            mv -f "$_usbguard_policy" /etc/usbguard/rules.conf
+        else
+            rm -f "$_usbguard_policy"
+            err "security.usbguard_policy_failed"
+        fi
+    fi
+    chmod 600 /etc/usbguard/rules.conf
     systemctl enable usbguard.service || warn "security.usbguard_enable_failed"
 fi
 

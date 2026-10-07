@@ -8,7 +8,7 @@ __log_in_progress=Log in progress: %s
 __press_enter=Press ENTER to close...
 
 env.sync=Syncing package databases
-env.sync_skipped=pacman database sync skipped
+env.sync_skipped=full system upgrade failed; setup stopped
 env.fixing_broken=Fixing broken pacman entries
 env.removing_broken=Removing broken entry: %s
 env.aur_empty=AUR install requested with empty package name
@@ -194,7 +194,7 @@ power.firewire=Disabling FireWire
 
 maint.sudo=Hardening sudo
 maint.sudoers_invalid=sudoers.d/security invalid, rolled back
-maint.cache=Clearing package cache
+maint.cache=Pruning package cache while retaining two versions per package
 maint.cache_skipped=package cache clear skipped
 maint.orphans=Cleaning orphaned packages
 maint.orphans_skipped=orphan cleanup skipped

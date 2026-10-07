@@ -3,7 +3,7 @@
 set -euo pipefail
 
 log "env.sync"
-pacman -Syu --noconfirm 2>/dev/null || warn "env.sync_skipped"
+OMARCHY_ALLOW_DIRECT_PACMAN=1 pacman -Syu --noconfirm || err "env.sync_skipped"
 
 log "env.fixing_broken"
 for pkg_dir in /var/lib/pacman/local/*/; do

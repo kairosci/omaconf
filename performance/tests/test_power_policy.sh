@@ -46,21 +46,15 @@ if [[ -f /etc/UPower/UPower.conf.d/99-omaconf-low-battery.conf ]]; then
     assert_file_contains "UPower drop-in acts at 5 percent" "/etc/UPower/UPower.conf.d/99-omaconf-low-battery.conf" "PercentageAction=5"
 fi
 
-check_live_battery_threshold() {
-    local checked=0
-    for bat_node in /sys/class/power_supply/BAT*/charge_control_end_threshold /sys/class/power_supply/BAT*/charge_stop_threshold /sys/class/power_supply/BATT*/charge_control_end_threshold; do
-        if [[ -f "$bat_node" ]]; then
-            checked=$((checked + 1))
-            local val
-            val=$(cat "$bat_node" 2>/dev/null)
-            [[ "$val" == "75" ]] || return 1
-        fi
-    done
-    return 0
-}
-
-if ls /sys/class/power_supply/BAT*/charge_control_end_threshold &>/dev/null && [[ -f /etc/omaconf/power.conf ]]; then
-    assert_true "live battery charge threshold matches policy (75%)" "check_live_battery_threshold"
+BATTERY_HELPER=/usr/local/libexec/omaconf-set-battery-charge-limit
+if [[ -x "$BATTERY_HELPER" && -r /etc/omaconf/power.conf ]]; then
+    assert_true "recorded battery charge limit matches policy" "[[ \"\$('$BATTERY_HELPER' --query state_limit)\" == \"\$('$BATTERY_HELPER' --query limit)\" ]]"
+    functional_nodes=$("$BATTERY_HELPER" --query functional_nodes)
+    if [[ "$functional_nodes" == 0 ]]; then
+        assert_true "unsupported firmware is not reported as enforced" "[[ \"\$('$BATTERY_HELPER' --query enforced)\" == no ]]"
+    else
+        assert_true "supported battery threshold does not drift" "[[ \"\$('$BATTERY_HELPER' --query drift)\" == no ]]"
+    fi
 fi
 
 test_summary

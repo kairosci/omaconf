@@ -33,6 +33,7 @@ assert_file_contains "hardware module blacklists firewire" "$POWER_MODULE" "disa
 
 assert_file_exists "maintenance module exists" "$MAINT_MODULE"
 assert_file_contains "maintenance module schedules weekly audit" "$MAINT_MODULE" "/etc/cron.weekly/security-audit.sh"
+assert_file_contains "weekly audit has a timer when cron is absent" "$MAINT_MODULE" "systemctl enable --now omaconf-security-audit.timer"
 assert_file_contains "auditd reload is guarded by a change check" "$SECURITY_STACK_MODULE" "augenrules --check"
 assert_file_contains "auditd rules are reloaded idempotently with augenrules" "$SECURITY_STACK_MODULE" "augenrules --load"
 assert_file_contains "service disabling is guarded on unit existence" "$SERVICES_MODULE" "unit_installed()"
@@ -41,7 +42,7 @@ assert_file_not_contains "auditd is not restarted via the missing initscripts se
 assert_file_contains "ssh config chmod targets the real config files" "$POWER_MODULE" "sshd_config.d/..conf"
 assert_file_not_contains "ssh config chmod no longer relies on a non-matching glob" "$POWER_MODULE" "chmod 644 /etc/ssh/..conf 2>"
 assert_file_not_contains "pacman cache cleanup no longer pipes yes through pipefail" "$MAINT_MODULE" "yes .. pacman -Scc"
-assert_file_contains "pacman cache cleanup uses noconfirm" "$MAINT_MODULE" "pacman -Scc --noconfirm"
+assert_file_contains "pacman cache cleanup retains rollback packages" "$MAINT_MODULE" "paccache -rk2"
 assert_file_contains "voxtype global disable is guarded on unit existence" "$MAINT_MODULE" "list-unit-files voxtype.service"
 assert_file_contains "maintenance module hardens sudoers" "$MAINT_MODULE" "/etc/sudoers.d/security"
 

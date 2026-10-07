@@ -18,5 +18,9 @@ Intrusion detection parameters are configured in `/etc/fail2ban/jail.local`. Act
 ## USB Device Authorization
 Peripheral device authorization is enforced through the policy configuration file `/etc/usbguard/rules.conf`. The daemon blocks unauthorized USB storage and rogue devices while allowing recognized human interface input devices such as keyboards and mice. Connected USB hardware states are inspected using `usbguard list-devices`.
 
+Generate the initial policy atomically only when no nonempty policy exists. Preserve established allow and block decisions on subsequent setup runs; do not automatically authorize newly attached devices by regenerating the policy.
+
 ## Antivirus and Security Audits
 ClamAV signature updates run continuously via `freshclam.service` and the virus scanning engine runs under `clamav-daemon.service`. Manual directory scans are launched with `clamscan -r -i /home`. Comprehensive system auditing is scheduled weekly via `/etc/cron.weekly/security-audit.sh`. Manual audit reports are generated using `lynis audit system` and rootkit integrity checks are run with `rkhunter --check --sk`.
+
+When Cronie is not enabled, setup enables `omaconf-security-audit.timer` to run the same canonical audit script weekly with persistent catch-up. Never enable both schedulers. Verify an enabled, active scheduler as well as the executable script. Freshclam runs through its daemon and is not repeated by the weekly audit. Retain two package versions with `paccache -rk2` for rollback.

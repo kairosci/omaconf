@@ -5,7 +5,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 BOOT="${OMACONF_I18N_BOOT:-${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/i18n/i18n-boot.sh}"
 [[ -f "$BOOT" ]] || BOOT="$PROJECT_DIR/scripts/lib/i18n-boot.sh"
-OMACONF_I18N_DIR="$(dirname "$BOOT")"
+OMACONF_I18N_DIR="$(dirname "$BOOT")/messages"
 # shellcheck source=/dev/null
 source "$BOOT"
 USERCONF="$SCRIPT_DIR/userconf.sh"

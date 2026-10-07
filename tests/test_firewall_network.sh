@@ -13,6 +13,7 @@ test_section "Firewall, Network & SSH Security"
 
 assert_file_exists "firewall module exists" "$FW_MODULE"
 assert_file_contains "firewall module sets default deny incoming" "$FW_MODULE" "ufw default deny incoming"
+assert_file_not_contains "firewall reconciliation preserves existing rules" "$FW_MODULE" "ufw --force reset"
 assert_file_contains "firewall module sets default allow outgoing" "$FW_MODULE" "ufw default allow outgoing"
 assert_file_contains "firewall module enables ufw.service" "$FW_MODULE" "systemctl enable ufw.service"
 
