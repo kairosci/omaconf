@@ -13,10 +13,9 @@ hl.config({
 
 hl.curve("omaconfSmooth", { type = "bezier", points = { { 0.22, 1 }, { 0.36, 1 } } })
 hl.animation({ leaf = "global", enabled = false })
-for _, leaf in ipairs({ "windows", "windowsIn", "windowsOut", "borderangle" }) do
+for _, leaf in ipairs({ "windows", "windowsIn", "windowsOut", "windowsMove", "borderangle" }) do
   hl.animation({ leaf = leaf, enabled = false })
 end
-hl.animation({ leaf = "windowsMove", enabled = true, speed = 1.6, bezier = "omaconfSmooth" })
 hl.animation({ leaf = "border", enabled = true, speed = 1.4, bezier = "omaconfSmooth" })
 for _, leaf in ipairs({ "fade", "fadeIn", "fadeLayers", "fadeLayersIn", "fadePopups" }) do
   hl.animation({ leaf = leaf, enabled = true, speed = 1.8, bezier = "omaconfSmooth" })
@@ -34,6 +33,5 @@ o.window(".*", {
   rounding = 0,
   no_shadow = true,
   no_blur = true,
-  no_anim = false,
 })
 o.window({ modal = false, tag = "negative:floating-window" }, { tile = true })
