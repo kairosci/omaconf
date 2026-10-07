@@ -56,7 +56,7 @@ assert_file_contains "keyring module selects GNOME backend" "$PROJECT_DIR/script
 assert_file_contains "keyring module provisions Seahorse" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "seahorse"
 assert_file_contains "keyring switch accepts GNOME backend" "$PROJECT_DIR/scripts/keyring-switch.sh" "gnome-keyring)"
 assert_file_contains "Makefile exposes the keyring selection target" "$PROJECT_DIR/Makefile" "scripts/keyring-switch.sh"
-assert_file_contains "Micro installs the project run plugin" "$PROJECT_DIR/conf/micro/install.sh" "run editorconfig"
+assert_file_contains "Micro installs the available runit plugin" "$PROJECT_DIR/conf/micro/install.sh" "runit editorconfig"
 
 PERSIST_PRE="$PROJECT_DIR/hooks/pre-refresh-pacman.d/99-omaconf-persist"
 assert_file_exists "pre-refresh persist hook exists in repo" "$PERSIST_PRE"
