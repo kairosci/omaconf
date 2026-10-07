@@ -92,7 +92,6 @@ install_user_electron_launcher() {
     staged=$(mktemp) || return 1
     if ! awk '
         /^Exec=/ {
-            sub(/^Exec=[^[:space:]]+/, "& --ozone-platform=auto")
             sub(/^Exec=/, "Exec=env GTK_USE_PORTAL=1 ")
         }
         { print }

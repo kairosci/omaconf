@@ -59,7 +59,8 @@ assert_true "invalid palette preserves the previous Zed theme" "jq -e '.themes[0
 unset OMACONF_THEME_NAME OMACONF_THEME_COLORS
 printf '[Desktop Entry]\nType=Application\nName=Sample\nExec=/usr/bin/sample --original %%U\n' > "$SANDBOX/sample.desktop"
 assert_true "Electron integration preserves packaged launcher arguments" "install_user_electron_launcher '$SANDBOX/sample.desktop' '$SANDBOX/result.desktop'"
-assert_file_contains_literal "Electron uses Wayland and native portals" "$SANDBOX/result.desktop" 'Exec=env GTK_USE_PORTAL=1 /usr/bin/sample --ozone-platform=auto --original %U'
+assert_file_contains_literal "Electron preserves native backend selection and portals" "$SANDBOX/result.desktop" 'Exec=env GTK_USE_PORTAL=1 /usr/bin/sample --original %U'
+assert_file_not_contains "Electron does not force an invalid Ozone backend" "$SANDBOX/result.desktop" 'ozone-platform=auto'
 if command -v desktop-file-validate >/dev/null; then
     assert_true "generated launcher is a valid desktop entry" "desktop-file-validate '$SANDBOX/result.desktop'"
 fi
