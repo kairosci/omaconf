@@ -23,6 +23,7 @@ MOCK
 chmod 755 "$SANDBOX/bin/"*
 
 test_section "Graphical Application Integration"
+assert_true "animation policy disables tearing and inherited workspace motion" "lua '$SCRIPT_DIR/animation-policy.lua' '$PROJECT_DIR/conf/gtk/data/tiling.lua'"
 assert_true "Zed native configuration installs" "bash '$PROJECT_DIR/conf/zed/install.sh'"
 assert_true "Zed uses native project preferences" "jq -e '.restore_on_startup == \"last_workspace\" and .project_panel.git_status == true and .terminal.shell == \"system\"' '$XDG_CONFIG_HOME/zed/settings.json'"
 assert_true "Zed settings installation is idempotent" "before=\$(sha256sum '$XDG_CONFIG_HOME/zed/settings.json'); bash '$PROJECT_DIR/conf/zed/install.sh'; [[ \"\$before\" == \"\$(sha256sum '$XDG_CONFIG_HOME/zed/settings.json')\" ]]"

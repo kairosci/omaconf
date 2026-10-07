@@ -1,5 +1,5 @@
 hl.config({
-  general = { gaps_in = 0, gaps_out = 0, border_size = 1, layout = "dwindle" },
+  general = { gaps_in = 0, gaps_out = 0, border_size = 1, layout = "dwindle", allow_tearing = false },
   decoration = {
     rounding = 0,
     active_opacity = 1,
@@ -13,7 +13,7 @@ hl.config({
 
 hl.curve("omaconfSmooth", { type = "bezier", points = { { 0.22, 1 }, { 0.36, 1 } } })
 hl.animation({ leaf = "global", enabled = false })
-for _, leaf in ipairs({ "windows", "windowsIn", "windowsOut", "windowsMove", "borderangle" }) do
+for _, leaf in ipairs({ "windows", "windowsIn", "windowsOut", "windowsMove", "borderangle", "workspaces", "workspacesIn", "workspacesOut", "specialWorkspace", "specialWorkspaceIn", "specialWorkspaceOut" }) do
   hl.animation({ leaf = leaf, enabled = false })
 end
 hl.animation({ leaf = "border", enabled = true, speed = 1.4, bezier = "omaconfSmooth" })
@@ -23,7 +23,7 @@ end
 for _, leaf in ipairs({ "fadeOut", "fadeLayersOut" }) do
   hl.animation({ leaf = leaf, enabled = true, speed = 1.4, bezier = "omaconfSmooth" })
 end
-for _, leaf in ipairs({ "layers", "layersIn", "layersOut", "workspaces", "specialWorkspace" }) do
+for _, leaf in ipairs({ "layers", "layersIn", "layersOut" }) do
   hl.animation({ leaf = leaf, enabled = true, speed = 1.8, bezier = "omaconfSmooth", style = "fade" })
 end
 
