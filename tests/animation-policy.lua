@@ -19,8 +19,10 @@ assert(config.general.allow_tearing == false)
 for _, leaf in ipairs({ "global", "windows", "windowsIn", "windowsOut", "windowsMove", "workspaces", "workspacesIn", "workspacesOut", "specialWorkspace", "specialWorkspaceIn", "specialWorkspaceOut", "borderangle" }) do
   assert(animations[leaf].enabled == false, leaf)
 end
-for _, leaf in ipairs({ "layers", "layersIn", "layersOut" }) do
-  assert(animations[leaf].enabled and animations[leaf].style == "fade", leaf)
+for _, leaf in ipairs({ "border", "fade", "fadeSwitch", "fadeShadow", "fadeGlow", "fadeDim", "fadeDpms", "fadeLayers", "fadePopups", "layers", "layersIn", "layersOut" }) do
+  assert(animations[leaf].enabled == false, leaf)
 end
-assert(animations.fadeIn.enabled and animations.fadeOut.enabled)
-assert(animations.border.enabled)
+for _, leaf in ipairs({ "fadeIn", "fadeOut", "fadeLayersIn", "fadeLayersOut", "fadePopupsIn", "fadePopupsOut" }) do
+  assert(animations[leaf].enabled, leaf)
+  assert(animations[leaf].speed >= 1 and animations[leaf].speed <= 1.4, leaf)
+end
