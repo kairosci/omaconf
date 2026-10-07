@@ -52,8 +52,8 @@ RestrictSUIDSGID=yes
 ReadWritePaths=/etc/ssh /var/log /var/run/sshd /run/sshd
 SSHD_SVC
 chmod 644 /etc/systemd/system/sshd.service.d/hardened.conf 2>/dev/null || warn "ssh.conf_chmod"
-sshd -t
 systemctl daemon-reload
 if systemctl is-active --quiet sshd.service; then
+    sshd -t
     systemctl restart sshd.service || warn "ssh.restart_failed"
 fi
