@@ -22,6 +22,7 @@ assert_file_exists "Local Bash SAST rules exist" "$PROJECT_DIR/.semgrep.yml"
 assert_file_contains "SAST dependency is version pinned" "$PROJECT_DIR/requirements-sast.txt" '^semgrep==[0-9.]+$'
 assert_file_contains "Bash SAST uploads SARIF" "$PROJECT_DIR/.github/workflows/sast.yml" 'upload-sarif@'
 assert_file_contains "Bash SAST uses local rules" "$PROJECT_DIR/.github/workflows/sast.yml" 'config .semgrep.yml'
+assert_file_contains "Bash SAST fails on security findings" "$PROJECT_DIR/.github/workflows/sast.yml" '^[[:space:]]+--error'
 assert_file_contains "Dependabot tracks SAST dependencies" "$PROJECT_DIR/.github/dependabot.yml" 'package-ecosystem: pip'
 assert_file_exists "security policy exists" "$PROJECT_DIR/SECURITY.md"
 assert_file_contains "Arch CI installs the YAML test dependency" "$PROJECT_DIR/.github/workflows/ci.yml" 'base-devel git sudo jq python python-yaml'

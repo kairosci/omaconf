@@ -35,6 +35,7 @@ jobs:
       - name: Scan Bash sources
         run: |
           semgrep scan \
+            --error \
             --metrics off \
             --config .semgrep.yml \
             --sarif \
