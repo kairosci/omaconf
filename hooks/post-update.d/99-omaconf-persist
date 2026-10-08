@@ -47,7 +47,7 @@ if declare -F theme_preview_normalize >/dev/null; then
     warn "hooks.preview_size_reapply_root_skipped"
   fi
 fi
-PIN_FILES=("/etc/pacman.d/omaconf/ignore-pkgs.list" "/etc/pacman.d/omasec/ignore-pkgs.list")
+PIN_FILES=("/etc/pacman.d/omaconf/ignore-pkgs.list")
 PINS=""
 for PIN_FILE in "${PIN_FILES[@]}"; do
   [[ -f "$PIN_FILE" ]] || continue
