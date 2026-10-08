@@ -75,6 +75,8 @@ assert_file_contains_literal "desktop defaults keep Brave for HTTPS" "$WORKFLOW_
 assert_file_contains_literal "text defaults use Zed" "$WORKFLOW_SANDBOX/commands" 'xdg-mime default dev.zed.Zed.desktop text/plain'
 assert_file_contains_literal "Omarchy editor state records Zed" "$WORKFLOW_SANDBOX/home/.local/state/omarchy/defaults/editor" 'zed'
 assert_file_contains_literal "PDF defaults use Papers" "$WORKFLOW_SANDBOX/commands" 'xdg-mime default org.gnome.Papers.desktop application/pdf'
+assert_file_contains_literal "office documents use OnlyOffice" "$WORKFLOW_SANDBOX/commands" 'xdg-mime default onlyoffice-desktopeditors.desktop application/msword'
+assert_file_contains_literal "backend launcher is hidden" "$WORKFLOW_SANDBOX/home/.local/share/applications/mpv.desktop" 'Hidden=true'
 assert_file_contains_literal "image defaults use Loupe" "$WORKFLOW_SANDBOX/commands" 'xdg-mime default org.gnome.Loupe.desktop image/png'
 assert_file_contains_literal "media defaults use Celluloid" "$WORKFLOW_SANDBOX/commands" 'xdg-mime default io.github.celluloid_player.Celluloid.desktop video/mp4'
 assert_file_contains "Omarchy file manager state records Nautilus" "$WORKFLOW_SANDBOX/home/.local/state/omarchy/defaults/file-manager" '^nautilus$'

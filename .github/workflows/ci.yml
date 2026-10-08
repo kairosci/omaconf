@@ -90,7 +90,7 @@ jobs:
         run: bash tests/test_hardware_power.sh
 
   theming-and-hook-engine:
-    name: Desktop Theming & Micro Engine
+    name: Desktop Theming & Application Policy
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -102,6 +102,9 @@ jobs:
 
       - name: Run Debloat & Theming Tests
         run: bash tests/test_debloat_theming.sh
+
+      - name: Run Application Policy Tests
+        run: bash tests/test_application_policy.sh
 
   arch-container-validation:
     name: Arch Linux Container Full Run

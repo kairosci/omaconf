@@ -28,14 +28,10 @@ assert_file_contains "desktop-applications skill registered in the agent contrac
 assert_file_exists "defaults module exists" "$DEFAULTS_MODULE"
 assert_true "Brave Origin is not part of the DEBLOAT package list" "! sed -n '/^DEBLOAT=(/,/^)/p' '$DEBLOAT_MODULE' | grep -q brave-origin-bin"
 assert_true "standard Brave is removed and pinned" "sed -n '/^DEBLOAT=(/,/^)/p' '$DEBLOAT_MODULE' | grep -qx '    brave-bin'"
-assert_file_contains "defaults module configures micro editor" "$DEFAULTS_MODULE" "micro"
-assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
 assert_file_contains "defaults module configures 7zip archive support" "$DEFAULTS_MODULE" "7zip"
 assert_file_contains "defaults module installs Kitty" "$DEFAULTS_MODULE" "pacman -S --noconfirm --needed kitty"
-assert_file_contains "defaults module configures imv image viewer" "$DEFAULTS_MODULE" "imv"
 assert_file_contains "defaults module configures trash-cli safe delete" "$DEFAULTS_MODULE" "trash-cli"
-assert_file_contains "defaults module configures mpv player" "$DEFAULTS_MODULE" "mpv"
-assert_file_contains "defaults module configures MuPDF pdf viewer" "$DEFAULTS_MODULE" "mupdf"
+assert_file_contains "defaults module configures Celluloid player" "$DEFAULTS_MODULE" "celluloid"
 
 assert_file_exists "theming module exists" "$THEMING_MODULE"
 assert_file_contains "theming module installs hooks" "$THEMING_MODULE" "hooks/theme-set.d"
@@ -130,18 +126,17 @@ if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pac
     assert_true "herdr installed" "pacman -Q herdr &>/dev/null"
     assert_true "gum installed" "pacman -Q gum &>/dev/null"
     assert_true "Nautilus installed" "pacman -Q nautilus &>/dev/null"
-    assert_true "micro installed" "pacman -Q micro &>/dev/null"
+    for app in zed papers loupe celluloid baobab resources onlyoffice-bin; do
+        assert_true "$app installed" "pacman -Q '$app' &>/dev/null"
+    done
     assert_true "7zip installed" "pacman -Q 7zip &>/dev/null"
-    assert_true "imv installed" "pacman -Q imv &>/dev/null"
     assert_true "mpv installed" "pacman -Q mpv &>/dev/null"
-    assert_true "mupdf installed" "pacman -Q mupdf &>/dev/null"
-    assert_true "btop installed" "pacman -Q btop &>/dev/null"
     assert_true "capitaine-cursors installed" "pacman -Q capitaine-cursors &>/dev/null"
     assert_true "qogir-icon-theme installed" "pacman -Q qogir-icon-theme &>/dev/null"
 
     assert_true "kitty terminal installed" "pacman -Q kitty &>/dev/null"
     assert_false "foot terminal removed" "pacman -Q foot &>/dev/null"
-    for debloated in chromium zathura zathura-pdf-mupdf thunar thunar-archive-plugin tumbler yaru-icon-theme system-config-printer totem evince eog dolphin okular gwenview xdg-desktop-portal-kde breeze breeze-gtk haruna kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra sushi gtksourceview4 gst-plugin-gtk foot neovim omarchy-nvim; do
+    for debloated in chromium zathura zathura-pdf-mupdf thunar thunar-archive-plugin tumbler yaru-icon-theme system-config-printer totem evince eog dolphin okular gwenview xdg-desktop-portal-kde breeze breeze-gtk haruna kdenlive obs-studio libreoffice-fresh obsidian gnome-disk-utility gnome-themes-extra sushi gtksourceview4 gst-plugin-gtk foot neovim omarchy-nvim micro imv mupdf btop gdu mpv-mpris libreoffice-still; do
         assert_false "debloat verified: $debloated removed" "pacman -Q '$debloated' &>/dev/null"
     done
     assert_false "docker daemon absent" "command -v dockerd &>/dev/null"
@@ -157,9 +152,6 @@ HOOK_FILE="$PROJECT_DIR/hooks/theme-set.d/folder-color"
 assert_file_exists "folder-color hook exists in repo" "$HOOK_FILE"
 assert_file_executable "folder-color hook executable" "$HOOK_FILE"
 
-MICRO_HOOK="$PROJECT_DIR/hooks/theme-set.d/micro-theme"
-assert_file_exists "micro-theme hook exists in repo" "$MICRO_HOOK"
-assert_file_executable "micro-theme hook executable" "$MICRO_HOOK"
 
 PERSIST_PRE="$PROJECT_DIR/hooks/pre-refresh-pacman.d/99-omaconf-persist"
 assert_file_exists "pre-refresh persist hook exists in repo" "$PERSIST_PRE"
@@ -179,9 +171,6 @@ assert_file_exists "plugin index exists" "$PROJECT_DIR/plugins/index.json"
 assert_file_contains "plugin index references omamp" "$PROJECT_DIR/plugins/index.json" "omamp"
 
 assert_file_exists "zedconf install script exists" "$PROJECT_DIR/conf/zed/install.sh"
-assert_file_exists "microconf install script exists" "$PROJECT_DIR/conf/micro/install.sh"
-assert_file_exists "microconf settings exists" "$PROJECT_DIR/conf/micro/data/settings.json"
-assert_file_exists "microconf bindings exists" "$PROJECT_DIR/conf/micro/data/bindings.json"
 assert_file_contains "defaults module enforces gio file manager default" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "gio mime inode/directory"
 assert_file_contains "defaults module delegates shared desktop defaults" "$DEFAULTS_MODULE" "desktop_workflow_defaults"
 assert_file_contains "defaults module records file-manager state" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "defaults/file-manager"

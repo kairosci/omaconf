@@ -3,6 +3,13 @@
 set -euo pipefail
 
 DEBLOAT=(
+    btop
+    gdu
+    imv
+    micro
+    mupdf
+    mpv-mpris
+    libreoffice-still
     geany
     geany-plugins
     keepassxc
