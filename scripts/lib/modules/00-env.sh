@@ -15,7 +15,7 @@ aur_package_artifact() {
     local directory="$1" package="$2" artifact name
     for artifact in "$directory/$package-"*.pkg.tar.*; do
         [[ -f "$artifact" && "$artifact" != *.sig ]] || continue
-        name=$(pacman -Qp --print-format '%n' "$artifact") || return 1
+        name=$(pacman -Qpq "$artifact") || return 1
         if [[ "$name" == "$package" ]]; then
             printf '%s\n' "$artifact"
             return 0

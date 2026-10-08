@@ -60,5 +60,16 @@ source <(sed -n '/^aur_source_dependencies()/,/^}/p' "$MODULES_DIR/00-env.sh")
 printf 'depends = gtk3\nmakedepends = patch\ndepends_x86_64 = libx11\ndepends_aarch64 = wrong-architecture\noptdepends = libreoffice: fonts\n' > "$AUR_SANDBOX/srcinfo"
 assert_true "AUR selects required dependencies for the current architecture" "[[ \$(aur_source_dependencies '$AUR_SANDBOX/srcinfo' x86_64) == \$'gtk3\npatch\nlibx11' ]]"
 assert_false "AUR propagates unreadable metadata" "aur_source_dependencies '$AUR_SANDBOX/missing' x86_64"
+if command -v pacman >/dev/null; then
+    # shellcheck source=/dev/null
+    source <(sed -n '/^aur_package_artifact()/,/^}/p' "$MODULES_DIR/00-env.sh")
+    mkdir -p "$AUR_SANDBOX/payload"
+    printf 'pkgname = wanted-git\npkgver = 1-1\npkgdesc = Fixture\nsize = 0\narch = any\n' > "$AUR_SANDBOX/payload/.PKGINFO"
+    tar -cf "$AUR_SANDBOX/wanted-0-1-any.pkg.tar.fixture" -C "$AUR_SANDBOX/payload" .PKGINFO
+    assert_false "AUR rejects an artifact with a different package name" "aur_package_artifact '$AUR_SANDBOX' wanted"
+    sed -i 's/wanted-git/wanted/' "$AUR_SANDBOX/payload/.PKGINFO"
+    tar -cf "$AUR_SANDBOX/wanted-1-1-any.pkg.tar.fixture" -C "$AUR_SANDBOX/payload" .PKGINFO
+    assert_true "AUR resolves the artifact from real pacman package metadata" "[[ \$(aur_package_artifact '$AUR_SANDBOX' wanted) == '$AUR_SANDBOX/wanted-1-1-any.pkg.tar.fixture' ]]"
+fi
 
 test_summary
