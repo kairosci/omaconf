@@ -305,6 +305,8 @@ tcheck "check.cli_secrets"      "command -v secret-tool &>/dev/null && command -
 tcheck "check.disk_config"      "[[ -f \$HOME/.config/gdu/gdu.yaml ]]"
 
 section verify.sec_debloat
+source "$SCRIPT_DIR/lib/package-pins.sh"
+tcheck "check.retained_updateable" "package_pins_retained_updateable"
 tcheck "check.ignorepkg" "grep -q '^IgnorePkg' /etc/pacman.conf"
 tcheck "check.icon_theme"      "gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | grep -q 'Qogir'"
 tcheck "check.cursor_theme"  "gsettings get org.gnome.desktop.interface cursor-theme 2>/dev/null | grep -q 'capitaine-cursors'"

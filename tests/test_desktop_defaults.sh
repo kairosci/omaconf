@@ -93,8 +93,24 @@ export -f pacman-conf
 assert_false "pre-refresh propagates config query failures" "OMACONF_PIN_FILE='$_pin_sandbox/pins' bash '$PERSIST_PRE'"
 unset -f pacman-conf
 rm -rf "$_pin_sandbox"
-_pin_filter=$(sed -n '/^EXISTING_PINS=$(awk /p' "$DEBLOAT_MODULE")
-assert_true "adjacent retained pins are both removed" "EXISTING_PINS='nautilus brave-origin-bin linux-lts'; eval \"\$_pin_filter\"; [[ \$EXISTING_PINS == 'linux-lts ' ]]"
+source "$PROJECT_DIR/scripts/lib/package-pins.sh"
+_pin_fixture=$(mktemp)
+printf 'IgnorePkg = nautilus brave-origin-bin linux-lts\n  IgnorePkg = linux-lts custom-hold # retained\n' > "$_pin_fixture"
+assert_true "all user pins survive retained package migration" "[[ \$(package_pins_existing '$_pin_fixture') == 'linux-lts custom-hold ' ]]"
+# shellcheck disable=SC2329
+pacman-conf() { printf 'linux-lts\n'; }
+assert_true "retained packages can update with unrelated holds" 'package_pins_retained_updateable'
+# shellcheck disable=SC2329
+pacman-conf() { printf 'nautilus\n'; }
+assert_false "retained package holds fail verification" 'package_pins_retained_updateable'
+# shellcheck disable=SC2329
+pacman-conf() { printf 'brave-*\n'; }
+assert_false "wildcard retained package holds fail verification" 'package_pins_retained_updateable'
+# shellcheck disable=SC2329
+pacman-conf() { return 42; }
+assert_false "retained package verification propagates query failure" 'package_pins_retained_updateable'
+unset -f pacman-conf
+rm -f "$_pin_fixture"
 assert_file_contains "post-update hook delegates shared desktop defaults" "$PERSIST_POST" "desktop_workflow_defaults"
 assert_file_contains "post-update hook reapplies Papers default" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "org.gnome.Papers.desktop application/pdf"
 assert_file_contains "post-update hook reapplies image defaults" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "org.gnome.Loupe.desktop image/png"
