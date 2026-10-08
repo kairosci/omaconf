@@ -40,12 +40,8 @@ OMACONF_THEME_PREVIEW="${OMACONF_THEME_PREVIEW:-$SCRIPT_DIR/../lib/theme-preview
 if [[ -f "$OMACONF_THEME_PREVIEW" ]]; then
   source "$OMACONF_THEME_PREVIEW"
 fi
-if declare -F theme_preview_normalize >/dev/null; then
-  if [[ $EUID -eq 0 ]]; then
-    theme_preview_normalize || warn "hooks.preview_size_reapply_skipped"
-  else
-    warn "hooks.preview_size_reapply_root_skipped"
-  fi
+if [[ $EUID -eq 0 ]] && declare -F theme_preview_normalize >/dev/null; then
+  theme_preview_normalize
 fi
 PIN_FILES=("/etc/pacman.d/omaconf/ignore-pkgs.list")
 PINS=""
