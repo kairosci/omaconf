@@ -8,7 +8,7 @@ if [[ -f "$OMACONF_I18N_BOOT" ]]; then
 else
     warn() { printf '%s: %s\n' "Warning" "$1" >&2; }
 fi
-PIN_FILES=("/etc/pacman.d/omaconf/ignore-pkgs.list" "/etc/pacman.d/omasec/ignore-pkgs.list")
+PIN_FILES=("/etc/pacman.d/omaconf/ignore-pkgs.list")
 PINS=""
 for PIN_FILE in "${PIN_FILES[@]}"; do
   [[ -f "$PIN_FILE" ]] || continue

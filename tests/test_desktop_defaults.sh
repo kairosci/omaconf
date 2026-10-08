@@ -72,6 +72,10 @@ assert_file_contains "pre-refresh hook re-merges IgnorePkg" "$PERSIST_PRE" "Igno
 PERSIST_POST="$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist"
 assert_file_exists "post-update persist hook exists in repo" "$PERSIST_POST"
 assert_file_executable "post-update persist hook executable" "$PERSIST_POST"
+assert_false "pre-refresh excludes retired omasec pins" "grep -q '/etc/pacman.d/omasec' '$PERSIST_PRE'"
+assert_false "post-update excludes retired omasec pins" "grep -q '/etc/pacman.d/omasec' '$PERSIST_POST'"
+_pin_filter=$(sed -n '/^EXISTING_PINS=$(awk /p' "$DEBLOAT_MODULE")
+assert_true "adjacent retained pins are both removed" "EXISTING_PINS='nautilus brave-origin-bin linux-lts'; eval \"\$_pin_filter\"; [[ \$EXISTING_PINS == 'linux-lts ' ]]"
 assert_file_contains "post-update hook delegates shared desktop defaults" "$PERSIST_POST" "desktop_workflow_defaults"
 assert_file_contains "post-update hook reapplies Papers default" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "org.gnome.Papers.desktop application/pdf"
 assert_file_contains "post-update hook reapplies image defaults" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "org.gnome.Loupe.desktop image/png"
