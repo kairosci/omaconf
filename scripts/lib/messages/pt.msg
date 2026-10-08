@@ -340,6 +340,7 @@ check.starship_config=configuração do starship
 check.git_config=configuração do git
 check.lazygit_config=configuração do lazygit
 check.ignorepkg=IgnorePkg no pacman.conf
+check.retained_updateable=Nautilus e Brave Origin podem ser atualizados
 check.icon_theme=icon-theme é Qogir
 check.cursor_theme=cursor-theme é Capitaine
 check.no_tela=sem substituição de Tela
