@@ -27,7 +27,7 @@ install_user_content() {
         if cmp -s "$tmp" "$dest"; then
             rm -f "$tmp"
             chmod "$mode" "$dest" || return 1
-            if [[ -e "$dest.bak" ]]; then
+            if [[ "$mode" == 600 && -e "$dest.bak" ]]; then
                 [[ -f "$dest.bak" && ! -L "$dest.bak" ]] || return 1
                 chmod "$mode" "$dest.bak" || return 1
             fi
