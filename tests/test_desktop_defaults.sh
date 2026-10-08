@@ -67,13 +67,32 @@ assert_file_contains "Micro installs the available runit plugin" "$PROJECT_DIR/c
 PERSIST_PRE="$PROJECT_DIR/hooks/pre-refresh-pacman.d/99-omaconf-persist"
 assert_file_exists "pre-refresh persist hook exists in repo" "$PERSIST_PRE"
 assert_file_executable "pre-refresh persist hook executable" "$PERSIST_PRE"
-assert_file_contains "pre-refresh hook re-merges IgnorePkg" "$PERSIST_PRE" "IgnorePkg"
+assert_file_contains "pre-refresh hook validates effective IgnorePkg" "$PERSIST_PRE" "pacman-conf IgnorePkg"
 
 PERSIST_POST="$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist"
 assert_file_exists "post-update persist hook exists in repo" "$PERSIST_POST"
 assert_file_executable "post-update persist hook executable" "$PERSIST_POST"
 assert_false "pre-refresh excludes retired omasec pins" "grep -q '/etc/pacman.d/omasec' '$PERSIST_PRE'"
 assert_false "post-update excludes retired omasec pins" "grep -q '/etc/pacman.d/omasec' '$PERSIST_POST'"
+assert_file_not_contains "pre-refresh never escalates package policy changes" "$PERSIST_PRE" 'sudo'
+assert_file_not_contains "post-update never removes packages" "$PERSIST_POST" 'pacman -Rns'
+assert_file_contains "setup aborts on failed debloat" "$DEBLOAT_MODULE" 'err "debloat.partial_removal"'
+_pin_sandbox=$(mktemp -d)
+printf 'geany\nyazi\n' > "$_pin_sandbox/pins"
+# shellcheck disable=SC2329
+pacman-conf() { printf 'geany\nyazi\n'; }
+export -f pacman-conf
+assert_true "pre-refresh accepts matching effective pins" "OMACONF_PIN_FILE='$_pin_sandbox/pins' bash '$PERSIST_PRE'"
+# shellcheck disable=SC2329
+pacman-conf() { printf 'geany\n'; }
+export -f pacman-conf
+assert_false "pre-refresh rejects missing effective pins" "OMACONF_PIN_FILE='$_pin_sandbox/pins' bash '$PERSIST_PRE'"
+# shellcheck disable=SC2329
+pacman-conf() { return 42; }
+export -f pacman-conf
+assert_false "pre-refresh propagates config query failures" "OMACONF_PIN_FILE='$_pin_sandbox/pins' bash '$PERSIST_PRE'"
+unset -f pacman-conf
+rm -rf "$_pin_sandbox"
 _pin_filter=$(sed -n '/^EXISTING_PINS=$(awk /p' "$DEBLOAT_MODULE")
 assert_true "adjacent retained pins are both removed" "EXISTING_PINS='nautilus brave-origin-bin linux-lts'; eval \"\$_pin_filter\"; [[ \$EXISTING_PINS == 'linux-lts ' ]]"
 assert_file_contains "post-update hook delegates shared desktop defaults" "$PERSIST_POST" "desktop_workflow_defaults"
