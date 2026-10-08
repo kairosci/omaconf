@@ -2,6 +2,24 @@
 
 set -euo pipefail
 
+install -d -m 755 -o root -g root /usr/local/lib/omaconf/messages /etc/pacman.d/hooks
+install -m 644 -o root -g root "$PROJECT_DIR/scripts/lib/i18n.sh" \
+    "$PROJECT_DIR/scripts/lib/theme-preview.sh" /usr/local/lib/omaconf/
+install -m 644 -o root -g root "$PROJECT_DIR"/scripts/lib/messages/*.msg /usr/local/lib/omaconf/messages/
+install -Dm755 -o root -g root "$PROJECT_DIR/scripts/lib/update-previews.sh" /usr/local/libexec/omaconf-update-previews
+cat > /etc/pacman.d/hooks/99-omaconf-theme-previews.hook << 'HOOK'
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Path
+Target = usr/share/omarchy/themes/*
+
+[Action]
+When = PostTransaction
+Exec = /usr/local/libexec/omaconf-update-previews
+HOOK
+chmod 644 /etc/pacman.d/hooks/99-omaconf-theme-previews.hook
+
 if [[ -f "$PROJECT_DIR/scripts/lib/theme-preview.sh" ]]; then
     # shellcheck source=../theme-preview.sh
     source "$PROJECT_DIR/scripts/lib/theme-preview.sh"

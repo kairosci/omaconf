@@ -69,6 +69,10 @@ assert_file_contains "theming module normalizes preview size" "$THEMING_MODULE" 
 assert_file_contains "theming module deploys the preview library to hooks lib" "$THEMING_MODULE" 'hooks/lib'
 assert_file_contains "post-update hook resolves the deployed preview library" "$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist" "lib/theme-preview.sh"
 assert_file_contains "post-update hook reapplies preview normalization" "$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist" "theme_preview_normalize"
+assert_file_contains "setup deploys privileged preview transaction hook" "$THEMING_MODULE" '99-omaconf-theme-previews.hook'
+assert_file_contains "preview hook targets packaged themes" "$THEMING_MODULE" 'Target = usr/share/omarchy/themes/'
+assert_file_contains "preview transaction uses only privileged libraries" "$PROJECT_DIR/scripts/lib/update-previews.sh" 'source /usr/local/lib/omaconf/theme-preview.sh'
+assert_false "user hook no longer warns about privileged previews" "grep -q 'hooks.preview_size_reapply_root_skipped' '$PROJECT_DIR/hooks/post-update.d/99-omaconf-persist'"
 
 REBUILD_GEOMETRY="$PROJECT_DIR/theme-previews/rebuild-previews.sh"
 assert_file_contains "rebuild script captures Zed" "$REBUILD_GEOMETRY" 'capture_app zed'
