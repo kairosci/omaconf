@@ -17,9 +17,9 @@ run_as_user() {
   local _ru="$1"
   shift
   if [[ "$_ru" == "$(id -un 2>/dev/null)" ]]; then
-    "$@" 2>/dev/null || return 1
+    "$@" || return 1
   else
-    sudo -u "$_ru" "$@" 2>/dev/null || return 1
+    sudo -u "$_ru" "$@" || return 1
   fi
 }
 OMACONF_DESKTOP_WORKFLOW="${OMACONF_DESKTOP_WORKFLOW:-$SCRIPT_DIR/../lib/desktop-workflow.sh}"
@@ -42,59 +42,6 @@ if [[ -f "$OMACONF_THEME_PREVIEW" ]]; then
 fi
 if [[ $EUID -eq 0 ]] && declare -F theme_preview_normalize >/dev/null; then
   theme_preview_normalize
-fi
-PIN_FILES=("/etc/pacman.d/omaconf/ignore-pkgs.list")
-PINS=""
-for PIN_FILE in "${PIN_FILES[@]}"; do
-  [[ -f "$PIN_FILE" ]] || continue
-  PINS="$PINS $(tr '\n' ' ' < "$PIN_FILE" | xargs)"
-done
-PINS=$(printf '%s\n' "$PINS" | xargs)
-if [[ -n "$PINS" ]]; then
-  EXISTING=""
-  if grep -q '^IgnorePkg' /etc/pacman.conf 2>/dev/null; then
-    EXISTING=$(grep '^IgnorePkg' /etc/pacman.conf | head -1 | sed 's/^IgnorePkg[[:space:]]*=[[:space:]]*//')
-  fi
-  MERGED="$EXISTING"
-  for pkg in $PINS; do
-    grep -qw "$pkg" <<< " $MERGED " 2>/dev/null || MERGED="$MERGED $pkg"
-  done
-  MERGED=$(printf '%s\n' "$MERGED" | xargs)
-  if [[ "$MERGED" != "$EXISTING" ]]; then
-    if grep -q '^IgnorePkg' /etc/pacman.conf 2>/dev/null; then
-      if [[ $EUID -eq 0 ]]; then
-        sed -i "s|^IgnorePkg.*|IgnorePkg = $MERGED|" /etc/pacman.conf 2>/dev/null || warn "hooks.ignore_merge_skipped"
-      elif sudo -n true 2>/dev/null; then
-        sudo -n sed -i "s|^IgnorePkg.*|IgnorePkg = $MERGED|" /etc/pacman.conf 2>/dev/null || warn "hooks.ignore_merge_skipped"
-      else
-        warn "hooks.ignore_merge_root_skipped"
-      fi
-    else
-      if [[ $EUID -eq 0 ]]; then
-        sed -i "/^\\[options\\]/a IgnorePkg = $MERGED" /etc/pacman.conf 2>/dev/null || warn "hooks.ignore_insert_skipped"
-      elif sudo -n true 2>/dev/null; then
-        sudo -n sed -i "/^\\[options\\]/a IgnorePkg = $MERGED" /etc/pacman.conf 2>/dev/null || warn "hooks.ignore_insert_skipped"
-      else
-        warn "hooks.ignore_insert_root_skipped"
-      fi
-    fi
-  fi
-  read -ra PINNED <<< "$PINS"
-  INSTALLED=()
-  for pkg in "${PINNED[@]}"; do
-    if pacman -Qq "$pkg" 2>/dev/null | grep -qx "$pkg"; then
-      INSTALLED+=("$pkg")
-    fi
-  done
-  if [[ ${#INSTALLED[@]} -gt 0 ]]; then
-    if [[ $EUID -eq 0 ]]; then
-      pacman -Rns --noconfirm "${INSTALLED[@]}" 2>/dev/null || warn "hooks.debloat_reapply_skipped"
-    elif sudo -n true 2>/dev/null; then
-      sudo -n pacman -Rns --noconfirm "${INSTALLED[@]}" 2>/dev/null || warn "hooks.debloat_reapply_skipped"
-    else
-      warn "hooks.debloat_reapply_root_skipped"
-    fi
-  fi
 fi
 if [[ -x /usr/local/libexec/omaconf-desktop-cleanup ]]; then
   /usr/local/libexec/omaconf-desktop-cleanup 2>/dev/null || warn "hooks.desktop_reapply_skipped" "all"

@@ -57,7 +57,7 @@ for pkg in "${DEBLOAT[@]}"; do
 done
 if [[ ${#INSTALLED_DEBLOAT[@]} -gt 0 ]]; then
     if ! pacman -Rns --noconfirm "${INSTALLED_DEBLOAT[@]}"; then
-        warn "debloat.partial_removal"
+        err "debloat.partial_removal"
     fi
 fi
 
