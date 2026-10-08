@@ -53,4 +53,12 @@ assert_file_contains "10-debloat defines DEBLOAT array" "$MODULES_DIR/10-debloat
 assert_file_contains "85-security-stack defines SECURITY_PKGS array" "$MODULES_DIR/85-security-stack.sh" "SECURITY_PKGS=\("
 assert_file_contains "setup.sh checks EUID root requirement" "$PROJECT_DIR/scripts/setup.sh" "EUID -eq 0"
 
+AUR_SANDBOX=$(mktemp -d)
+trap 'rm -rf "$AUR_SANDBOX"' EXIT
+# shellcheck source=/dev/null
+source <(sed -n '/^aur_source_dependencies()/,/^}/p' "$MODULES_DIR/00-env.sh")
+printf 'depends = gtk3\nmakedepends = patch\ndepends_x86_64 = libx11\ndepends_aarch64 = wrong-architecture\noptdepends = libreoffice: fonts\n' > "$AUR_SANDBOX/srcinfo"
+assert_true "AUR selects required dependencies for the current architecture" "[[ \$(aur_source_dependencies '$AUR_SANDBOX/srcinfo' x86_64) == \$'gtk3\npatch\nlibx11' ]]"
+assert_false "AUR propagates unreadable metadata" "aur_source_dependencies '$AUR_SANDBOX/missing' x86_64"
+
 test_summary
