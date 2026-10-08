@@ -115,6 +115,7 @@ for user_home in /home/*; do
     cp "$PROJECT_DIR/scripts/lib/theme-preview.sh" "$_lib_dir/"
     cp "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "$_lib_dir/"
     cp "$PROJECT_DIR/conf/xdg-desktop-portal/data/portals.conf" "$_lib_dir/"
+    cp "$PROJECT_DIR/conf/desktop/data/mpv.desktop" "$_lib_dir/"
     chmod 644 "$_i18n_dir/i18n.sh" "$_i18n_dir"/messages/*.msg "$_lib_dir/theme-preview.sh"
     chown -R "$_user":"$_user" "$_hook_dir" "$_i18n_dir" "$_lib_dir"
 done

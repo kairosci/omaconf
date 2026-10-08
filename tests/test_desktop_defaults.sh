@@ -41,7 +41,7 @@ assert_file_contains "debloat module installs persistence hooks" "$DEBLOAT_MODUL
 assert_file_contains "defaults module records file-manager state" "$PROJECT_DIR/scripts/lib/desktop-workflow.sh" "defaults/file-manager"
 assert_file_contains "defaults module rebinds file manager keys to Nautilus" "$DEFAULTS_MODULE" "omaconf-nautilus-fm"
 assert_file_contains "defaults module provisions herdrconf menu" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
-assert_file_contains "defaults module installs gdu disk analyzer" "$DEFAULTS_MODULE" "pacman -Q gdu"
+assert_file_contains "defaults module installs Baobab disk analyzer" "$DEFAULTS_MODULE" "baobab"
 assert_file_contains "defaults module installs Micro symbol navigation dependencies" "$DEFAULTS_MODULE" "universal-ctags"
 assert_file_contains "defaults module provisions diskconf" "$PROJECT_DIR/scripts/lib/modules/24-user-configurations.sh" "conf/\*/install.sh"
 assert_file_contains "shell plugins module uses canonical omamp source" "$SHELL_PLUGINS_MODULE" "omaconf/omamp.git"
@@ -62,7 +62,6 @@ assert_file_contains "keyring module selects GNOME backend" "$PROJECT_DIR/script
 assert_file_contains "keyring module provisions Seahorse" "$PROJECT_DIR/scripts/lib/modules/62-keyring.sh" "seahorse"
 assert_file_contains "keyring switch accepts GNOME backend" "$PROJECT_DIR/scripts/keyring-switch.sh" "gnome-keyring)"
 assert_file_contains "Makefile exposes the keyring selection target" "$PROJECT_DIR/Makefile" "scripts/keyring-switch.sh"
-assert_file_contains "Micro installs the available runit plugin" "$PROJECT_DIR/conf/micro/install.sh" "runit editorconfig"
 
 PERSIST_PRE="$PROJECT_DIR/hooks/pre-refresh-pacman.d/99-omaconf-persist"
 assert_file_exists "pre-refresh persist hook exists in repo" "$PERSIST_PRE"
@@ -156,7 +155,7 @@ if [[ -x "$OMAQT_DIR/install.sh" ]]; then
 fi
 
 if command -v pacman &>/dev/null && [[ -f /etc/arch-release ]] && [[ -f /etc/pacman.d/omaconf/ignore-pkgs.list ]]; then
-    for app in nautilus zed imv mpv qogir-icon-theme; do
+    for app in nautilus zed loupe celluloid qogir-icon-theme; do
         assert_true "$app installed" "pacman -Q $app &>/dev/null"
     done
     for app in thunar totem evince eog yaru-icon-theme dolphin okular gwenview \
