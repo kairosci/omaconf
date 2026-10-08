@@ -134,6 +134,8 @@ assert_false "aliases remain when no canonical entry is available" "desktop_clea
 printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=Disk Usage' 'Hidden=true' > "$DC_HOMES/tester/.local/share/applications/Disk Usage.desktop"
 assert_false "hidden legacy aliases survive subsequent cleanup" "desktop_cleanup_file '$DC_HOMES/tester/.local/share/applications/Disk Usage.desktop'"
 
+printf '#!/bin/bash\nexit 0\n' > "$DC_BIN/papers"
+chmod +x "$DC_BIN/papers"
 printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=Papers' 'Exec=papers' > "$DC_SANDBOX/sysapps/org.gnome.Papers.desktop"
 printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Name=Protected viewer' 'Exec=papers' > "$DC_SANDBOX/sysapps/protected.desktop"
 export PATH="$DC_FAKEBIN:$DC_BIN:/usr/bin:/bin"
