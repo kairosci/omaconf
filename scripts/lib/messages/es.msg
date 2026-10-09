@@ -434,3 +434,6 @@ git.main_push_forbidden=Los push directos a main están prohibidos; usa una rama
 identity.arch=Restaurar la identidad nativa Arch Linux del sistema
 identity.failed=No se puede restaurar la identidad nativa Arch Linux del sistema
 identity.check=Identidad nativa Arch Linux del sistema
+power.samsung_recover=Reinicializando el controlador Samsung para restaurar los eventos de batería
+power.samsung_reload_failed=Falló la reinicialización del controlador Samsung
+auth.pam_failed=Falló la integración de la política PAM
