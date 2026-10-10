@@ -8,13 +8,4 @@ if [[ -f "$OMACONF_I18N_BOOT" ]]; then
 else
     warn() { printf '%s: %s\n' "Warning" "$1" >&2; }
 fi
-PIN_FILE="${OMACONF_PIN_FILE:-/etc/pacman.d/omaconf/ignore-pkgs.list}"
-[[ -f "$PIN_FILE" ]] || exit 0
-PINS=$(pacman-conf IgnorePkg)
-while IFS= read -r pkg || [[ -n "$pkg" ]]; do
-    [[ -n "$pkg" ]] || continue
-    if ! grep -Fxq -- "$pkg" <<< "$PINS"; then
-        warn "hooks.ignore_merge_root_skipped"
-        exit 1
-    fi
-done < "$PIN_FILE"
+exit 0
