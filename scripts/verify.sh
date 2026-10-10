@@ -319,6 +319,12 @@ tcheck "check.desktop_disk_valid" "disk_entry_valid"
 tcheck "check.desktop_no_docker" "command -v lazydocker &>/dev/null || [[ ! -f \"/usr/share/omarchy/applications/Docker.desktop\" ]]"
 tcheck "check.desktop_hook" "[[ -f /etc/pacman.d/hooks/99-omaconf-desktop-cleanup.hook ]] && [[ -x /usr/local/libexec/omaconf-desktop-cleanup ]]"
 
+section verify.sec_performance
+# shellcheck source=scripts/lib/responsiveness.sh
+source "$SCRIPT_DIR/lib/responsiveness.sh"
+tcheck "check.performance_files" "responsiveness_files_match \"$(dirname "$SCRIPT_DIR")\""
+tcheck "check.performance_runtime" "responsiveness_runtime \"$(dirname "$SCRIPT_DIR")\""
+
 section verify.sec_aur
 tcheck "check.no_unverified_aur" "! grep -q 'aur_install ' '$SCRIPT_DIR/setup.sh'"
 tcheck "check.no_yay"   "! grep -q 'yay -S' '$SCRIPT_DIR/setup.sh'"
